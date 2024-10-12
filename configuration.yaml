@@ -1,0 +1,71 @@
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+# Purge de la base
+recorder:
+  purge_keep_days: 10
+
+#   include :
+#     domains:
+#       - sensor
+#       - binary_sensor
+#       - input_number
+#       - input_boolean
+#       - alarm_control_panel
+#     entities:
+#       - sensor.solcast_pv_forecast_previsions_pour_aujourd_hui
+#       - sensor.solcast_pv_forecast_previsions_du_pic_aujourd_hui
+#   exclude:
+#     domains:
+#       - automation
+#       - script
+#       - device_tracker
+#       - camera
+#       - cover
+#       - update
+#       - button
+#       - input_button
+#       - number
+#       - switch
+#       - scene
+#       - select
+#       - lock
+#     entity_globs:
+#       - sensor.sun*
+#       - sensor.energy*
+#       - sensor.power*
+#       - sensor.iphone*
+#       - camera.*
+#       - binary_sensor.camera*
+#       - switch.camera*
+#       - switch.doorbell*
+#       - event.*
+#       - sensor.*current*
+#       - sensor.solcast_pv_forecas*
+#       - sensor.system_monitor*
+#       - sensor.talence*
+#     entities:
+#       - sensor.power_production_now
+
+homeassistant:
+  packages: !include_dir_named sensors/
+  allowlist_external_dirs:
+    - /config
+
+python_script:
+logger:
+  default: info
+
+shell_command:
+  batch_py: python3 /config/python_scripts/script.py
+  supp_ecojoko: python3 /config/python_scripts/suppression_ecojoko.py
+
+my:

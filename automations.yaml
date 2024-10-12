@@ -1,0 +1,1573 @@
+- id: '1719750374699'
+  alias: Sauvegarde manuelle
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - input_button.backup
+    from:
+    to:
+  condition: []
+  action:
+  - service: hassio.backup_full
+    data:
+      compressed: true
+      homeassistant_exclude_database: false
+  mode: single
+- id: '1719771464619'
+  alias: Changement IP Fixe
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.myip
+  condition:
+  - condition: state
+    entity_id: sensor.myip
+    state: not unknown
+  - condition: state
+    entity_id: sensor.myip
+    state: not unavailable
+  action:
+  - metadata: {}
+    data:
+      message: 'Nouvelle IP Fixe : {{states(''sensor.myip'')}}'
+    action: notify.notify
+  mode: single
+- id: '1719775557204'
+  alias: Départ en vacances
+  description: 'Fermeture de tous les volets/stores/fenêtres sauf Garage
+
+    Activation du mode alarme sur ouvertures/caméras'
+  triggers:
+  - entity_id:
+    - input_button.depart_en_vacances
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.automatisation
+    state: 'on'
+  actions:
+  - device_id: 2bd1859f74267146aa2087e82d1ffd4f
+    domain: button
+    entity_id: 38477b2ac9f932c74d15d3041385d4cb
+    type: press
+  - metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.mode_alarme
+    action: input_boolean.turn_on
+  - type: turn_off
+    device_id: 62be3297a0c0d75c708f1a2e49911819
+    entity_id: 84ede9c070c6abc84dbd5367e484c988
+    domain: switch
+  mode: single
+- id: '1719776952844'
+  alias: Retour de vacances
+  description: Active le Chauffe eau et désactive les alarmes
+  trigger:
+  - platform: state
+    entity_id:
+    - input_button.retour_de_vacances
+  condition:
+  - condition: state
+    entity_id: input_boolean.automatisation
+    state: 'on'
+  action:
+  - type: turn_on
+    device_id: 62be3297a0c0d75c708f1a2e49911819
+    entity_id: 84ede9c070c6abc84dbd5367e484c988
+    domain: switch
+  - service: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.mode_alarme
+  mode: single
+- id: '1719836236088'
+  alias: Alerte Mémoire
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.system_monitor_utilisation_de_la_memoire
+    above: 0.9
+  condition: []
+  action:
+  - service: notify.send_message
+    metadata: {}
+    data:
+      message: 'Utilisation de la mémoire > 90% : {{states(''sensor.system_monitor_utilisation_de_la_memoire'')}}'
+  mode: single
+- id: '1719836323085'
+  alias: Alerte CPU
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.system_monitor_charge_5m
+    above: 0.5
+    trigger: numeric_state
+  conditions: []
+  actions:
+  - metadata: {}
+    data:
+      message: 'Utilisation du CPU importante : {{states(''sensor.system_monitor_charge_5m'')}}'
+    action: notify.mobile_app_iphone_de_mat
+  - metadata: {}
+    data:
+      message: 'Utilisation du CPU importante : {{states(''sensor.system_monitor_charge_5m'')}}'
+    action: persistent_notification.create
+  mode: single
+- id: '1719836425210'
+  alias: Alerte Swap
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.system_monitor_espace_d_echange_libre
+    below: 650
+  condition: []
+  action:
+  - service: notify.send_message
+    metadata: {}
+    data:
+      message: 'Utilisation du SWAP < 10Mo : {{states(''sensor.system_monitor_utilisation_de_la_memoire'')}}
+        Mo restants'
+  mode: single
+- id: '1719933755667'
+  alias: Début ECS
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.disjoncteur_cumulus_puissance
+    above: 4
+  - platform: numeric_state
+    entity_id:
+    - sensor.cumulus_2
+    above: 4
+  condition: []
+  action:
+  - metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.ecs
+    action: input_boolean.turn_on
+  - action: input_number.set_value
+    metadata: {}
+    data:
+      value: '{{ states(''sensor.cumulus_kwh'') | float(0) }}'
+    target:
+      entity_id: input_number.debut_ecs
+  mode: single
+- id: '1719951431038'
+  alias: Fin ECS
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.disjoncteur_cumulus_puissance
+    below: 4
+  - platform: numeric_state
+    entity_id:
+    - sensor.cumulus_2
+    below: 4
+  condition:
+  - condition: state
+    entity_id: input_boolean.ecs
+    state: 'on'
+  action:
+  - metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.ecs
+    action: input_boolean.turn_off
+  - action: input_number.set_value
+    metadata: {}
+    data:
+      value: '{{ states(''sensor.cumulus_kwh'') | float(0) }}'
+    target:
+      entity_id: input_number.fin_ecs
+  - action: automation.trigger
+    metadata: {}
+    data:
+      skip_condition: true
+    target:
+      entity_id: automation.cycle_ecs
+  mode: single
+- id: '1719951775105'
+  alias: Début Frigo
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.prise_frigo_local_puissance
+    - sensor.prise_frigo_puissance
+    above: 3
+    trigger: numeric_state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.frigo
+    state: 'off'
+  actions:
+  - metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.frigo
+    action: input_boolean.turn_on
+  - action: input_number.set_value
+    metadata: {}
+    data:
+      value: '{{ states(''sensor.frigo_wh'') | float(0) }}'
+    target:
+      entity_id: input_number.debut_frigo
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.dernier_cycle_frigo
+    data:
+      datetime: '{{state_attr(''automation.fin_frigo'',''last_triggered'')}}'
+  mode: single
+- id: '1719951809758'
+  alias: Fin Frigo
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.prise_frigo_puissance
+    - sensor.prise_frigo_local_puissance
+    below: 3
+  condition:
+  - condition: state
+    entity_id: input_boolean.frigo
+    state: 'on'
+  action:
+  - data: {}
+    target:
+      entity_id: input_boolean.frigo
+    action: input_boolean.turn_off
+  - action: input_number.set_value
+    metadata: {}
+    data:
+      value: '{{ states(''sensor.frigo_wh'') | float(0) }}'
+    target:
+      entity_id: input_number.fin_frigo
+  - action: automation.trigger
+    metadata: {}
+    data:
+      skip_condition: true
+    target:
+      entity_id: automation.cycle_frigo
+  mode: single
+- id: '1720013652767'
+  alias: Début Prise Salon
+  description: ''
+  triggers:
+  - entity_id:
+    - switch.lumiere_salon
+    to: 'on'
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.prise_salon
+    state: 'off'
+  actions:
+  - metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.prise_salon
+    action: input_boolean.turn_on
+  mode: single
+- id: '1720013745679'
+  alias: Fin Prise Salon
+  description: ''
+  triggers:
+  - entity_id:
+    - switch.lumiere_salon
+    to: 'off'
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.prise_salon
+    state: 'on'
+  actions:
+  - target:
+      entity_id:
+      - input_boolean.prise_salon
+    data: {}
+    action: input_boolean.turn_off
+  mode: single
+- id: '1720778515127'
+  alias: Suppression données EcoJoko
+  description: Suppression données EcoJoko
+  trigger:
+  - platform: time
+    at: 00:04:00
+  condition: []
+  action:
+  - data:
+      entity_id:
+      - sensor.ecojoko_consommation_reseau
+      keep_days: 0
+    action: recorder.purge_entities
+  - action: shell_command.supp_ecojoko
+    data: {}
+    response_variable: Count
+  mode: single
+- id: '1720780669285'
+  alias: Suppression données (purge recorder)
+  description: Suppression données quotidiennes
+  trigger:
+  - platform: time
+    at: 00:04:00
+  condition: []
+  action:
+  - data:
+      keep_days: 1
+      entity_id:
+      - sensor.consommation_non_suivie_moyenne
+      - sensor.consommation_suivie
+      - sensor.consommation_non_suivie
+      - sensor.puissance_socle
+      - sensor.puissance_suivie
+      - sensor.four
+      - sensor.prises_rdc
+      - sensor.prises_rdc_2
+      domains: climate
+      entity_globs:
+      - switch.clim_*_xfan
+      - switch.clim_*_quiet
+      - switch.clim_*_panel_light
+      - switch.clim_*_fresh_air
+      - sensor.*frequence*
+      - sensor.*voltage*
+      - sensor.*tension*
+      - sensor.*courant*
+      - sensor.*current*
+      - sensor.energie_consommee*
+      - sensor.energy_total*
+      - sensor.system_monitor*
+      - sensor.m5*
+      - sensor.*power_factor*
+      - sensor.em06*_this_month_energy
+    action: recorder.purge_entities
+  mode: single
+- id: '1724796582689'
+  alias: Alerte conso minimum
+  description: ''
+  triggers:
+  - at: '23:00:00'
+    trigger: time
+  conditions:
+  - condition: numeric_state
+    entity_id: sensor.conso_tr_mini_last_24h
+    above: 99
+  actions:
+  - data:
+      message: 'Conso mini du jour > 100W : {{states(''sensor.conso_tr_mini_last_24h'')}}'
+    action: notify.notify
+  mode: single
+- id: '1725127161330'
+  alias: Début TV
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.prise_tv_cloud_puissance
+    - sensor.prise_tv_puissance
+    above: 3
+    trigger: numeric_state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.tv
+    state: 'off'
+  actions:
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.tv
+  mode: single
+- id: '1725127378854'
+  alias: Fin TV
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.prise_tv_puissance
+    - sensor.prise_tv_cloud_puissance
+    below: 10
+  condition: []
+  action:
+  - data: {}
+    action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.tv
+  mode: single
+- id: '1725127433392'
+  alias: Début Lave Vaisselle
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.prise_lave_vaiselle_local_puissance
+    - sensor.prise_lave_vaisselle_cloud_puissance
+    above: 15
+  condition: []
+  action:
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.lave_vaisselle
+  mode: single
+- id: '1725127461592'
+  alias: Début Lave Linge
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.prise_lave_linge_local_puissance
+    - sensor.prise_lave_linge_puissance
+    above: 15
+    trigger: numeric_state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.lave_linge
+    state: 'off'
+  actions:
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.lave_linge
+  mode: single
+- id: '1725127533248'
+  alias: Début Four
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.em06_b2_power
+    above: 10
+    trigger: numeric_state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.four
+    state: 'off'
+  actions:
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.four
+  mode: single
+- id: '1725127596650'
+  alias: Fin Lave Linge
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.prise_lave_linge_local_puissance
+    - sensor.prise_lave_linge_puissance
+    below: 10
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  condition:
+  - condition: state
+    entity_id: input_boolean.lave_linge
+    state: 'on'
+  action:
+  - data: {}
+    action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.lave_linge
+  mode: single
+- id: '1725127616602'
+  alias: Fin Lave Vaisselle
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.prise_lave_vaisselle_cloud_puissance
+    - sensor.prise_lave_vaisselle_cloud_puissance
+    below: 5
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  - platform: numeric_state
+    entity_id:
+    - sensor.prise_lave_vaiselle_local_puissance
+    below: 5
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  condition: []
+  action:
+  - data: {}
+    action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.lave_vaisselle
+  mode: single
+- id: '1725127649202'
+  alias: Fin Four
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.em06_b2_power
+    below: 10
+  condition:
+  - condition: state
+    entity_id: input_boolean.four
+    state: 'on'
+  action:
+  - data: {}
+    action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.four
+  mode: single
+- id: '1725135323812'
+  alias: Début Clim
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.disjoncteur_3_puissance
+    - sensor.disjoncteur_3_puissance_2
+    above: 49.8
+  condition: []
+  action:
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.climatisation
+  mode: single
+- id: '1725135356249'
+  alias: Fin Clim
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.disjoncteur_3_puissance_2
+    - sensor.disjoncteur_3_puissance
+    below: 49.9
+  condition:
+  - condition: state
+    entity_id: input_boolean.climatisation
+    state: 'on'
+  action:
+  - data: {}
+    action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.climatisation
+  mode: single
+- id: '1725138072700'
+  alias: Début Clim Salon
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.disjoncteur_4_puissance_2
+    - sensor.disjoncteur_4_puissance
+    above: 49.8
+    trigger: numeric_state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.clim_salon
+    state: 'off'
+  actions:
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.clim_salon
+  mode: single
+- id: '1725138108554'
+  alias: Fin Clim Salon
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.disjoncteur_4_puissance_2
+    - sensor.disjoncteur_4_puissance
+    below: 49.9
+  condition:
+  - condition: state
+    entity_id: input_boolean.clim_salon
+    state: 'on'
+  action:
+  - data: {}
+    action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.clim_salon
+  mode: single
+- id: '1725219604319'
+  alias: Reboot sonnette
+  description: ''
+  trigger:
+  - platform: time
+    at: 03:00:00
+  condition: []
+  action:
+  - type: turn_off
+    device_id: 03b230bab81dca8d8a72acdc74e2abc7
+    entity_id: f187e1d0f6d842f8a23510361214def2
+    domain: switch
+  - delay:
+      hours: 0
+      minutes: 2
+      seconds: 0
+      milliseconds: 0
+  - type: turn_on
+    device_id: 03b230bab81dca8d8a72acdc74e2abc7
+    entity_id: f187e1d0f6d842f8a23510361214def2
+    domain: switch
+  mode: single
+- id: '1725223267378'
+  alias: Alerte TV non éteinte
+  description: ''
+  trigger:
+  - platform: time
+    at: 00:30:00
+  condition:
+  - condition: numeric_state
+    entity_id: sensor.prise_tv_puissance
+    above: 1
+  - condition: numeric_state
+    entity_id: sensor.prise_tv_cloud_puissance
+    above: 1
+  action:
+  - data:
+      message: 'TV non éteinte : {{states(''sensor.prise_tv_puissance'')}}W'
+    action: notify.notify
+  - action: switch.turn_off
+    target:
+      device_id:
+      - ccfd320c2ae171b9cbca0e8d97e04e9d
+    data: {}
+  mode: single
+- id: '1725788391315'
+  alias: Alerte Disjoncteur Cumulus Local
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.cumulus_3
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+  action:
+  - data:
+      message: Pas de réponse de Tuya Local sur Disjoncteur Cumulus
+    action: notify.notify
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1725794082259'
+  alias: Début Plaque
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.em06_a2_power
+    above: 10
+  condition: []
+  action:
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
+      entity_id:
+      - input_boolean.plaque
+  mode: single
+- id: '1725794111545'
+  alias: Fin Plaque
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.em06_a2_power
+    below: 10
+  condition: []
+  action:
+  - data: {}
+    action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.plaque
+  mode: single
+- id: '1725824309622'
+  alias: Alerte Prise TV
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.prise_tv_local_tension
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+  condition: []
+  action:
+  - data:
+      message: Pas de réponse de Tuya Local sur Prise TV
+    action: notify.notify
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id: ccfd320c2ae171b9cbca0e8d97e04e9d
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1725824732571'
+  alias: Alerte Lave Linge
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.prise_lave_linge_local_tension
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+  condition: []
+  action:
+  - data:
+      message: Pas de réponse de Tuya Local sur Prise Lave Linge
+    action: notify.notify
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id: d4d1a674deef9c59116468790efc2b84
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1725824762140'
+  alias: Alerte Lave Vaisselle
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.prise_lave_vaiselle_local_tension
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+  condition: []
+  action:
+  - data:
+      message: Pas de réponse de Tuya Local sur Prise Lave Vaisselle
+    action: notify.notify
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id: d4d1a674deef9c59116468790efc2b84
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1725824803245'
+  alias: Alerte Prise Frigo
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.prise_frigo_local_tension
+    for:
+      hours: 0
+      minutes: 15
+      seconds: 0
+  condition: []
+  action:
+  - data:
+      message: Pas de réponse de Tuya Local sur Prise Frigo
+    action: notify.notify
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id: e6e71c3420d1962f3698349154b8a91c
+  mode: single
+- id: '1725825001282'
+  alias: Alerte Mesureur n2
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.bidirectional_energy_meter_tension
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+  condition: []
+  action:
+  - data:
+      message: Pas de réponse de Tuya Local sur Mesureur n2
+    action: notify.notify
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id: ec387d4e4ebf0006d56be89fc2b09d1a
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1725825034602'
+  alias: Alerte Mesureur n1
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.double_clamp_meter_voltage_a
+    for:
+      hours: 0
+      minutes: 15
+      seconds: 0
+  condition: []
+  action:
+  - data:
+      message: Pas de réponse de Tuya Local sur Mesureur n1
+    action: notify.notify
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id: 7dec8abef00b42a0e674ef898c45c3f3
+  mode: single
+- id: '1725956019083'
+  alias: Alerte EcoJoko
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.ecojoko_consommation_reseau
+    for:
+      hours: 0
+      minutes: 15
+      seconds: 0
+  condition: []
+  action:
+  - data:
+      message: Pas de réponse d'EcoJoko !
+    action: notify.notify
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id: 4b74478c94d963f91d4fb4c038530cf7
+  mode: single
+- id: '1725956270150'
+  alias: Alerte Refoss
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.em06_b1_power
+    for:
+      hours: 0
+      minutes: 15
+      seconds: 0
+    trigger: state
+  conditions: []
+  actions:
+  - data:
+      message: Pas de réponse de Refoss !
+    action: notify.notify
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id:
+      - 551a4cec52ce5ec5f96436a57efb7e39
+      - 70241aa2125233db1ee21cb73c58a47a
+  mode: single
+- id: '1726580260450'
+  alias: Alerte Disjoncteur 3
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.disjoncteur_3_tension_2
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+  condition: []
+  action:
+  - data:
+      message: Pas de réponse de Tuya Local sur Disjoncteur 3
+    action: notify.notify
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1726580281298'
+  alias: Alerte Disjoncteur 4
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.disjoncteur_4_tension_2
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+  condition: []
+  action:
+  - data:
+      message: Pas de réponse de Tuya Local sur Disjoncteur 4
+    action: notify.notify
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1726580346858'
+  alias: Alerte Tuya Cloud
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.disjoncteur_cumulus_tension
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+    trigger: state
+  conditions: []
+  actions:
+  - data:
+      message: Pas de réponse de Tuya Cloud !
+    action: notify.notify
+  - action: notify.persistent_notification
+    data:
+      message: Pas de réponse de Tuya Cloud !
+  - action: homeassistant.reload_config_entry
+    target:
+      label_id: tuya_cloud
+    data: {}
+  mode: single
+- id: '1726659595098'
+  alias: 'Alerte fonctionnement Frigo '
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - input_boolean.frigo
+    for:
+      hours: 1
+      minutes: 0
+      seconds: 0
+  condition: []
+  action:
+  - data:
+      message: Pas de démarrage du Frigo pendant 30 min !
+    action: notify.notify
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1726759242515'
+  alias: Solcast update
+  description: ''
+  trigger:
+  - platform: template
+    value_template: "{% set nr = as_datetime(state_attr('sun.sun','next_rising'))
+      | as_local %} {% set ns = as_datetime(state_attr('sun.sun','next_setting'))
+      | as_local %} {% set api_request_limit = 10 %} {% if nr > ns %}\n  {% set nr
+      = nr - timedelta(hours = 24) %} \n{% endif %} {% set hours_difference = (ns
+      - nr) %} {% set interval_hours = hours_difference / api_request_limit %} {%
+      set ns = namespace(match = false) %} {% for i in range(api_request_limit) %}\n
+      \ {% set start_time = nr + (i * interval_hours) %}\n  {% if ((start_time - timedelta(seconds=30))
+      <= now()) and (now() <= (start_time + timedelta(seconds=30))) %}\n    {% set
+      ns.match = true %}\n  {% endif %}\n{% endfor %} {{ ns.match }}"
+  condition:
+  - condition: sun
+    before: sunset
+    after: sunrise
+  action:
+  - delay:
+      seconds: '{{ range(30, 360)|random|int }}'
+  - data: {}
+    action: solcast_solar.update_forecasts
+  mode: single
+- id: '1727031043968'
+  alias: Début Lumières RDC
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.em06_c2_power
+    above: 0
+    trigger: numeric_state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.lumieres_rdc
+    state: 'off'
+  actions:
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.lumieres_rdc
+  mode: single
+- id: '1727031116637'
+  alias: Début Lumières Étage
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.bidirectional_energy_meter_power_b
+    above: 0
+    trigger: numeric_state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.lumieres_etage
+    state: 'off'
+  actions:
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.lumieres_etage
+  mode: single
+- id: '1727031227421'
+  alias: Début Prises Etage
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.bidirectional_energy_meter_power_a
+    above: 0
+  condition: []
+  action:
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.prises_etage
+  mode: single
+- id: '1727040109754'
+  alias: Fin Lumières Etage
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.bidirectional_energy_meter_power_b
+    below: 1
+  condition: []
+  action:
+  - action: input_boolean.turn_off
+    target:
+      entity_id:
+      - input_boolean.lumieres_etage
+    data: {}
+  mode: single
+- id: '1727040145674'
+  alias: Fin Lumières RDC
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.em06_c2_power
+    below: 1
+  condition: []
+  action:
+  - action: input_boolean.turn_off
+    target:
+      entity_id:
+      - input_boolean.lumieres_rdc
+    data: {}
+  mode: single
+- id: '1727040181229'
+  alias: Fin Prises Etage
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.bidirectional_energy_meter_power_a
+    below: 1
+  condition: []
+  action:
+  - action: input_boolean.turn_off
+    target:
+      entity_id:
+      - input_boolean.prises_etage
+    data: {}
+  mode: single
+- id: '1727100872708'
+  alias: Passage HC
+  description: ''
+  trigger:
+  - platform: time
+    at: '21:08:00'
+  action:
+  - data:
+      option: HC
+    action: select.select_option
+    target:
+      entity_id:
+      - select.energie_consommee_h
+      - select.energie_consommee_j
+      - select.energie_consommee_s
+      - select.energie_consommee_m
+      - select.energie_consommee_a
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.hp_hc
+    data: {}
+  initial_state: true
+- id: '1727101009222'
+  alias: Passage HP
+  description: ''
+  trigger:
+  - platform: time
+    at: 05:08:00
+  condition: []
+  action:
+  - data:
+      option: HP
+    action: select.select_option
+    target:
+      entity_id:
+      - select.energie_consommee_h
+      - select.energie_consommee_j
+      - select.energie_consommee_s
+      - select.energie_consommee_m
+      - select.energie_consommee_a
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.hp_hc
+    data: {}
+  mode: single
+  initial_state: true
+- id: '1727103070490'
+  alias: Energie - Notification
+  description: ''
+  triggers:
+  - at: 00:01:00
+    trigger: time
+  actions:
+  - data_template:
+      title: 'Données Energie du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y",
+        True) }}
+
+        '
+      message: "HC : {{ states('input_number.taux_hc_j_1') | round(1) }} %. Conso
+        : {{states('input_number.energie_j_1') | round(2) }} kWh / {{states('input_number.cout_energie_j_1')
+        | round(2)  }}€\nSolaire : {{ states('input_number.taux_solar_j_1') | round(1)
+        }} %. Prod : {{ (states('input_number.solar_production_j_1') | float) | round(2)
+        }} kWh / {{states('input_number.solar_previsions_j_1') | round(1) }} kWh.
+        \nDemain : {{states('sensor.solcast_pv_forecast_previsions_pour_aujourd_hui')
+        | round(1)}} kWh / max  {{states('sensor.solcast_pv_forecast_previsions_du_pic_aujourd_hui')
+        | round(0)}} W à {{ as_timestamp(states('sensor.solcast_pv_forecast_heure_du_pic_aujourd_hui'))
+        | timestamp_custom(\"%Hh%M\", True) }}. Météo : {{states('sensor.talence_daily_original_condition')}}\n"
+    action: notify.mobile_app_iphone_de_mat
+  - data_template:
+      title: 'Données Energie du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y",
+        True) }}
+
+        '
+      message: "Taux HC du jour : {{ states('input_number.taux_hc_j_1') | round(1)
+        }} %.\n\nConsommation de la journée : {{states('input_number.energie_j_1')
+        | round(2) }} kWh / {{states('input_number.cout_energie_j_1') | round(2)  }}€
+        \n"
+    action: notify.persistent_notification
+  mode: single
+- id: '1727185709244'
+  alias: Reload Pyscript
+  description: ''
+  triggers:
+  - at: 01:05:00
+    trigger: time
+  conditions: []
+  actions:
+  - action: pyscript.reload
+    metadata: {}
+    data: {}
+  mode: single
+- id: '1727255726386'
+  alias: Energie - Calcul
+  description: ''
+  triggers:
+  - at: '23:59:50'
+    trigger: time
+  conditions: []
+  actions:
+  - data_template:
+      entity_id: input_number.energie_j_1
+      value: '{{(states(''sensor.energie_consommee_j_hc'')| float + states(''sensor.energie_consommee_j_hp'')|
+        float) / 1000 | float | round(2)}}'
+    action: input_number.set_value
+  - data_template:
+      entity_id: input_number.cout_energie_j_1
+      value: '{{ (states(''sensor.hc_cout_jour'')| float + states(''sensor.hp_cout_jour'')|
+        float) | round(2) }}'
+    action: input_number.set_value
+  - data_template:
+      entity_id: input_number.taux_hc_j_1
+      value: '{{ states(''sensor.taux_hc_jour'') | float | round(1)}}'
+    action: input_number.set_value
+  - data_template:
+      entity_id: input_number.solar_previsions_j_1
+      value: '{{ states(''sensor.solcast_pv_forecast_previsions_pour_aujourd_hui'')
+        | float | round(2)}}'
+    action: input_number.set_value
+  - data_template:
+      entity_id: input_number.solar_production_j_1
+      value: '{{ states(''sensor.energie_solar_j'') | float / 1000 | float | round(2)}}'
+    action: input_number.set_value
+  - data_template:
+      entity_id: input_number.taux_solar_j_1
+      value: '{{ states(''sensor.taux_solar_jour'') | float | round(1)}}'
+    action: input_number.set_value
+  mode: single
+- id: '1727278237568'
+  alias: Energie - Calcul (h)
+  description: ''
+  trigger:
+  - platform: time_pattern
+    hours: '*'
+    minutes: '59'
+    seconds: '55'
+  condition: []
+  action:
+  - data_template:
+      entity_id: input_number.solar_previsions_h_1
+      value: '{{ states(''sensor.solcast_pv_forecast_previsions_heure_actuel'') |
+        float | round(0)}}'
+    action: input_number.set_value
+  - data_template:
+      entity_id: input_number.solar_production_h_1
+      value: '{{ states(''sensor.energie_solar_h'') | float | round(0)}}'
+    action: input_number.set_value
+  - data_template:
+      entity_id: input_number.taux_solar_h_1
+      value: '{{ states(''sensor.taux_solar_heure'') | float | round(1)}}'
+    action: input_number.set_value
+  mode: single
+- id: '1727279595948'
+  alias: Energie - Notification (h)
+  description: ''
+  triggers:
+  - hours: '*'
+    minutes: '1'
+    trigger: time_pattern
+  conditions:
+  - condition: numeric_state
+    entity_id: input_number.solar_previsions_h_1
+    above: 1
+  actions:
+  - data_template:
+      title: 'Données solaire du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y
+        %Hh", True) }}
+
+        '
+      message: "\nTaux de prévision solaire : {{ states('input_number.taux_solar_h_1')
+        | float(0) | round(1) }} %. \n\nLa production solaire de l'heure écoulée est
+        de {{ (states('input_number.solar_production_h_1') | float(0)) | round(0)
+        }} Wh sur {{states('input_number.solar_previsions_h_1') | float(0) |\nround(0)
+        }} Wh prévus. \nDans l'heure, il est prévu : {{states('sensor.solcast_pv_forecast_previsions_heure_actuel')
+        | float(0) | round(0)}} Wh. \nMétéo en cours : {{ states('weather.forecast_maison')
+        | string() }} / {{ state_attr('weather.forecast_maison','cloud_coverage')
+        | float(0) | round(0) }}% nuageux\n"
+    action: notify.persistent_notification
+    enabled: true
+  mode: single
+- id: '1727467947113'
+  alias: Reset Compteurs
+  description: ''
+  trigger:
+  - platform: time
+    at: 00:00:00
+  condition: []
+  action:
+  - action: utility_meter.reset
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - select.energie_consommee_a
+      - select.energie_consommee_m
+      - select.energie_consommee_s
+  mode: single
+- id: '1727558860632'
+  alias: Reload integration on startup
+  description: ''
+  triggers:
+  - event: start
+    trigger: homeassistant
+  actions:
+  - data:
+      addon: 15d21743_samba_backup
+      input: restore-sensor
+    action: hassio.addon_stdin
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id: 9b77fab7a9aa7b4577e7cfe2d53e7375
+  mode: single
+- id: '1727734195815'
+  alias: Cycle ECS
+  description: ''
+  trigger: []
+  condition: []
+  action:
+  - action: input_number.increment
+    data: {}
+    target:
+      entity_id: input_number.cycles_ecs
+  - data_template:
+      title: "Cycle ECS n°{{states('input_number.cycles_ecs') | round (0)}} du {{
+        as_timestamp(now()) | timestamp_custom(\"%d.%m.%y\", True) }} \n"
+      message: "{%- set time =\n    ((state_attr('automation.fin_ecs','last_triggered'))
+        -\n    (state_attr('automation.debut_ecs','last_triggered'))).seconds\n    -%}
+        {%- set minutes = ((time % 3600) / 60) | round | int -%} {%- set\n    hours
+        = ((time % 86400) / 3600) | int -%}\n{%- set energy =\n    ((states('input_number.fin_ecs'))
+        | float(0) -\n    (states('input_number.debut_ecs')) | float(0) ) | float(0)
+        | round(2) -%}\n{%- set cout =\n    ((((states('input_number.prix_hc_kwh'))
+        | float(0))) * (energy)) | round(2) -%}\n{%- set puissance =\n    ((energy*1000)/(time)*3600)
+        | round(0) -%}\nDurée du cycle : {{ ' {:02}h{:02}m'.format(hours,minutes)}}\nEnergie
+        du cycle : {{energy}} kWh pour {{cout}} €\nPuissance moyenne : {{puissance}}
+        W\n"
+    action: notify.persistent_notification
+  - action: input_number.set_value
+    metadata: {}
+    data:
+      value: '{{(((state_attr(''automation.fin_ecs'',''last_triggered'')) - (state_attr(''automation.debut_ecs'',''last_triggered''))).seconds
+        / 60 | int(0)) | round(0) }}'
+    target:
+      entity_id: input_number.duree_cycle_ecs
+  mode: single
+- id: '1727786542143'
+  alias: Cycle Frigo
+  description: ''
+  triggers: []
+  conditions: []
+  actions:
+  - action: input_number.increment
+    data: {}
+    target:
+      entity_id:
+      - input_number.cycles_frigo
+  - data_template:
+      title: "Cycle Frigo n°{{states('input_number.cycles_frigo') | round (0)}} du
+        {{ as_timestamp(now()) | timestamp_custom(\"%d.%m.%y\", True) }} \n"
+      message: "{%- set time =\n    ((state_attr('automation.fin_frigo','last_triggered'))
+        -\n    (state_attr('automation.debut_frigo','last_triggered'))).seconds-%}\n{%-
+        set delai =\n((state_attr('automation.debut_frigo','last_triggered'))-(as_datetime(state_attr('input_datetime.dernier_cycle_frigo','timestamp')))).seconds-%}\n{%-
+        set energy =\n    ((states('input_number.fin_frigo')) | float(0) -\n    (states('input_number.debut_frigo'))
+        | float(0) ) | float(0) -%}\n{%- set heure = (as_timestamp(now()) | timestamp_custom(\"%H\",
+        True)) |\n\nint -%}{%- if (heure>=21 or heure<5) -%} \n  {%- set cout = (((states('input_number.prix_hc'))
+        | float(0)))  -%}\n{%- else-%}\n  {%- set cout = (((states('input_number.prix_hp'))
+        | float(0)))  -%}\n{%- endif -%} {%- set puissance =\n    ((energy)/(time)*3600)
+        | round(2) -%}\n\n\nDurée du cycle : {{ time | int(0) | timestamp_custom('%Mm%Ss',
+        false)}} depuis {{ delai | int(0) | timestamp_custom('%Mm%Ss', false)}}\nEnergie
+        du cycle : {{energy | round(2)}} Wh\nPuissance moyenne : {{puissance | round(0)}}
+        W\n"
+    action: notify.persistent_notification
+    enabled: false
+  - action: input_number.set_value
+    metadata: {}
+    data:
+      value: '{{(((state_attr(''automation.fin_frigo'',''last_triggered'')) - (state_attr(''automation.debut_frigo'',''last_triggered''))).seconds
+        | int(0)) | round(0) }}'
+    target:
+      entity_id: input_number.duree_cycle_frigo
+  mode: single
+- id: '1727901329718'
+  alias: Alerte Tahoma
+  description: ''
+  triggers:
+  - entity_id:
+    - switch.lumiere_salon
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: state
+    to: unavailable
+  conditions: []
+  actions:
+  - data:
+      message: Pas de réponse de Tahoma !
+    action: notify.notify
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.lumiere_salon
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1727989585410'
+  alias: Alerte SwitchBot
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.salon_temperature
+    - sensor.entree_temperature
+    - sensor.chambre_leo_temperature
+    - sensor.chambre_lisa_temperature
+    - sensor.chambre_parents_temperature
+    - sensor.thermometre_frigo_temperature
+    - sensor.exterieur_temperature
+    for:
+      hours: 3
+      minutes: 0
+      seconds: 0
+    trigger: state
+  - trigger: state
+    entity_id:
+    - sensor.switchbot_cloud
+    to: unavailable
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  conditions: []
+  actions:
+  - data:
+      message: Pas de réponse de SwitchBot ! {{trigger.from_state.attributes.friendly_name
+        }}
+    action: notify.notify
+  - action: notify.persistent_notification
+    data:
+      message: Pas de réponse de SwitchBot ! {{trigger.from_state.attributes.friendly_name
+        }}
+  - action: homeassistant.reload_config_entry
+    data:
+      entry_id: 01J8DKMC9KWGY1GD1EFXCC2QG2
+  mode: single
+- id: '1727989940257'
+  alias: Bilan Solaire
+  description: ''
+  triggers:
+  - trigger: sun
+    event: sunset
+    offset: 00:30:00
+  actions:
+  - data_template:
+      title: 'Données Solaire du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y",
+        True) }}
+
+        '
+      message: "\nTaux de prévision solaire : {{ states('sensor.taux_solar_jour')
+        | float | round(1)}} %. \n\nProduction solaire : {{ (states('sensor.energie_solar_j')
+        | float / 1000) | float | round(2)}} kWh / {{ states('sensor.solcast_pv_forecast_previsions_pour_aujourd_hui')
+        | float | round(2)}} kWh prévus.\n\nDemain, il est prévu : {{states('sensor.solcast_pv_forecast_previsions_pour_demain')
+        | round(1)}} kWh / max  {{states('sensor.solcast_pv_forecast_previsions_du_pic_pour_demain')
+        | round(0)}} W à {{ as_timestamp(states('sensor.solcast_pv_forecast_heure_du_pic_demain'))
+        | timestamp_custom(\"%Hh%M\", True) }}.\n"
+    action: notify.persistent_notification
+  - data_template:
+      title: 'Données Solaire du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y",
+        True) }}
+
+        '
+      message: "Solaire : {{ states('sensor.taux_solar_jour') | round(1) }} %. Prod
+        : {{ (states('sensor.energie_solar_j') | float / 1000) | round(2) }} kWh /
+        {{states('sensor.solcast_pv_forecast_previsions_pour_aujourd_hui') | round(1)
+        }} kWh. \nDemain : {{states('sensor.solcast_pv_forecast_previsions_pour_demain')
+        | round(1)}} kWh / max  {{states('sensor.solcast_pv_forecast_previsions_du_pic_pour_demain')
+        | round(0)}} W à {{ as_timestamp(states('sensor.solcast_pv_forecast_heure_du_pic_demain'))
+        | timestamp_custom(\"%Hh%M\", True) }}.\n"
+    action: notify.mobile_app_iphone_de_mat
+- id: '1728387375442'
+  alias: Alerte Garage absence
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.em06_02_c1_power
+    above: 0
+  - trigger: state
+    entity_id:
+    - cover.porte_garage
+    to: opening
+  conditions:
+  - condition: and
+    conditions:
+    - condition: device
+      device_id: 3dcd1c27afacd49396637a7af7ecdb8b
+      domain: device_tracker
+      entity_id: 035446e48a32a16bfa670cdac3cb3dcc
+      type: is_not_home
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: device_tracker.nmap_tracker_72_41_95_68_25_16
+        state: home
+  actions:
+  - action: notify.notify
+    data:
+      message: Alerte ouverture garage !
+  - action: notify.persistent_notification
+    metadata: {}
+    data:
+      message: Alerte ouverture garage !
+  mode: single
+- id: '1728655435449'
+  alias: Alerte Météo
+  description: ''
+  triggers:
+  - entity_id:
+    - weather.talence
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: state
+    to: unavailable
+  conditions: []
+  actions:
+  - action: notify.persistent_notification
+    data:
+      message: Pas de réponse de Météo
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      entity_id: weather.talence
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1728735423978'
+  alias: speedtest
+  description: ''
+  triggers: []
+  conditions: []
+  actions:
+  - action: homeassistant.update_entity
+    metadata: {}
+    data:
+      entity_id:
+      - sensor.speedtest_ping
+      - sensor.speedtest_download
+      - sensor.speedtest_upload
+  mode: single
