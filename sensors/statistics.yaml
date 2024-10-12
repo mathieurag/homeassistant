@@ -1,0 +1,31 @@
+sensor:
+  - platform: statistics
+
+    name: conso_tr_mini_last_24h
+    entity_id: sensor.ecojoko_consommation_temps_reel
+    state_characteristic: value_min
+    unique_id: "conso_tr_mini_last_24h"
+    max_age:
+      hours: 24
+
+  - platform: statistics
+    name: conso_tr_mini_last_24h_em06
+    entity_id: sensor.em06_b1_power
+    state_characteristic: value_min
+    unique_id: "conso_tr_mini_last_24h_em06"
+    max_age:
+      hours: 24
+
+  - platform: statistics
+    name: consommation_non_suivie_moyenne
+    entity_id: sensor.consommation_non_suivie
+    state_characteristic: mean
+    unique_id: "consommation_non_suivie_moyenne"
+    max_age:
+      minutes: 5
+
+  - platform: command_line
+    name: DNS resolution time
+    unique_id: "dns_resolution_time"
+    command: "dig +retries=1 force.com | grep -A 100 'ANSWER SECTION:' | grep -Po '(?<=Query time: )[0-9a]*' || echo '-10'"
+    unit_of_measurement: "mS"

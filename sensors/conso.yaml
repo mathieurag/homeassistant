@@ -1,0 +1,54 @@
+template:
+  - sensor:
+      - name: "Lampe Salon"
+        unique_id: "lampe_salon"
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: "{% if is_state('input_boolean.prise_salon', 'on') -%} 5 {%- else -%} 0 {%- endif %}"
+
+      - name: "Prises RDC"
+        unique_id: "prises_rdc"
+        device_class: power # Exemples de valeurs possibles
+        state_class: measurement
+        unit_of_measurement: "W"
+        state: "{{ (states('sensor.em06_c1_power') | float(0) -states('sensor.lampe_salon') | float(0) - states('sensor.prise_tv_puissance') | float(0) - states('sensor.prise_lave_vaiselle_local_puissance') | float(0)) | round(1) }}"
+
+      - name: "Puissance socle"
+        unique_id: "puissance_socle"
+        device_class: power # Exemples de valeurs possibles
+        state_class: measurement
+        unit_of_measurement: "W"
+        state: "{{ (states('sensor.mesureur_n1_puissance_a') | float(0) + states('sensor.disjoncteur_sonnette_local_puissance') | float(0) + states('sensor.em06_a1_power') | float(0) + states('sensor.double_clamp_meter_power_b') | float(0) + states('sensor.prises_rdc') | float(0)) | round(1) }}"
+
+      - name: "Consommation non suivie"
+        unique_id: "consommation_non_suivie"
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: "W"
+        state: "{{
+          (states('sensor.em06_b1_power') | float(0)
+          - states('sensor.puissance_socle') | float(0)
+          - states('sensor.puissance_suivie') | float(0)
+          + states('sensor.prises_rdc') | float(0)
+          ) | round(1) }}"
+
+      - name: "Consommation suivie"
+        unique_id: "consommation_suivie"
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: "W"
+        state: "{{
+          ( states('sensor.em06_c1_power') | float(0)
+          - states('sensor.prises_rdc') | float(0)
+          + states('sensor.em06_a2_power') | float(0)
+          + states('sensor.em06_b2_power') | float(0)
+          + states('sensor.em06_c2_power') | float(0)
+          + states('sensor.cumulus_2') | float(0)
+          + states('sensor.disjoncteur_3_puissance_2') | float(0)
+          + states('sensor.disjoncteur_4_puissance_2') | float (0)
+          + states('sensor.prise_frigo_local_puissance') | float(0)
+          + states('sensor.prise_lave_linge_local_puissance') | float(0)
+          + states('sensor.bidirectional_energy_meter_power_a') | float(0)
+          + states('sensor.bidirectional_energy_meter_power_b') | float(0)
+          ) | round(1) }}"

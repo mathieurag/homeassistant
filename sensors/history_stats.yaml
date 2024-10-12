@@ -1,0 +1,267 @@
+sensor:
+  #ECS
+  - platform: history_stats
+    name: temps_allumage_ecs_today
+    entity_id: input_boolean.ecs
+    state: "on"
+    type: time
+
+    start: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
+    end: "{{ now() }}"
+    unique_id: "temps_allumage_ecs_today"
+
+  - platform: history_stats
+    name: temps_allumage_ecs_hier
+    entity_id: input_boolean.ecs
+    state: "on"
+    unique_id: "temps_allumage_ecs_hier"
+    type: time
+    end: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
+    duration:
+      hours: 24
+
+  - platform: history_stats
+    name: temps_allumage_ecs_semaine
+    entity_id: input_boolean.ecs
+    state: "on"
+    unique_id: "temps_allumage_ecs_semaine"
+    type: time
+    start: "{{ as_timestamp( now().replace(hour=0, minute=0, second=0, microsecond=0) ) - now().weekday() * 86400 }}"
+    end: "{{ now() }}"
+
+  - platform: history_stats
+    name: temps_allumage_ecs_mois
+    entity_id: input_boolean.ecs
+    state: "on"
+    unique_id: "temps_allumage_ecs_mois"
+    type: time
+    start: "{{ now().replace(day=1, hour=0, minute=0, second=0, microsecond=0 ) }}"
+    end: "{{ now() }}"
+
+  # FRIGO
+  - platform: history_stats
+    name: temps_allumage_frigo_today
+    entity_id: input_boolean.frigo
+    state: "on"
+    type: time
+    start: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
+    end: "{{ now() }}"
+    unique_id: "temps_allumage_frigo_today"
+
+  - platform: history_stats
+    name: temps_allumage_frigo_hier
+    entity_id: input_boolean.frigo
+    state: "on"
+    unique_id: "temps_allumage_frigo_hier"
+    type: time
+    end: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
+    duration:
+      hours: 24
+
+  - platform: history_stats
+    name: temps_allumage_frigo_semaine
+    entity_id: input_boolean.frigo
+    state: "on"
+    unique_id: "temps_allumage_frigo_semaine"
+    type: time
+    start: "{{ as_timestamp( now().replace(hour=0, minute=0, second=0, microsecond=0) ) - now().weekday() * 86400 }}"
+    end: "{{ now() }}"
+
+  - platform: history_stats
+    name: temps_allumage_frigo_mois
+    entity_id: input_boolean.frigo
+    state: "on"
+    unique_id: "temps_allumage_frigo_mois"
+    type: time
+    start: "{{ now().replace(day=1, hour=0, minute=0, second=0, microsecond=0 ) }}"
+    end: "{{ now() }}"
+
+  #PRISE SALON
+  - platform: history_stats
+    name: temps_allumage_salon_today
+    entity_id: input_boolean.prise_salon
+    state: "on"
+    type: time
+    start: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
+    end: "{{ now() }}"
+    unique_id: "temps_allumage_salon_today"
+
+  - platform: history_stats
+    name: temps_allumage_salon_hier
+    entity_id: input_boolean.prise_salon
+    state: "on"
+    unique_id: "temps_allumage_salon_hier"
+    type: time
+    end: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
+    duration:
+      hours: 24
+
+  - platform: history_stats
+    name: temps_allumage_salon_semaine
+    entity_id: input_boolean.prise_salon
+    state: "on"
+    unique_id: "temps_allumage_salon_semaine"
+    type: time
+    start: "{{ as_timestamp( now().replace(hour=0, minute=0, second=0, microsecond=0) ) - now().weekday() * 86400 }}"
+    end: "{{ now() }}"
+
+  - platform: history_stats
+    name: temps_allumage_salon_mois
+    entity_id: input_boolean.prise_salon
+    state: "on"
+    unique_id: "temps_allumage_salon_mois"
+    type: time
+    start: "{{ now().replace(day=1, hour=0, minute=0, second=0, microsecond=0 ) }}"
+    end: "{{ now() }}"
+
+  # LL
+  - platform: history_stats
+    name: temps_allumage_LL_today
+    entity_id: input_boolean.lave_linge
+    state: "on"
+    type: time
+    start: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
+    end: "{{ now() }}"
+    unique_id: "temps_allumage_LL_today"
+
+  - platform: history_stats
+    name: temps_allumage_LL_hier
+    entity_id: input_boolean.lave_linge
+    state: "on"
+    unique_id: "temps_allumage_LL_hier"
+    type: time
+    end: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
+    duration:
+      hours: 24
+
+  - platform: history_stats
+    name: temps_allumage_LL_semaine
+    entity_id: input_boolean.lave_linge
+    state: "on"
+    unique_id: "temps_allumage_LL_semaine"
+    type: time
+    start: "{{ as_timestamp( now().replace(hour=0, minute=0, second=0, microsecond=0) ) - now().weekday() * 86400 }}"
+    end: "{{ now() }}"
+
+  - platform: history_stats
+    name: temps_allumage_LL_mois
+    entity_id: input_boolean.lave_linge
+    state: "on"
+    unique_id: "temps_allumage_LL_mois"
+    type: time
+    start: "{{ now().replace(day=1, hour=0, minute=0, second=0, microsecond=0 ) }}"
+    end: "{{ now() }}"
+
+  # LV
+  - platform: history_stats
+    name: temps_allumage_LV_today
+    entity_id: input_boolean.lave_vaisselle
+    state: "on"
+    type: time
+    start: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
+    end: "{{ now() }}"
+    unique_id: "temps_allumage_LV_today"
+
+  - platform: history_stats
+    name: temps_allumage_LV_hier
+    entity_id: input_boolean.lave_vaisselle
+    state: "on"
+    unique_id: "temps_allumage_LV_hier"
+    type: time
+    end: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
+    duration:
+      hours: 24
+
+  - platform: history_stats
+    name: temps_allumage_LV_semaine
+    entity_id: input_boolean.lave_vaisselle
+    state: "on"
+    unique_id: "temps_allumage_LV_semaine"
+    type: time
+    start: "{{ as_timestamp( now().replace(hour=0, minute=0, second=0, microsecond=0) ) - now().weekday() * 86400 }}"
+    end: "{{ now() }}"
+
+  - platform: history_stats
+    name: temps_allumage_LV_mois
+    entity_id: input_boolean.lave_vaisselle
+    state: "on"
+    unique_id: "temps_allumage_LV_mois"
+    type: time
+    start: "{{ now().replace(day=1, hour=0, minute=0, second=0, microsecond=0 ) }}"
+    end: "{{ now() }}"
+
+  # TV
+  - platform: history_stats
+    name: temps_allumage_TV_today
+    entity_id: input_boolean.tv
+    state: "on"
+    type: time
+    start: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
+    end: "{{ now() }}"
+    unique_id: "temps_allumage_TV_today"
+
+  - platform: history_stats
+    name: temps_allumage_TV_hier
+    entity_id: input_boolean.tv
+    state: "on"
+    unique_id: "temps_allumage_TV_hier"
+    type: time
+    end: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
+    duration:
+      hours: 24
+
+  - platform: history_stats
+    name: temps_allumage_TV_semaine
+    entity_id: input_boolean.tv
+    state: "on"
+    unique_id: "temps_allumage_TV_semaine"
+    type: time
+    start: "{{ as_timestamp( now().replace(hour=0, minute=0, second=0, microsecond=0) ) - now().weekday() * 86400 }}"
+    end: "{{ now() }}"
+
+  - platform: history_stats
+    name: temps_allumage_TV_mois
+    entity_id: input_boolean.tv
+    state: "on"
+    unique_id: "temps_allumage_TV_mois"
+    type: time
+    start: "{{ now().replace(day=1, hour=0, minute=0, second=0, microsecond=0 ) }}"
+    end: "{{ now() }}"
+
+  # FOUR
+  - platform: history_stats
+    name: temps_allumage_four_today
+    entity_id: input_boolean.four
+    state: "on"
+    type: time
+    start: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
+    end: "{{ now() }}"
+    unique_id: "temps_allumage_four_today"
+
+  - platform: history_stats
+    name: temps_allumage_four_hier
+    entity_id: input_boolean.four
+    state: "on"
+    unique_id: "temps_allumage_four_hier"
+    type: time
+    end: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
+    duration:
+      hours: 24
+
+  - platform: history_stats
+    name: temps_allumage_four_semaine
+    entity_id: input_boolean.four
+    state: "on"
+    unique_id: "temps_allumage_four_semaine"
+    type: time
+    start: "{{ as_timestamp( now().replace(hour=0, minute=0, second=0, microsecond=0) ) - now().weekday() * 86400 }}"
+    end: "{{ now() }}"
+
+  - platform: history_stats
+    name: temps_allumage_four_mois
+    entity_id: input_boolean.four
+    state: "on"
+    unique_id: "temps_allumage_four_mois"
+    type: time
+    start: "{{ now().replace(day=1, hour=0, minute=0, second=0, microsecond=0 ) }}"
+    end: "{{ now() }}"

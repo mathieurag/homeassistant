@@ -1,0 +1,11 @@
+template:
+  - binary_sensor:
+      - name: "Cycle Frigo"
+        device_class: running
+        unique_id: cycle_frigo
+        state: "{{ is_state('input_boolean.frigo', 'on') }}"
+
+      - name: DNS Resolution
+        unique_id: dns_resolution
+        state: >
+          {{ states('sensor.dns_resolution_time') != "-10" }}

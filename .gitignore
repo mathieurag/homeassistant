@@ -5,6 +5,8 @@
 !*.yaml
 !.gitignore
 !*.md
+!sensors
+!python_scripts
 
 # Ignore folders.
 .storage
