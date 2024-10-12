@@ -1,0 +1,1470 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "lovelace.tableau_de_bord",
+  "data": {
+    "config": {
+      "views": [
+        {
+          "type": "sections",
+          "sections": [
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "tile",
+                  "entity": "sensor.system_monitor_adresse_ipv4_enp0s1"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.myip"
+                },
+                {
+                  "type": "history-graph",
+                  "entities": [
+                    {
+                      "entity": "sensor.system_monitor_adresse_ipv4_enp0s1"
+                    },
+                    {
+                      "entity": "sensor.myip"
+                    }
+                  ],
+                  "title": "IP Locale"
+                },
+                {
+                  "graph": "none",
+                  "type": "sensor",
+                  "entity": "sensor.m5_vitesse_de_telechargement",
+                  "detail": 1,
+                  "name": "Download"
+                },
+                {
+                  "graph": "none",
+                  "type": "sensor",
+                  "entity": "sensor.m5_vitesse_de_telechargement_montant",
+                  "detail": 1,
+                  "name": "Upload"
+                },
+                {
+                  "type": "history-graph",
+                  "entities": [
+                    {
+                      "entity": "sensor.m5_vitesse_de_telechargement"
+                    },
+                    {
+                      "entity": "sensor.m5_vitesse_de_telechargement_montant"
+                    }
+                  ],
+                  "hours_to_show": 24
+                },
+                {
+                  "type": "tile",
+                  "vertical": false,
+                  "entity": "sensor.uptime"
+                },
+                {
+                  "type": "history-graph",
+                  "entities": [
+                    {
+                      "entity": "sensor.uptime"
+                    }
+                  ],
+                  "hours_to_show": 24
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "tile",
+                  "entity": "sensor.system_monitor_memoire_utilisee"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.system_monitor_utilisation_de_la_memoire"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.system_monitor_espace_d_echange_libre"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.system_monitor_utilisation_du_disque"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.home_assistant_v2_db_taille",
+                  "name": "Home Assistant"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.database"
+                },
+                {
+                  "type": "history-graph",
+                  "entities": [
+                    {
+                      "entity": "sensor.system_monitor_charge_5m"
+                    }
+                  ]
+                },
+                {
+                  "type": "history-graph",
+                  "entities": [
+                    {
+                      "entity": "sensor.system_monitor_utilisation_de_la_memoire"
+                    }
+                  ],
+                  "min_y_axis": 0
+                },
+                {
+                  "type": "custom:stack-in-card",
+                  "title": "Backup",
+                  "cards": [
+                    {
+                      "type": "entities",
+                      "entities": [
+                        {
+                          "attribute": "last_backup",
+                          "entity": "sensor.samba_backup",
+                          "icon": "mdi:file-clock-outline",
+                          "name": "Last Backup Samba",
+                          "type": "attribute"
+                        },
+                        {
+                          "entity": "sensor.samba_backup",
+                          "icon": "mdi:file-replace-outline",
+                          "name": "Backup Samba Status"
+                        },
+                        {
+                          "attribute": "total_backups_failed",
+                          "entity": "sensor.samba_backup",
+                          "icon": "mdi:file-cancel-outline",
+                          "name": "Failed Backups",
+                          "type": "attribute"
+                        }
+                      ],
+                      "show_header_toggle": false
+                    },
+                    {
+                      "type": "custom:button-card",
+                      "name": "Lancer un Backup Samba",
+                      "icon": "mdi:backup-restore",
+                      "size": "40px",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "hassio.addon_stdin",
+                        "service_data": {
+                          "addon": "15d21743_samba_backup",
+                          "input": "trigger"
+                        }
+                      }
+                    },
+                    {
+                      "type": "custom:button-card",
+                      "name": "Lancer un Backup local",
+                      "icon": "mdi:backup-restore",
+                      "size": "40px",
+                      "action": "toggle",
+                      "entity": "input_button.backup"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "custom:flex-table-card",
+                  "title": "Devices",
+                  "entities": {
+                    "include": "device_tracker.*",
+                    "exclude": "device_tracker.*iphone*"
+                  },
+                  "clickable": true,
+                  "sort": "x.ip+",
+                  "columns": [
+                    {
+                      "name": "Name",
+                      "data": "x.friendly_name",
+                      "modify": "x.friendly_name"
+                    },
+                    {
+                      "name": "IP",
+                      "data": "x.ip",
+                      "modify": "x.ip"
+                    }
+                  ]
+                },
+              ]
+            }
+          ],
+          "max_columns": 4,
+          "title": "Supervision",
+          "cards": [],
+          "icon": "mdi:memory"
+        },
+        {
+          "title": "VOLETS RDC",
+          "icon": "mdi:home-floor-0",
+          "subview": false,
+          "cards": [],
+          "badges": [
+            {
+              "entity": "switch.lumiere_salon"
+            },
+            {
+              "entity": "scene.tout_fermer"
+            },
+            {
+              "entity": "scene.ouvrir_volet"
+            }
+          ],
+          "type": "sections",
+          "sections": [
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "features": [
+                    {
+                      "type": "cover-open-close"
+                    },
+                    {
+                      "type": "cover-position"
+                    }
+                  ],
+                  "type": "tile",
+                  "entity": "cover.volet_salon",
+                  "color": "primary",
+                  "vertical": true,
+                  "hide_state": false,
+                  "tap_action": {
+                    "action": "more-info"
+                  },
+                  "icon_tap_action": {
+                    "action": "toggle"
+                  }
+                },
+                {
+                  "features": [
+                    {
+                      "type": "cover-open-close"
+                    },
+                    {
+                      "type": "cover-position"
+                    }
+                  ],
+                  "type": "tile",
+                  "color": "primary",
+                  "vertical": true,
+                  "hide_state": false,
+                  "tap_action": {
+                    "action": "more-info"
+                  },
+                  "icon_tap_action": {
+                    "action": "toggle"
+                  },
+                  "entity": "cover.store_salon"
+                },
+                {
+                  "features": [
+                    {
+                      "type": "cover-open-close"
+                    },
+                    {
+                      "type": "cover-position"
+                    }
+                  ],
+                  "type": "tile",
+                  "entity": "cover.volet_couloir",
+                  "color": "primary",
+                  "vertical": true,
+                  "hide_state": false,
+                  "tap_action": {
+                    "action": "more-info"
+                  },
+                  "icon_tap_action": {
+                    "action": "toggle"
+                  }
+                },
+                {
+                  "features": [
+                    {
+                      "type": "cover-open-close"
+                    },
+                    {
+                      "type": "cover-position"
+                    }
+                  ],
+                  "type": "tile",
+                  "entity": "cover.volet_cuisine",
+                  "color": "primary",
+                  "vertical": true,
+                  "hide_state": false,
+                  "tap_action": {
+                    "action": "more-info"
+                  },
+                  "icon_tap_action": {
+                    "action": "toggle"
+                  }
+                },
+                {
+                  "features": [
+                    {
+                      "type": "cover-open-close"
+                    },
+                    {
+                      "type": "cover-position"
+                    }
+                  ],
+                  "type": "tile",
+                  "color": "primary",
+                  "vertical": true,
+                  "hide_state": false,
+                  "tap_action": {
+                    "action": "more-info"
+                  },
+                  "icon_tap_action": {
+                    "action": "toggle"
+                  },
+                  "entity": "cover.store_entree"
+                },
+                {
+                  "features": [
+                    {
+                      "type": "cover-open-close"
+                    },
+                    {
+                      "type": "cover-position"
+                    }
+                  ],
+                  "type": "tile",
+                  "color": "primary",
+                  "vertical": true,
+                  "hide_state": false,
+                  "tap_action": {
+                    "action": "more-info"
+                  },
+                  "icon_tap_action": {
+                    "action": "toggle"
+                  },
+                  "entity": "cover.porte_garage"
+                }
+              ],
+              "title": "RDC"
+            }
+          ],
+          "max_columns": 4
+        },
+        {
+          "title": "VOLETS ETAGE",
+          "icon": "mdi:home-floor-1",
+          "subview": false,
+          "cards": [],
+          "badges": [
+            {
+              "entity": "scene.tout_fermer"
+            },
+            {
+              "entity": "scene.ouvrir_volet"
+            }
+          ],
+          "type": "sections",
+          "sections": [
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "features": [
+                    {
+                      "type": "cover-open-close"
+                    },
+                    {
+                      "type": "cover-position"
+                    }
+                  ],
+                  "type": "tile",
+                  "entity": "cover.volet_lisa",
+                  "color": "primary",
+                  "vertical": true,
+                  "hide_state": false,
+                  "tap_action": {
+                    "action": "more-info"
+                  },
+                  "icon_tap_action": {
+                    "action": "toggle"
+                  }
+                },
+                {
+                  "features": [
+                    {
+                      "type": "cover-open-close"
+                    },
+                    {
+                      "type": "cover-position"
+                    }
+                  ],
+                  "type": "tile",
+                  "entity": "cover.volet_leo",
+                  "color": "primary",
+                  "vertical": true,
+                  "hide_state": false,
+                  "tap_action": {
+                    "action": "more-info"
+                  },
+                  "icon_tap_action": {
+                    "action": "toggle"
+                  }
+                },
+                {
+                  "features": [
+                    {
+                      "type": "cover-open-close"
+                    },
+                    {
+                      "type": "cover-position"
+                    }
+                  ],
+                  "type": "tile",
+                  "entity": "cover.volet_parents",
+                  "color": "primary",
+                  "vertical": true,
+                  "hide_state": false,
+                  "tap_action": {
+                    "action": "more-info"
+                  },
+                  "icon_tap_action": {
+                    "action": "toggle"
+                  }
+                },
+                {
+                  "type": "tile",
+                  "entity": "cover.volet_bureau",
+                  "color": "primary",
+                  "vertical": true,
+                  "hide_state": false,
+                  "tap_action": {
+                    "action": "more-info"
+                  },
+                  "icon_tap_action": {
+                    "action": "toggle"
+                  },
+                  "features": [
+                    {
+                      "type": "cover-open-close"
+                    },
+                    {
+                      "type": "cover-position"
+                    }
+                  ]
+                },
+                {
+                  "features": [
+                    {
+                      "type": "cover-open-close"
+                    },
+                    {
+                      "type": "cover-position"
+                    }
+                  ],
+                  "type": "tile",
+                  "entity": "cover.volet_velux_lisa",
+                  "color": "primary",
+                  "vertical": true,
+                  "hide_state": false,
+                  "tap_action": {
+                    "action": "more-info"
+                  },
+                  "icon_tap_action": {
+                    "action": "toggle"
+                  }
+                },
+                {
+                  "features": [
+                    {
+                      "type": "cover-open-close"
+                    },
+                    {
+                      "type": "cover-position"
+                    }
+                  ],
+                  "type": "tile",
+                  "color": "primary",
+                  "vertical": true,
+                  "hide_state": false,
+                  "tap_action": {
+                    "action": "more-info"
+                  },
+                  "icon_tap_action": {
+                    "action": "toggle"
+                  },
+                  "entity": "cover.velux_lisa"
+                },
+                {
+                  "features": [
+                    {
+                      "type": "cover-open-close"
+                    },
+                    {
+                      "type": "cover-position"
+                    }
+                  ],
+                  "type": "tile",
+                  "color": "primary",
+                  "vertical": true,
+                  "hide_state": false,
+                  "tap_action": {
+                    "action": "more-info"
+                  },
+                  "icon_tap_action": {
+                    "action": "toggle"
+                  },
+                  "entity": "cover.velux_bureau"
+                },
+                {
+                  "features": [
+                    {
+                      "type": "cover-open-close"
+                    },
+                    {
+                      "type": "cover-position"
+                    }
+                  ],
+                  "type": "tile",
+                  "entity": "cover.volet_velux_bureau",
+                  "color": "primary",
+                  "vertical": true,
+                  "hide_state": false,
+                  "tap_action": {
+                    "action": "more-info"
+                  },
+                  "icon_tap_action": {
+                    "action": "toggle"
+                  }
+                }
+              ]
+            }
+          ],
+          "max_columns": 10
+        },
+        {
+          "title": "Température/Clim",
+          "path": "temperature-clim",
+          "type": "sections",
+          "sections": [
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "graph": "line",
+                  "type": "sensor",
+                  "detail": 2,
+                  "hours_to_show": 24,
+                  "name": "Lisa",
+                  "entity": "sensor.chambre_lisa_temperature"
+                },
+                {
+                  "type": "tile",
+                  "entity": "climate.clim_lisa",
+                  "show_entity_picture": false,
+                  "vertical": true,
+                  "hide_state": false,
+                  "icon_tap_action": {
+                    "action": "toggle"
+                  },
+                  "icon": "mdi:air-conditioner"
+                },
+                {
+                  "graph": "line",
+                  "type": "sensor",
+                  "detail": 2,
+                  "hours_to_show": 24,
+                  "name": "Léo",
+                  "entity": "sensor.chambre_leo_temperature"
+                },
+                {
+                  "type": "tile",
+                  "entity": "climate.clim_leo",
+                  "show_entity_picture": false,
+                  "vertical": true,
+                  "hide_state": false,
+                  "icon_tap_action": {
+                    "action": "toggle"
+                  },
+                  "icon": "mdi:air-conditioner"
+                },
+                {
+                  "graph": "line",
+                  "type": "sensor",
+                  "detail": 2,
+                  "hours_to_show": 24,
+                  "name": "Entrée",
+                  "entity": "sensor.entree_temperature"
+                },
+                {
+                  "type": "tile",
+                  "entity": "climate.clim_entree",
+                  "show_entity_picture": false,
+                  "vertical": true,
+                  "hide_state": false,
+                  "icon_tap_action": {
+                    "action": "toggle"
+                  },
+                  "icon": "mdi:air-conditioner"
+                },
+                {
+                  "graph": "line",
+                  "type": "sensor",
+                  "detail": 2,
+                  "hours_to_show": 24,
+                  "name": "Parents",
+                  "entity": "sensor.chambre_parents_temperature"
+                },
+                {
+                  "type": "tile",
+                  "show_entity_picture": false,
+                  "vertical": true,
+                  "hide_state": false,
+                  "entity": "climate.clim_parents",
+                  "icon_tap_action": {
+                    "action": "toggle"
+                  },
+                  "icon": "mdi:air-conditioner"
+                },
+                {
+                  "graph": "line",
+                  "type": "sensor",
+                  "detail": 2,
+                  "entity": "sensor.salon_temperature",
+                  "hours_to_show": 24,
+                  "name": "Salon"
+                },
+                {
+                  "graph": "line",
+                  "type": "sensor",
+                  "detail": 2,
+                  "hours_to_show": 24,
+                  "name": "Extérieur",
+                  "entity": "sensor.exterieur_temperature"
+                },
+                {
+                  "graph": "line",
+                  "type": "sensor",
+                  "detail": 2,
+                  "entity": "sensor.ecojoko_temperature_exterieure",
+                  "hours_to_show": 24,
+                  "name": "Garage"
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "graph": "line",
+                  "type": "sensor",
+                  "detail": 1,
+                  "entity": "sensor.chambre_lisa_humidite"
+                },
+                {
+                  "graph": "line",
+                  "type": "sensor",
+                  "detail": 1,
+                  "entity": "sensor.chambre_leo_humidite"
+                },
+                {
+                  "graph": "line",
+                  "type": "sensor",
+                  "detail": 1,
+                  "entity": "sensor.chambre_parents_humidite"
+                },
+                {
+                  "graph": "line",
+                  "type": "sensor",
+                  "detail": 1,
+                  "entity": "sensor.salon_humidite"
+                },
+                {
+                  "graph": "line",
+                  "type": "sensor",
+                  "detail": 1,
+                  "entity": "sensor.entree_humidite"
+                }
+              ]
+            }
+          ],
+          "max_columns": 4,
+          "icon": "mdi:fan-auto",
+          "cards": []
+        },
+        {
+          "title": "Energie",
+          "path": "energie",
+          "icon": "mdi:lightning-bolt",
+          "cards": [
+            {
+              "type": "gauge",
+              "entity": "sensor.ecojoko_consommation_temps_reel",
+              "max": 4000,
+              "min": 0,
+              "needle": true,
+              "name": "Consommation",
+              "severity": {
+                "green": 0,
+                "yellow": 250,
+                "red": 2000
+              }
+            },
+            {
+              "type": "history-graph",
+              "entities": [
+                {
+                  "entity": "sensor.ecojoko_consommation_temps_reel"
+                }
+              ],
+              "hours_to_show": 24
+            },
+            {
+              "type": "history-graph",
+              "entities": [
+                {
+                  "entity": "sensor.double_clamp_meter_power_b"
+                },
+                {
+                  "entity": "sensor.frigo_puissance"
+                },
+                {
+                  "entity": "sensor.disjoncteur_cumulus_puissance"
+                }
+              ],
+              "hours_to_show": 24
+            },
+            {
+              "type": "history-graph",
+              "entities": [
+                {
+                  "entity": "sensor.ecojoko_consommation_reseau"
+                }
+              ],
+              "hours_to_show": 24,
+              "min_y_axis": 0
+            },
+            {
+              "chart_type": "line",
+              "period": "hour",
+              "type": "statistics-graph",
+              "entities": [
+                "sensor.cumulus_3"
+              ],
+              "stat_types": [
+                "mean",
+                "min",
+                "max"
+              ],
+              "title": "Tension",
+              "days_to_show": 7
+            },
+            {
+              "type": "conditional",
+              "conditions": [
+                {
+                  "condition": "numeric_state",
+                  "entity": "sensor.double_clamp_meter_power_a",
+                  "above": 4
+                }
+              ],
+              "card": {
+                "show_name": true,
+                "show_icon": false,
+                "type": "button",
+                "tap_action": {
+                  "action": "more-info"
+                },
+                "show_state": true,
+                "entity": "sensor.disjoncteur_cumulus_puissance",
+                "hold_action": {
+                  "action": "none"
+                },
+                "name": "Double Clamp A"
+              }
+            },
+            {
+              "type": "conditional",
+              "conditions": [
+                {
+                  "condition": "numeric_state",
+                  "entity": "sensor.disjoncteur_cumulus_puissance",
+                  "above": 4
+                }
+              ],
+              "card": {
+                "show_name": true,
+                "show_icon": false,
+                "type": "button",
+                "tap_action": {
+                  "action": "more-info"
+                },
+                "show_state": true,
+                "entity": "sensor.disjoncteur_cumulus_puissance",
+                "hold_action": {
+                  "action": "none"
+                },
+                "name": "Cumulus"
+              }
+            },
+            {
+              "type": "conditional",
+              "conditions": [
+                {
+                  "condition": "numeric_state",
+                  "entity": "sensor.frigo_puissance",
+                  "above": 1
+                }
+              ],
+              "card": {
+                "show_name": true,
+                "show_icon": false,
+                "type": "button",
+                "tap_action": {
+                  "action": "more-info"
+                },
+                "entity": "sensor.frigo_puissance",
+                "show_state": true,
+                "hold_action": {
+                  "action": "none"
+                }
+              }
+            },
+            {
+              "type": "conditional",
+              "conditions": [
+                {
+                  "condition": "numeric_state",
+                  "entity": "sensor.double_clamp_meter_power_b",
+                  "above": 18
+                }
+              ],
+              "card": {
+                "show_name": true,
+                "show_icon": false,
+                "type": "button",
+                "tap_action": {
+                  "action": "more-info"
+                },
+                "show_state": true,
+                "hold_action": {
+                  "action": "none"
+                },
+                "name": "Baie Informatique",
+                "entity": "sensor.double_clamp_meter_power_b"
+              }
+            },
+            {
+              "type": "history-graph",
+              "entities": [
+                {
+                  "entity": "sensor.disjoncteur_cumulus_puissance"
+                },
+                {
+                  "entity": "sensor.double_clamp_meter_power_a"
+                }
+              ],
+              "hours_to_show": 24,
+              "min_y_axis": 0
+            },
+            {
+              "type": "custom:energy-flow-card-plus",
+              "entities": {
+                "battery": {
+                  "entity": {
+                    "consumption": "",
+                    "production": ""
+                  }
+                },
+                "grid": {
+                  "entity": {
+                    "consumption": "sensor.double_clamp_meter_total_energy_a"
+                  }
+                },
+                "home": {}
+              },
+              "clickable_entities": true,
+              "display_zero_lines": true,
+              "use_new_flow_rate_model": true,
+              "energy_date_selection": true,
+              "wh_decimals": 1,
+              "kwh_decimals": 0,
+              "min_flow_rate": 1,
+              "max_flow_rate": 6,
+              "max_expected_energy": 2000,
+              "min_expected_energy": 10,
+              "wh_kwh_threshold": 1000
+            }
+          ],
+          "type": "custom:horizontal-layout"
+        },
+        {
+          "title": "Caméras",
+          "path": "cameras",
+          "icon": "mdi:webcam",
+          "cards": [
+            {
+              "show_state": true,
+              "show_name": true,
+              "camera_view": "auto",
+              "type": "picture-entity",
+              "entity": "camera.camera_hub_g2hpro_7273",
+              "camera_image": "camera.camera_hub_g2hpro_7273"
+            },
+            {
+              "show_state": true,
+              "show_name": true,
+              "camera_view": "auto",
+              "type": "picture-entity",
+              "entity": "camera.camera_hub_g3_a121",
+              "camera_image": "camera.camera_hub_g3_a121"
+            }
+          ]
+        },
+        {
+          "title": "Météo",
+          "path": "meteo",
+          "cards": [
+            {
+              "type": "history-graph",
+              "entities": [
+                {
+                  "entity": "sensor.exterieur_temperature"
+                },
+                {
+                  "entity": "sensor.ecojoko_temperature_exterieure"
+                }
+              ]
+            },
+            {
+              "type": "history-graph",
+              "entities": [
+                {
+                  "entity": "weather.forecast_maison"
+                }
+              ]
+            },
+            {
+              "show_current": true,
+              "show_forecast": true,
+              "type": "weather-forecast",
+              "entity": "weather.forecast_maison",
+              "forecast_type": "hourly",
+              "secondary_info_attribute": "cloud_coverage"
+            },
+            {
+              "type": "history-graph",
+              "entities": [
+                {
+                  "entity": "sensor.energy_production_tomorrow"
+                },
+                {
+                  "entity": "sensor.energy_production_today"
+                },
+                {
+                  "entity": "sensor.energy_current_hour"
+                },
+                {
+                  "entity": "sensor.energy_next_hour"
+                }
+              ],
+              "hours_to_show": 48
+            }
+          ],
+          "icon": "mdi:white-balance-sunny"
+        },
+        {
+          "title": "Automatisation",
+          "path": "automatisation",
+          "icon": "mdi:home-automation",
+          "cards": [
+            {
+              "type": "entities",
+              "entities": [
+                "input_boolean.automatisation"
+              ]
+            },
+            {
+              "type": "entities",
+              "entities": [
+                "input_boolean.mode_alarme"
+              ]
+            },
+            {
+              "type": "entities",
+              "entities": [
+                "input_button.depart_en_vacances"
+              ],
+              "show_header_toggle": false,
+              "state_color": false
+            },
+            {
+              "type": "entities",
+              "entities": [
+                "input_button.retour_de_vacances"
+              ]
+            },
+            {
+              "type": "entities",
+              "entities": [
+                {
+                  "entity": "switch.cumulus"
+                },
+                {
+                  "entity": "switch.frigo"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "mdi:battery-outline",
+          "title": "Batteries",
+          "path": "devices",
+          "cards": [
+            {
+              "type": "custom:battery-state-card"
+            }
+          ]
+        },
+        {
+          "title": "Device",
+          "path": "device",
+          "icon": "mdi:account-group",
+          "cards": [
+            {
+              "type": "custom:mushroom-person-card",
+              "entity": "device_tracker.apple_8d_65_3e",
+              "secondary_info": "last-changed",
+              "fill_container": true,
+              "primary_info": "name",
+              "layout": "vertical",
+              "icon_type": "icon"
+            },
+            {
+              "type": "entity",
+              "entity": "device_tracker.gree_electric_appliances_of_zhuhai_06_04_59",
+              "attribute": "ip",
+              "state_color": true,
+              "icon": "mdi:air-conditioner"
+            },
+            {
+              "type": "entity",
+              "entity": "device_tracker.gree_electric_appliances_of_zhuhai_06_06_43",
+              "attribute": "ip",
+              "state_color": true,
+              "icon": "mdi:air-conditioner"
+            },
+            {
+              "type": "entity",
+              "entity": "device_tracker.gree_electric_appliances_of_zhuhai_06_05_3e",
+              "attribute": "ip",
+              "state_color": true,
+              "icon": "mdi:air-conditioner"
+            },
+            {
+              "type": "custom:bar-card",
+              "entities": [
+                {
+                  "entity": "sensor.chambre_leo_batterie"
+                },
+                {
+                  "entity": "sensor.chambre_lisa_batterie"
+                },
+                {
+                  "entity": "sensor.chambre_parents_batterie"
+                },
+                {
+                  "entity": "sensor.entree_batterie"
+                },
+                {
+                  "entity": "sensor.exterieur_batterie"
+                },
+                {
+                  "entity": "sensor.salon_batterie"
+                }
+              ],
+              "severity": [
+                {
+                  "from": "1",
+                  "to": "20",
+                  "color": "#CC0000"
+                },
+                {
+                  "from": "21",
+                  "to": "50",
+                  "color": "#FF9900"
+                },
+                {
+                  "from": "51",
+                  "to": "80",
+                  "color": "#CCCC66"
+                },
+                {
+                  "from": "81",
+                  "to": "100",
+                  "color": "#66CC00"
+                }
+              ]
+            },
+            {
+              "type": "custom:layout-card",
+              "layout_type": "masonry",
+              "layout": {},
+              "cards": [
+                {
+                  "show_name": true,
+                  "show_icon": true,
+                  "show_state": true,
+                  "type": "glance",
+                  "entities": [
+                    {
+                      "entity": "device_tracker.gree_electric_appliances_of_zhuhai_06_04_59"
+                    },
+                    {
+                      "entity": "device_tracker.gree_electric_appliances_of_zhuhai_06_06_43"
+                    },
+                    {
+                      "entity": "device_tracker.gree_electric_appliances_of_zhuhai_06_05_47"
+                    },
+                    {
+                      "entity": "device_tracker.gree_electric_appliances_of_zhuhai_06_05_3e"
+                    }
+                  ],
+                  "state_color": true,
+                  "attributes": "ip"
+                }
+              ]
+            },
+            {
+              "type": "custom:mushroom-climate-card",
+              "entity": "climate.clim_entree",
+              "fill_container": true,
+              "primary_info": "name",
+              "secondary_info": "state",
+              "icon_type": "icon",
+              "hvac_modes": [
+                "auto",
+                "off",
+                "heat",
+                "cool"
+              ],
+              "show_temperature_control": true,
+              "collapsible_controls": false,
+              "icon": "mdi:air-conditioner"
+            },
+            {
+              "type": "custom:layout-card",
+              "layout_type": "masonry",
+              "layout": {},
+              "cards": [
+                {
+                  "type": "custom:mushroom-number-card",
+                  "entity": "number.volet_leo_my_position"
+                },
+                {
+                  "type": "custom:mushroom-number-card",
+                  "entity": "number.volet_lisa_my_position"
+                },
+                {
+                  "type": "custom:mushroom-number-card",
+                  "entity": "number.volet_parents_my_position"
+                },
+                {
+                  "type": "custom:mushroom-number-card",
+                  "entity": "number.volet_bureau_my_position"
+                },
+                {
+                  "type": "custom:mushroom-number-card",
+                  "entity": "number.store_entree_my_position"
+                },
+                {
+                  "type": "custom:mushroom-number-card",
+                  "entity": "number.store_salon_my_position"
+                },
+                {
+                  "type": "custom:mushroom-number-card",
+                  "entity": "number.volet_velux_lisa_my_position"
+                },
+                {
+                  "type": "custom:mushroom-number-card",
+                  "entity": "number.volet_velux_bureau_my_position"
+                },
+                {
+                  "type": "custom:mushroom-number-card",
+                  "entity": "number.volet_couloir_my_position"
+                },
+                {
+                  "type": "custom:mushroom-number-card",
+                  "entity": "number.volet_cuisine_my_position"
+                }
+              ]
+            },
+            {
+              "type": "custom:bar-card",
+              "entities": [
+                {
+                  "entity": "number.volet_lisa_my_position"
+                },
+                {
+                  "entity": "number.volet_leo_my_position"
+                },
+                {
+                  "entity": "number.volet_parents_my_position"
+                },
+                {
+                  "entity": "number.volet_salon_my_position"
+                },
+                {
+                  "entity": "number.volet_couloir_my_position"
+                },
+                {
+                  "entity": "number.volet_salon_my_position"
+                },
+                {
+                  "entity": "number.store_entree_my_position"
+                },
+                {
+                  "entity": "number.store_salon_my_position"
+                },
+                {
+                  "entity": "number.volet_velux_lisa_my_position"
+                },
+                {
+                  "entity": "number.volet_velux_bureau_my_position"
+                }
+              ],
+              "severity": [
+                {
+                  "from": "1",
+                  "to": "20",
+                  "color": "#CC0000"
+                },
+                {
+                  "from": "21",
+                  "to": "50",
+                  "color": "#FF9900"
+                },
+                {
+                  "from": "51",
+                  "to": "80",
+                  "color": "#CCCC66"
+                },
+                {
+                  "from": "81",
+                  "to": "100",
+                  "color": "#66CC00"
+                }
+              ]
+            },
+            {
+              "type": "custom:layout-card",
+              "layout_type": "masonry",
+              "layout": {},
+              "cards": [
+                {
+                  "type": "entities",
+                  "entities": [
+                    "climate.clim_leo",
+                    "sensor.chambre_leo_temperature",
+                    "climate.clim_lisa",
+                    "sensor.chambre_lisa_temperature",
+                    "climate.clim_entree",
+                    "sensor.entree_temperature",
+                    "climate.clim_parents",
+                    "sensor.chambre_parents_temperature"
+                  ],
+                  "attributes": "ip"
+                },
+                {
+                  "type": "entities",
+                  "entities": [
+                    "sensor.chambre_leo_temperature",
+                    "climate.clim_lisa",
+                    "climate.clim_entree",
+                    "climate.clim_parents"
+                  ],
+                  "attributes": "ip"
+                },
+                {
+                  "type": "custom:mushroom-climate-card",
+                  "entity": "climate.clim_entree",
+                  "icon": "mdi:air-conditioner",
+                  "fill_container": true,
+                  "show_temperature_control": true,
+                  "collapsible_controls": false,
+                  "hvac_modes": [
+                    "heat",
+                    "cool",
+                    "off"
+                  ],
+                  "icon_type": "icon",
+                  "secondary_info": "state",
+                  "primary_info": "name",
+                  "layout": "vertical"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "mdi:water-boiler",
+          "cards": [
+            {
+              "type": "history-graph",
+              "entities": [
+                {
+                  "entity": "input_boolean.ecs"
+                },
+                {
+                  "entity": "input_boolean.frigo"
+                },
+                {
+                  "entity": "input_boolean.prise_salon"
+                }
+              ],
+              "title": "Consommation",
+              "hours_to_show": 36
+            },
+            {
+              "type": "history-graph",
+              "entities": [
+                {
+                  "entity": "sensor.frigo_2"
+                },
+                {
+                  "entity": "sensor.cumulus_2"
+                }
+              ],
+              "hours_to_show": 12
+            },
+            {
+              "show_name": true,
+              "show_icon": true,
+              "show_state": true,
+              "type": "glance",
+              "entities": [
+                {
+                  "entity": "input_boolean.ecs"
+                },
+                {
+                  "entity": "input_boolean.frigo"
+                },
+                {
+                  "entity": "input_boolean.prise_salon"
+                }
+              ],
+              "state_color": true
+            },
+            {
+              "type": "entities",
+              "entities": [
+                {
+                  "entity": "sensor.cumulus_2"
+                },
+                {
+                  "entity": "sensor.frigo_2"
+                }
+              ]
+            },
+            {
+              "show_name": true,
+              "show_icon": true,
+              "show_state": true,
+              "title": "ECS",
+              "type": "glance",
+              "entities": [
+                {
+                  "entity": "sensor.temps_allumage_ecs_today",
+                  "icon": "mdi:water-boiler",
+                  "name": "Jour"
+                },
+                {
+                  "entity": "sensor.temps_allumage_ecs_hier",
+                  "icon": "mdi:water-boiler",
+                  "name": "Hier"
+                },
+                {
+                  "entity": "sensor.temps_allumage_ecs_semaine",
+                  "icon": "mdi:water-boiler",
+                  "name": "Semaine"
+                },
+                {
+                  "entity": "sensor.temps_allumage_ecs_mois",
+                  "icon": "mdi:water-boiler",
+                  "name": "Mois"
+                }
+              ]
+            },
+            {
+              "show_name": true,
+              "show_icon": true,
+              "show_state": true,
+              "title": "Frigo",
+              "type": "glance",
+              "entities": [
+                {
+                  "entity": "sensor.temps_allumage_frigo_today",
+                  "icon": "mdi:fridge",
+                  "name": "Jour"
+                },
+                {
+                  "entity": "sensor.temps_allumage_frigo_hier",
+                  "icon": "mdi:fridge",
+                  "name": "Hier"
+                },
+                {
+                  "entity": "sensor.temps_allumage_frigo_semaine",
+                  "icon": "mdi:fridge",
+                  "name": "Semaine"
+                },
+                {
+                  "entity": "sensor.temps_allumage_frigo_mois",
+                  "icon": "mdi:fridge",
+                  "name": "Mois"
+                }
+              ]
+            },
+            {
+              "show_name": true,
+              "show_icon": true,
+              "show_state": true,
+              "type": "glance",
+              "entities": [
+                {
+                  "entity": "sensor.temps_allumage_salon_today",
+                  "icon": "mdi:power-plug",
+                  "name": "Jour"
+                },
+                {
+                  "entity": "sensor.temps_allumage_salon_hier",
+                  "icon": "mdi:power-plug",
+                  "name": "Hier"
+                },
+                {
+                  "entity": "sensor.temps_allumage_salon_semaine",
+                  "icon": "mdi:power-plug",
+                  "name": "Semaine"
+                },
+                {
+                  "entity": "sensor.temps_allumage_salon_mois",
+                  "icon": "mdi:power-plug",
+                  "name": "Mois"
+                }
+              ],
+              "title": "Salon"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

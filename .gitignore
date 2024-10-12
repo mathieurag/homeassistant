@@ -9,8 +9,8 @@
 !python_scripts
 !custom_components
 !blueprints
-!tts
 !www
+!lovelace*
 
 # Ignore folders.
 .storage
