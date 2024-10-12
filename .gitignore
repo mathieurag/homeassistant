@@ -7,6 +7,10 @@
 !*.md
 !sensors
 !python_scripts
+!custom_components
+!blueprints
+!tts
+!www
 
 # Ignore folders.
 .storage
