@@ -2,7 +2,7 @@ sensor:
   - platform: statistics
 
     name: conso_tr_mini_last_24h
-    entity_id: sensor.ecojoko_consommation_temps_reel
+    entity_id: sensor.conso_mini
     state_characteristic: value_min
     unique_id: "conso_tr_mini_last_24h"
     max_age:

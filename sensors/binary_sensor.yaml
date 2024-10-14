@@ -6,6 +6,6 @@ template:
         state: "{{ is_state('input_boolean.frigo', 'on') }}"
 
       - name: DNS Resolution
+        device_class: running
         unique_id: dns_resolution
-        state: >
-          {{ states('sensor.dns_resolution_time') != "-10" }}
+        state: "{{ states('sensor.dns_resolution_time') != '-10' }}"

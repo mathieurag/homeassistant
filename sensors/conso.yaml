@@ -52,3 +52,17 @@ template:
           + states('sensor.bidirectional_energy_meter_power_a') | float(0)
           + states('sensor.bidirectional_energy_meter_power_b') | float(0)
           ) | round(1) }}"
+
+      - name: "Conso mini"
+        unique_id: "conso_mini"
+        device_class: power # Exemples de valeurs possibles
+        state_class: measurement
+        unit_of_measurement: "W"
+        state: "{% if states('sensor.em06_b1_power') | float(0) < 85 -%} 100 {%- else -%} {{states('sensor.em06_b1_power') | float(0)}} {%- endif %}"
+
+      - name: "Surplus Production"
+        unique_id: "surplus_production"
+        device_class: power # Exemples de valeurs possibles
+        state_class: measurement
+        unit_of_measurement: "W"
+        state: "{% if int(states('sensor.em06_02_a1_power')) | float(0) > int(states('sensor.em06_b1_power')) -%} {{(int(states('sensor.em06_02_a1_power')) - int(states('sensor.em06_b1_power'))) | float(0)}} {%- else -%} 0 {%- endif %}"
