@@ -1,23 +1,23 @@
 template:
   - sensor:
-      - name: 'Taux de production solaire (j)'
+      - name: "Taux de production solaire (j)"
         unique_id: "taux_solar_jour"
-        state: "{{ (states('sensor.energie_solar_j') | float(0) / 1000 / (states('sensor.solcast_pv_forecast_previsions_pour_aujourd_hui')| float(1)+0.001)) * 100 | round(1) }}"
+        state: "{{ (states('sensor.energie_solar_j') | float(0) / (states('sensor.solcast_pv_forecast_previsions_pour_aujourd_hui')| float(1)+0.001)) * 100 | round(1) }}"
         unit_of_measurement: "%"
-        device_class: power_factor   # Exemples de valeurs possibles
-        state_class: measurement   # Exemples de valeurs possibles
+        device_class: power_factor # Exemples de valeurs possibles
+        state_class: measurement # Exemples de valeurs possibles
 
-      - name: 'Taux de production solaire (h)'
+      - name: "Taux de production solaire (h)"
         unique_id: "taux_solar_heure"
         state: "{{ (states('sensor.energie_solar_h') | float(0)  / (states('sensor.solcast_pv_forecast_previsions_heure_actuel')| float(1)+0.001)) * 100 | round(1) }}"
         unit_of_measurement: "%"
-        device_class: power_factor   # Exemples de valeurs possibles
-        state_class: measurement   # Exemples de valeurs possibles
+        device_class: power_factor # Exemples de valeurs possibles
+        state_class: measurement # Exemples de valeurs possibles
 
       - name: "Taux de production solaire sensor"
         unique_id: "taux_solar"
         state: "{{ (states('input_number.taux_solar_j_1')|float(0))| round(2) }}"
         unit_of_measurement: "%"
-        device_class: power_factor   # Exemples de valeurs possibles
-        state_class: measurement   # Exemples de valeurs possibles
+        device_class: power_factor # Exemples de valeurs possibles
+        state_class: measurement # Exemples de valeurs possibles
 

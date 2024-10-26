@@ -165,20 +165,28 @@
 - id: '1719951431038'
   alias: Fin ECS
   description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id:
+  triggers:
+  - entity_id:
     - sensor.disjoncteur_cumulus_puissance
     below: 4
-  - platform: numeric_state
-    entity_id:
+    trigger: numeric_state
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  - entity_id:
     - sensor.cumulus_2
     below: 4
-  condition:
+    trigger: numeric_state
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  conditions:
   - condition: state
     entity_id: input_boolean.ecs
     state: 'on'
-  action:
+  actions:
   - metadata: {}
     data: {}
     target:
@@ -300,15 +308,15 @@
 - id: '1720778515127'
   alias: Suppression données EcoJoko
   description: Suppression données EcoJoko
-  trigger:
-  - platform: time
-    at: 00:04:00
-  condition: []
-  action:
+  triggers:
+  - at: 00:04:00
+    trigger: time
+  conditions: []
+  actions:
   - data:
       entity_id:
       - sensor.ecojoko_consommation_reseau
-      keep_days: 0
+      keep_days: 1
     action: recorder.purge_entities
   - action: shell_command.supp_ecojoko
     data: {}
@@ -605,28 +613,6 @@
     action: input_boolean.turn_off
     target:
       entity_id: input_boolean.clim_salon
-  mode: single
-- id: '1725219604319'
-  alias: Reboot sonnette
-  description: ''
-  trigger:
-  - platform: time
-    at: 03:00:00
-  condition: []
-  action:
-  - type: turn_off
-    device_id: 03b230bab81dca8d8a72acdc74e2abc7
-    entity_id: f187e1d0f6d842f8a23510361214def2
-    domain: switch
-  - delay:
-      hours: 0
-      minutes: 2
-      seconds: 0
-      milliseconds: 0
-  - type: turn_on
-    device_id: 03b230bab81dca8d8a72acdc74e2abc7
-    entity_id: f187e1d0f6d842f8a23510361214def2
-    domain: switch
   mode: single
 - id: '1725223267378'
   alias: Alerte TV non éteinte
@@ -1126,7 +1112,10 @@
       hours: 0
       minutes: 1
       seconds: 0
-  conditions: []
+  conditions:
+  - condition: state
+    entity_id: input_boolean.prises_etage
+    state: 'on'
   actions:
   - action: input_boolean.turn_off
     target:
@@ -1192,15 +1181,20 @@
         True) }}
 
         '
-      message: "HC : {{ states('input_number.taux_hc_j_1') | round(1) }} %. Conso
-        : {{states('input_number.energie_j_1') | round(2) }} kWh / {{states('input_number.cout_energie_j_1')
-        | round(2)  }}€\nSolaire : {{ states('input_number.taux_solar_j_1') | round(1)
-        }} %. Prod : {{ (states('input_number.solar_production_j_1') | float) | round(2)
-        }} kWh / {{states('input_number.solar_previsions_j_1') | round(1) }} kWh.
-        \nDemain : {{states('sensor.solcast_pv_forecast_previsions_pour_aujourd_hui')
-        | round(1)}} kWh / max  {{states('sensor.solcast_pv_forecast_previsions_du_pic_aujourd_hui')
-        | round(0)}} W à {{ as_timestamp(states('sensor.solcast_pv_forecast_heure_du_pic_aujourd_hui'))
-        | timestamp_custom(\"%Hh%M\", True) }}. Météo : {{states('sensor.talence_daily_original_condition')}}\n"
+      message: 'HC : {{ states(''input_number.taux_hc_j_1'') | round(1) }} %. Conso
+        : {{states(''input_number.energie_j_1'') | round(2) }} kWh / {{states(''input_number.cout_energie_j_1'')
+        | round(2)  }}€ Surplus : {{ (states(''input_number.surplus_production_j_1'')
+        | float(0)) | round(2) }} kWh pour  {{ (states(''input_number.prix_vente_edf_oa'')
+        | float(0) * states(''input_number.surplus_production_j_1'') | float(0)) |
+        round(2) }} € Solaire : {{ states(''input_number.taux_solar_j_1'') | round(1)
+        }} %. Prod : {{ (states(''input_number.solar_production_j_1'') | float) |
+        round(2) }} kWh / {{states(''input_number.solar_previsions_j_1'') | round(1)
+        }} kWh.  Demain : {{states(''sensor.solcast_pv_forecast_previsions_pour_aujourd_hui'')
+        | round(1)}} kWh / max  {{states(''sensor.solcast_pv_forecast_previsions_du_pic_aujourd_hui'')
+        | round(0)}} W à {{ as_timestamp(states(''sensor.solcast_pv_forecast_heure_du_pic_aujourd_hui''))
+        | timestamp_custom("%Hh%M", True) }}. Météo : {{states(''sensor.talence_daily_original_condition'')}}
+
+        '
     action: notify.mobile_app_iphone_de_mat
   - data_template:
       title: 'Données Energie du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y",
@@ -1210,7 +1204,10 @@
       message: "Taux HC du jour : {{ states('input_number.taux_hc_j_1') | round(1)
         }} %.\n\nConsommation de la journée : {{states('input_number.energie_j_1')
         | round(2) }} kWh / {{states('input_number.cout_energie_j_1') | round(2)  }}€
-        \n"
+        \n\nSurplus : {{ (states('input_number.surplus_production_j_1') | float(0))
+        | round(2) }} kWh pour  {{ (states('input_number.prix_vente_edf_oa') | float(0)
+        * states('input_number.surplus_production_j_1') | float(0)) | round(2) }}
+        €\n"
     action: notify.persistent_notification
   mode: single
 - id: '1727255726386'
@@ -1224,12 +1221,12 @@
   - data_template:
       entity_id: input_number.energie_j_1
       value: '{{(states(''sensor.energie_consommee_j_hc'')| float + states(''sensor.energie_consommee_j_hp'')|
-        float) / 1000 | float | round(2)}}'
+        float) | float | round(2)}}'
     action: input_number.set_value
   - data_template:
       entity_id: input_number.cout_energie_j_1
-      value: '{{ (states(''sensor.hc_cout_jour'')| float + states(''sensor.hp_cout_jour'')|
-        float) | round(2) }}'
+      value: '{{(float(states(''sensor.energie_consommee_j_hc''))*float(states(''input_number.prix_hc_kwh''))+float(states(''sensor.energie_consommee_j_hp''))*float(states(''input_number.prix_hp_kwh'')))
+        | round(2)}}'
     action: input_number.set_value
   - data_template:
       entity_id: input_number.taux_hc_j_1
@@ -1242,11 +1239,15 @@
     action: input_number.set_value
   - data_template:
       entity_id: input_number.solar_production_j_1
-      value: '{{ states(''sensor.energie_solar_j'') | float / 1000 | float | round(2)}}'
+      value: '{{ states(''sensor.energie_solar_j'') | float(0) | round(2)}}'
     action: input_number.set_value
   - data_template:
       entity_id: input_number.taux_solar_j_1
       value: '{{ states(''sensor.taux_solar_jour'') | float | round(1)}}'
+    action: input_number.set_value
+  - data_template:
+      entity_id: input_number.surplus_production_j_1
+      value: '{{ states(''sensor.surplus_production_compteur'') | float | round(2)}}'
     action: input_number.set_value
   mode: single
 - id: '1727278237568'
@@ -1435,19 +1436,6 @@
   alias: Alerte SwitchBot
   description: ''
   triggers:
-  - entity_id:
-    - sensor.salon_temperature
-    - sensor.entree_temperature
-    - sensor.chambre_leo_temperature
-    - sensor.chambre_lisa_temperature
-    - sensor.chambre_parents_temperature
-    - sensor.thermometre_frigo_temperature
-    - sensor.exterieur_temperature
-    for:
-      hours: 3
-      minutes: 0
-      seconds: 0
-    trigger: state
   - trigger: state
     entity_id:
     - sensor.switchbot_cloud
@@ -1456,6 +1444,13 @@
       hours: 0
       minutes: 5
       seconds: 0
+  - entity_id:
+    - sensor.switchbot_cloud
+    for:
+      hours: 1
+      minutes: 0
+      seconds: 0
+    trigger: state
   conditions: []
   actions:
   - data:
@@ -1476,15 +1471,7 @@
   triggers:
   - trigger: sun
     event: sunset
-    offset: 00:30:00
-  - trigger: numeric_state
-    entity_id:
-    - sensor.em06_02_a1_power
-    for:
-      hours: 0
-      minutes: 30
-      seconds: 0
-    below: 0
+    offset: 00:15:00
   actions:
   - data_template:
       title: 'Données Solaire du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y",
@@ -1493,8 +1480,11 @@
         '
       message: "\nTaux de prévision solaire : {{ states('sensor.taux_solar_jour')
         | float | round(1)}} %. \n\nProduction solaire : {{ (states('sensor.energie_solar_j')
-        | float / 1000) | float | round(2)}} kWh / {{ states('sensor.solcast_pv_forecast_previsions_pour_aujourd_hui')
-        | float | round(2)}} kWh prévus.\n\nDemain, il est prévu : {{states('sensor.solcast_pv_forecast_previsions_pour_demain')
+        | float) | float | round(2)}} kWh / {{ states('sensor.solcast_pv_forecast_previsions_pour_aujourd_hui')
+        | float | round(2)}} kWh prévus.\nSurplus solaire : {{ (states('sensor.surplus_production_compteur')
+        | float(0))| round(2)}} kWh / {{ (states('sensor.surplus_production_compteur')
+        | float(0) * states('input_number.prix_vente_edf_oa') | float(0)) | round(2)}}
+        €.\n\nDemain, il est prévu : {{states('sensor.solcast_pv_forecast_previsions_pour_demain')
         | round(1)}} kWh / max  {{states('sensor.solcast_pv_forecast_previsions_du_pic_pour_demain')
         | round(0)}} W à {{ as_timestamp(states('sensor.solcast_pv_forecast_heure_du_pic_demain'))
         | timestamp_custom(\"%Hh%M\", True) }}.\n"
@@ -1505,9 +1495,11 @@
 
         '
       message: "Solaire : {{ states('sensor.taux_solar_jour') | round(1) }} %. Prod
-        : {{ (states('sensor.energie_solar_j') | float / 1000) | round(2) }} kWh /
-        {{states('sensor.solcast_pv_forecast_previsions_pour_aujourd_hui') | round(1)
-        }} kWh. \nDemain : {{states('sensor.solcast_pv_forecast_previsions_pour_demain')
+        : {{ (states('sensor.energie_solar_j') | float) | round(2) }} kWh / {{states('sensor.solcast_pv_forecast_previsions_pour_aujourd_hui')
+        | round(1) }} kWh. \nSurplus solaire : {{ (states('sensor.surplus_production_compteur')
+        | float(0))| round(2)}} kWh / {{ (states('sensor.surplus_production_compteur')
+        | float(0) * states('input_number.prix_vente_edf_oa') | float(0)) | round(2)}}
+        €.\nDemain : {{states('sensor.solcast_pv_forecast_previsions_pour_demain')
         | round(1)}} kWh / max  {{states('sensor.solcast_pv_forecast_previsions_du_pic_pour_demain')
         | round(0)}} W à {{ as_timestamp(states('sensor.solcast_pv_forecast_heure_du_pic_demain'))
         | timestamp_custom(\"%Hh%M\", True) }}.\n"

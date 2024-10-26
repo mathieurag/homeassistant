@@ -1,0 +1,14 @@
+multiscrape:
+  - name: HA scraper
+    resource: https://www.home-assistant.io
+    scan_interval: 3600
+    sensor:
+      - unique_id: ha_latest_version
+        name: Latest version
+        select: ".release-date"
+        value_template: "{{ value | trim }}"
+      - unique_id: ha_release_date
+        name: Release date
+        select: ".release-date"
+        attribute: "title"
+        value_template: "{{ (value.split('released')[1]) }}"

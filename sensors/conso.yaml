@@ -66,3 +66,17 @@ template:
         state_class: measurement
         unit_of_measurement: "W"
         state: "{% if int(states('sensor.em06_02_a1_power')) | float(0) > int(states('sensor.em06_b1_power')) -%} {{(int(states('sensor.em06_02_a1_power')) - int(states('sensor.em06_b1_power'))) | float(0)}} {%- else -%} 0 {%- endif %}"
+
+      - name: "Production Solaire"
+        unique_id: "production_solaire"
+        device_class: power # Exemples de valeurs possibles
+        state_class: measurement
+        unit_of_measurement: "W"
+        state: "{% if int(states('sensor.em06_02_a1_power')) | float(0) > 0 -%} {{ int(states('sensor.em06_02_a1_power')) | float(0)}} {%- else -%} 0 {%- endif %}"
+
+      - name: "Consommation réseau Absolue"
+        unique_id: "consommation_reseau_abs"
+        device_class: power # Exemples de valeurs possibles
+        state_class: measurement
+        unit_of_measurement: "W"
+        state: "{% if int(states('sensor.em06_02_b1_power')) | float(0) > 0 -%} {{ int(states('sensor.em06_02_b1_power')) | float(0)}} {%- else -%} 0 {%- endif %}"
