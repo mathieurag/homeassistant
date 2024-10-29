@@ -64,9 +64,9 @@ python_script:
 logger:
   default: info
   logs:
-    homeassistant.components.scrape: debug
-    homeassistant.components.scrape.sensor: debug
-    homeassistant.components.rest: debug
+    homeassistant.components.scrape: info
+    homeassistant.components.scrape.sensor: info
+    homeassistant.components.rest: info
 
 shell_command:
   batch_py: python3 /config/python_scripts/script.py

@@ -23,9 +23,3 @@ sensor:
     unique_id: "consommation_non_suivie_moyenne"
     max_age:
       minutes: 5
-
-  - platform: command_line
-    name: DNS resolution time
-    unique_id: "dns_resolution_time"
-    command: "dig +retries=1 force.com | grep -A 100 'ANSWER SECTION:' | grep -Po '(?<=Query time: )[0-9a]*' || echo '-10'"
-    unit_of_measurement: "mS"
