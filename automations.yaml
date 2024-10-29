@@ -1566,3 +1566,21 @@
       seconds: 0
       milliseconds: 0
   mode: single
+- id: '1730232489877'
+  alias: Mise à jour token Estar
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.estar_token
+    attribute: token
+    from: None
+  conditions: []
+  actions:
+  - action: input_text.set_value
+    metadata: {}
+    data:
+      value: estar_token={{state_attr('sensor.estar_token','token')}}
+    target:
+      entity_id: input_text.estar_token_input
+  mode: single

@@ -4,7 +4,7 @@ rest:
   - authentication: basic
     username: "Raguere33"
     password: "Celipo14"
-    scan_interval: 3600
+    scan_interval: 25000
     method: POST
     payload: '{"ERROR_BACK":true,"LOAD":{"loading":true},"body":{"password":"6c71f5f1fb46743d4291a20fdcbf646a.WdENgttHaU5Rt611y3IJWxjda8rOpI5gRExSovO7bI0=","user_name":"Raguere33"},"WAITING_PROMISE":true}'
     resource: "https://monitor.estarpower.com/platform/api/gateway/iam/auth_login"
@@ -23,13 +23,13 @@ rest:
   - authentication: basic
     username: "Raguere33"
     password: "Celipo14"
-    scan_interval: 3600
+    scan_interval: 60
     method: POST
     payload: '{"body":{"id":6886470},"WAITING_PROMISE":true}'
     resource: "https://monitor.estarpower.com/platform/api/gateway/pvm/station_select_device_of_tree"
     headers:
       Content-Type: application/json;charset=UTF-8
-      Cookie: "estar_token=2.2Qia8euoFcV3KvzkLd8tIuqmPy5Ge5jjIHzqR2zE7vWYgImMn8nMq68NAeqOGZIZlsNxZIV4apElPPVC4fBQQ7CE1ZdY.0"
+      Cookie: "{{ states('input_text.estar_token_input')}}"
     sensor:
       - name: "Estar DCU"
         unique_id: "estar_dcu_data"
@@ -44,17 +44,21 @@ rest:
           - "soft_ver"
           - "hard_ver"
           - "warn_data"
-
+    binary_sensor:
+      - name: "Estar DCU"
+        unique_id: "estar_dcu_binary"
+        device_class: connectivity
+        value_template: "{{ value_json.data[0].warn_data.connect}}"
   - authentication: basic
     username: "Raguere33"
     password: "Celipo14"
-    scan_interval: 3600
+    scan_interval: 60
     method: POST
     payload: '{"body":{"id":6886470},"WAITING_PROMISE":true}'
     resource: "https://monitor.estarpower.com/platform/api/gateway/pvm/station_select_device_of_tree"
     headers:
       Content-Type: application/json;charset=UTF-8
-      Cookie: estar_token=2.2Qia8euoFcV3KvzkLd8tIuqmPy5Ge5jjIHzqR2zE7vWYgImMn8nMq68NAeqOGZIZlsNxZIV4apElPPVC4fBQQ7CE1ZdY.0
+      Cookie: "{{ states('input_text.estar_token_input')}}"
     sensor:
       - name: "Estar MO1"
         unique_id: "estar_mo1_data"
@@ -72,17 +76,22 @@ rest:
           - "hard_ver"
           - "warn_data"
           - "extend_data"
+    binary_sensor:
+      - name: "Estar MO1"
+        unique_id: "estar_mo1_binary"
+        device_class: connectivity
+        value_template: "{{ value_json.data[0].children[0].warn_data.connect}}"
 
   - authentication: basic
     username: "Raguere33"
     password: "Celipo14"
-    scan_interval: 3600
+    scan_interval: 60
     method: POST
     payload: '{"body":{"id":6886470},"WAITING_PROMISE":true}'
     resource: "https://monitor.estarpower.com/platform/api/gateway/pvm/station_select_device_of_tree"
     headers:
       Content-Type: application/json;charset=UTF-8
-      Cookie: estar_token=2.2Qia8euoFcV3KvzkLd8tIuqmPy5Ge5jjIHzqR2zE7vWYgImMn8nMq68NAeqOGZIZlsNxZIV4apElPPVC4fBQQ7CE1ZdY.0
+      Cookie: "{{ states('input_text.estar_token_input')}}"
     sensor:
       - name: "Estar MO2"
         unique_id: "estar_mo2_data"
@@ -100,17 +109,22 @@ rest:
           - "hard_ver"
           - "warn_data"
           - "extend_data"
+    binary_sensor:
+      - name: "Estar MO2"
+        unique_id: "estar_mo2_binary"
+        device_class: connectivity
+        value_template: "{{ value_json.data[0].children[1].warn_data.connect}}"
 
   - authentication: basic
     username: "Raguere33"
     password: "Celipo14"
-    scan_interval: 3600
+    scan_interval: 60
     method: POST
     payload: '{"body":{"id":6886470},"WAITING_PROMISE":true}'
     resource: "https://monitor.estarpower.com/platform/api/gateway/pvm/station_select_device_of_tree"
     headers:
       Content-Type: application/json;charset=UTF-8
-      Cookie: estar_token=2.2Qia8euoFcV3KvzkLd8tIuqmPy5Ge5jjIHzqR2zE7vWYgImMn8nMq68NAeqOGZIZlsNxZIV4apElPPVC4fBQQ7CE1ZdY.0
+      Cookie: "{{ states('input_text.estar_token_input')}}"
     sensor:
       - name: "Estar MO3"
         unique_id: "estar_mo3_data"
@@ -128,17 +142,22 @@ rest:
           - "hard_ver"
           - "warn_data"
           - "extend_data"
+    binary_sensor:
+      - name: "Estar MO3"
+        unique_id: "estar_mo3_binary"
+        device_class: connectivity
+        value_template: "{{ value_json.data[0].children[2].warn_data.connect}}"
 
   - authentication: basic
     username: "Raguere33"
     password: "Celipo14"
-    scan_interval: 3600
+    scan_interval: 60
     method: POST
     payload: '{"body":{"id":6886470},"WAITING_PROMISE":true}'
     resource: "https://monitor.estarpower.com/platform/api/gateway/pvm/station_select_device_of_tree"
     headers:
       Content-Type: application/json;charset=UTF-8
-      Cookie: estar_token=2.2Qia8euoFcV3KvzkLd8tIuqmPy5Ge5jjIHzqR2zE7vWYgImMn8nMq68NAeqOGZIZlsNxZIV4apElPPVC4fBQQ7CE1ZdY.0
+      Cookie: "{{states('input_text.estar_token_input')}}"
     sensor:
       - name: "Estar MO4"
         unique_id: "estar_mo4_data"
@@ -156,3 +175,8 @@ rest:
           - "hard_ver"
           - "warn_data"
           - "extend_data"
+    binary_sensor:
+      - name: "Estar MO4"
+        unique_id: "estar_mo4_binary"
+        device_class: connectivity
+        value_template: "{{ value_json.data[0].children[3].warn_data.connect}}"
