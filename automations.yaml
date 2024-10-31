@@ -1572,15 +1572,40 @@
   triggers:
   - trigger: state
     entity_id:
+    - sensor.estar_url
+    to: token verify error.
+  - trigger: state
+    entity_id:
     - sensor.estar_token
-    attribute: token
-    from: None
   conditions: []
   actions:
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
   - action: input_text.set_value
     metadata: {}
     data:
       value: estar_token={{state_attr('sensor.estar_token','token')}}
     target:
       entity_id: input_text.estar_token_input
+  - action: rest.reload
+    metadata: {}
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - if:
+    - condition: state
+      entity_id: sensor.estar_url
+      state: success
+    then: []
+    else:
+    - action: notify.persistent_notification
+      metadata: {}
+      data:
+        message: MAJ Token Estar NOK
   mode: single
