@@ -11,6 +11,7 @@
 !blueprints
 !www
 !lovelace*
+!zigbee2mqtt
 
 # Ignore folders.
 .storage

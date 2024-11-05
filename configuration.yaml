@@ -67,6 +67,7 @@ logger:
     homeassistant.components.scrape: info
     homeassistant.components.scrape.sensor: info
     homeassistant.components.rest: info
+    homeassistant.components.automation.wled: error
 
 shell_command:
   batch_py: python3 /config/python_scripts/script.py

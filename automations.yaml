@@ -1508,10 +1508,6 @@
   alias: Alerte Garage absence
   description: ''
   triggers:
-  - trigger: numeric_state
-    entity_id:
-    - sensor.em06_02_c1_power
-    above: 0
   - trigger: state
     entity_id:
     - cover.porte_garage
@@ -1608,4 +1604,304 @@
       metadata: {}
       data:
         message: MAJ Token Estar NOK
+  mode: single
+- id: '1730412448174'
+  alias: WLED 100
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.em06_b1_power
+    above: 0
+    below: 100
+  conditions: []
+  actions:
+  - action: select.select_option
+    target:
+      entity_id: select.wled1_prereglage
+    data:
+      option: Prod100
+  mode: single
+- id: '1730412683148'
+  alias: WLED 200
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.em06_b1_power
+    above: 100
+    below: 199.8
+  conditions: []
+  actions:
+  - action: select.select_option
+    target:
+      entity_id: select.wled1_prereglage
+    data:
+      option: Prod200
+  mode: single
+- id: '1730412749837'
+  alias: WLED 300
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.em06_b1_power
+    above: 200
+    below: 300
+  conditions: []
+  actions:
+  - action: select.select_option
+    target:
+      entity_id: select.wled1_prereglage
+    data:
+      option: Prod300
+  mode: single
+- id: '1730412872632'
+  alias: WLED Max
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.em06_b1_power
+    above: 3000
+  conditions: []
+  actions:
+  - action: select.select_option
+    target:
+      entity_id: select.wled1_prereglage
+    data:
+      option: ProdMax
+  mode: single
+- id: '1730413135308'
+  alias: WLED 400
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.em06_b1_power
+    above: 300
+    below: 400
+  conditions: []
+  actions:
+  - action: select.select_option
+    target:
+      entity_id: select.wled1_prereglage
+    data:
+      option: Prod400
+  mode: single
+- id: '1730413160193'
+  alias: WLED 500
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.em06_b1_power
+    above: 399.9
+    below: 500
+  conditions: []
+  actions:
+  - action: select.select_option
+    target:
+      entity_id: select.wled1_prereglage
+    data:
+      option: Prod500
+  mode: single
+- id: '1730413195280'
+  alias: WLED 750
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.em06_b1_power
+    above: 500
+    below: 750
+    id: '750'
+  conditions: []
+  actions:
+  - action: select.select_option
+    target:
+      entity_id: select.wled1_prereglage
+    data:
+      option: Prod750
+  mode: single
+- id: '1730413216269'
+  alias: WLED 1000
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.em06_b1_power
+    above: 750
+    below: 999.8
+  conditions: []
+  actions:
+  - action: select.select_option
+    target:
+      entity_id: select.wled1_prereglage
+    data:
+      option: Prod1000
+  mode: single
+- id: '1730501750728'
+  alias: WLED
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.em06_b1_power
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 100
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod100
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 200
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod200
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 300
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod300
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 400
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod400
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 500
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod500
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 750
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod750
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 1000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod1000
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 1500
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod1500
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 2000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod2000
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 2500
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod2500
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 3000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod3000
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        above: 3000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: ProdMax
+  - delay:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1730799442676'
+  alias: Alerte TP-Link
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.tp_link_router_cpu_used
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  conditions: []
+  actions:
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id: 9b77fab7a9aa7b4577e7cfe2d53e7375
+  - action: notify.persistent_notification
+    metadata: {}
+    data:
+      message: Pas de réponse de TP Link !
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
   mode: single

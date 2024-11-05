@@ -1,0 +1,44 @@
+homeassistant: true
+advanced:
+  network_key:
+    - 69
+    - 54
+    - 81
+    - 21
+    - 251
+    - 148
+    - 169
+    - 121
+    - 84
+    - 160
+    - 40
+    - 28
+    - 45
+    - 154
+    - 56
+    - 52
+  pan_id: 3038
+  ext_pan_id:
+    - 137
+    - 100
+    - 252
+    - 101
+    - 162
+    - 194
+    - 49
+    - 141
+  homeassistant_legacy_entity_attributes: false
+  legacy_api: false
+  legacy_availability_payload: false
+mqtt:
+  server: mqtt://core-mosquitto:1883
+  user: homeassistant
+  password: teiPheiraiquaizaeCh7shaew5iuwaWahdeir0iawaimae3aep5eiwahmoonu5Ai
+frontend:
+  port: 8099
+serial:
+  port: >-
+    /dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_fa68f88a56e7ed11af7d646262c613ac-if00-port0
+  adapter: ember
+device_options:
+  legacy: false
