@@ -1326,10 +1326,6 @@
   - event: start
     trigger: homeassistant
   actions:
-  - data:
-      addon: 15d21743_samba_backup
-      input: restore-sensor
-    action: hassio.addon_stdin
   - action: homeassistant.reload_config_entry
     metadata: {}
     data: {}
@@ -1570,11 +1566,16 @@
     entity_id:
     - sensor.estar_url
     to: token verify error.
-  - trigger: state
-    entity_id:
-    - sensor.estar_token
   conditions: []
   actions:
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - action: rest.reload
+    metadata: {}
+    data: {}
   - delay:
       hours: 0
       minutes: 0
@@ -1586,14 +1587,6 @@
       value: estar_token={{state_attr('sensor.estar_token','token')}}
     target:
       entity_id: input_text.estar_token_input
-  - action: rest.reload
-    metadata: {}
-    data: {}
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 5
-      milliseconds: 0
   - if:
     - condition: state
       entity_id: sensor.estar_url
@@ -1605,149 +1598,12 @@
       data:
         message: MAJ Token Estar NOK
   mode: single
-- id: '1730412448174'
-  alias: WLED 100
-  description: ''
-  triggers:
-  - trigger: numeric_state
-    entity_id:
-    - sensor.em06_b1_power
-    above: 0
-    below: 100
-  conditions: []
-  actions:
-  - action: select.select_option
-    target:
-      entity_id: select.wled1_prereglage
-    data:
-      option: Prod100
-  mode: single
-- id: '1730412683148'
-  alias: WLED 200
-  description: ''
-  triggers:
-  - trigger: numeric_state
-    entity_id:
-    - sensor.em06_b1_power
-    above: 100
-    below: 199.8
-  conditions: []
-  actions:
-  - action: select.select_option
-    target:
-      entity_id: select.wled1_prereglage
-    data:
-      option: Prod200
-  mode: single
-- id: '1730412749837'
-  alias: WLED 300
-  description: ''
-  triggers:
-  - trigger: numeric_state
-    entity_id:
-    - sensor.em06_b1_power
-    above: 200
-    below: 300
-  conditions: []
-  actions:
-  - action: select.select_option
-    target:
-      entity_id: select.wled1_prereglage
-    data:
-      option: Prod300
-  mode: single
-- id: '1730412872632'
-  alias: WLED Max
-  description: ''
-  triggers:
-  - trigger: numeric_state
-    entity_id:
-    - sensor.em06_b1_power
-    above: 3000
-  conditions: []
-  actions:
-  - action: select.select_option
-    target:
-      entity_id: select.wled1_prereglage
-    data:
-      option: ProdMax
-  mode: single
-- id: '1730413135308'
-  alias: WLED 400
-  description: ''
-  triggers:
-  - trigger: numeric_state
-    entity_id:
-    - sensor.em06_b1_power
-    above: 300
-    below: 400
-  conditions: []
-  actions:
-  - action: select.select_option
-    target:
-      entity_id: select.wled1_prereglage
-    data:
-      option: Prod400
-  mode: single
-- id: '1730413160193'
-  alias: WLED 500
-  description: ''
-  triggers:
-  - trigger: numeric_state
-    entity_id:
-    - sensor.em06_b1_power
-    above: 399.9
-    below: 500
-  conditions: []
-  actions:
-  - action: select.select_option
-    target:
-      entity_id: select.wled1_prereglage
-    data:
-      option: Prod500
-  mode: single
-- id: '1730413195280'
-  alias: WLED 750
-  description: ''
-  triggers:
-  - trigger: numeric_state
-    entity_id:
-    - sensor.em06_b1_power
-    above: 500
-    below: 750
-    id: '750'
-  conditions: []
-  actions:
-  - action: select.select_option
-    target:
-      entity_id: select.wled1_prereglage
-    data:
-      option: Prod750
-  mode: single
-- id: '1730413216269'
-  alias: WLED 1000
-  description: ''
-  triggers:
-  - trigger: numeric_state
-    entity_id:
-    - sensor.em06_b1_power
-    above: 750
-    below: 999.8
-  conditions: []
-  actions:
-  - action: select.select_option
-    target:
-      entity_id: select.wled1_prereglage
-    data:
-      option: Prod1000
-  mode: single
 - id: '1730501750728'
-  alias: WLED
+  alias: WLED Conso
   description: ''
   triggers:
-  - trigger: state
-    entity_id:
-    - sensor.em06_b1_power
+  - trigger: time_pattern
+    minutes: /1
   conditions: []
   actions:
   - choose:
@@ -1902,6 +1758,281 @@
   - delay:
       hours: 0
       minutes: 5
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1730807917596'
+  alias: WLED Prod
+  description: ''
+  triggers:
+  - minutes: '*'
+    trigger: time_pattern
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 1
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Vide Prod
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 100
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod100
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 200
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod200
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 300
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod300
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 400
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod400
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 500
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod500
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 750
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod750
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 1000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod1000
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 1500
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod1500
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 2000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod2000
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 2500
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod2500
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 3000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod3000
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        above: 3000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: ProdMax
+  mode: single
+- id: '1730807984000'
+  alias: WLED Surplus
+  description: ''
+  triggers:
+  - trigger: time_pattern
+    minutes: '*'
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 100
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus100
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 200
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus200
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 300
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus300
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 400
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus400
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 500
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus500
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 750
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus750
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 1000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus1000
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 1500
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus1500
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 2000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus2000
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 2500
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus2500
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 3000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus3000
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        above: 3000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: SurplusMax
+  - delay:
+      hours: 0
+      minutes: 1
       seconds: 0
       milliseconds: 0
   mode: single

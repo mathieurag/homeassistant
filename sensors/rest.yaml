@@ -2,11 +2,11 @@ multiscrape:
 scrape:
 rest:
   - authentication: basic
-    username: "Raguere33"
-    password: "Celipo14"
-    scan_interval: 25000
+    username: !secret login_estar
+    password: !secret password_estar
+    scan_interval: 10000
     method: POST
-    payload: '{"ERROR_BACK":true,"LOAD":{"loading":true},"body":{"password":"6c71f5f1fb46743d4291a20fdcbf646a.WdENgttHaU5Rt611y3IJWxjda8rOpI5gRExSovO7bI0=","user_name":"Raguere33"},"WAITING_PROMISE":true}'
+    payload: !secret payload_estar
     resource: "https://monitor.estarpower.com/platform/api/gateway/iam/auth_login"
     headers:
       Content-Type: application/json;charset=UTF-8
@@ -21,8 +21,8 @@ rest:
           - "token"
 
   - authentication: basic
-    username: "Raguere33"
-    password: "Celipo14"
+    username: !secret login_estar
+    password: !secret password_estar
     scan_interval: 60
     method: POST
     payload: '{"body":{"id":6886470},"WAITING_PROMISE":true}'
@@ -131,11 +131,12 @@ rest:
         value_template: "{{ value_json.data[0].children[3].warn_data.connect}}"
 
   - authentication: basic
-    username: "Raguere33"
-    password: "Celipo14"
+    username: !secret login_estar
+    password: !secret password_estar
     scan_interval: 60
     method: POST
-    payload: '{"body":{"sid":6886470,"date":"2024-10-29","day_num":1},"WAITING_PROMISE":true}'
+    payload_template: >
+      {{ {'sid':6886470,'date':states('sensor.date'), 'day_num':1} | to_json }}
     resource: "https://monitor.estarpower.com/platform/api/gateway/pvm-data/data_select_module_day_data"
     headers:
       Content-Type: application/json;charset=UTF-8
@@ -154,12 +155,59 @@ rest:
 
   - scan_interval: 3600
     method: POST
-    payload: '{"sid":6886470,"date":"2024-10-29"}'
-    resource: "https://neapi.hoymiles.com/pvm-data/api/0/module/data/down_module_day_data"
+    payload_template: >
+      {{ {'sid':6886470,'date':states('sensor.date')} | to_json }}
+    resource_template: >
+      {{ "https://neapi.hoymiles.com/pvm-data" + states('input_text.estar_url') | to_json }}
     headers:
-      Authorization: "{{ states('input_text.estar_token_input')[12:]}}"
+      Content-Type: application/json
+      Authorization: "{{ states('input_text.estar_token_input')[:12]}}"
     sensor:
       - name: "Estar DATA"
         unique_id: "estar_data"
         icon: mdi:file-chart-outline
-        value_template: "{{ value}}"
+        value_template: "success"
+
+  - scan_interval: 60
+    method: POST
+    payload: '{"body":{"sid":6886470},"WAITING_PROMISE":true}'
+    resource: "https://monitor.estarpower.com/platform/api/gateway/pvm-data/data_count_station_real_data"
+    headers:
+      Host: monitor.estarpower.com
+      Content-Type: application/json
+      Cookie: "{{ states('input_text.estar_token_input')}}"
+    sensor:
+      - name: "Estar Centrale"
+        unique_id: "estar_centrale"
+        icon: mdi:solar-power-variant
+        json_attributes_path: "$.data"
+        value_template: "{{ value_json.data.capacitor}}"
+        device_class: power
+        unit_of_measurement: kW
+        json_attributes:
+          - "today_eq"
+          - "month_eq"
+          - "year_eq"
+          - "real_power"
+          - "plant_tree"
+          - "data_time"
+          - "last_data_time"
+          - "capacitor"
+          - "is_balance"
+          - "is_reflux"
+      - name: "Estar Centrale Power"
+        unique_id: "estar_centrale_power"
+        icon: mdi:lightning-bolt
+        json_attributes_path: "$.data.reflux_station_data"
+        value_template: "{{ value_json.data.reflux_station_data.pv_power}}"
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        json_attributes:
+          - "pv_power"
+          - "grid_power"
+          - "load_power"
+      - name: "Estar MAJ Data"
+        unique_id: "estar_maj_data"
+        icon: mdi:clock
+        value_template: "{{ value_json.data.last_data_time | as_datetime | relative_time }}"

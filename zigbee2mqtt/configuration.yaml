@@ -42,3 +42,13 @@ serial:
   adapter: ember
 device_options:
   legacy: false
+devices:
+  '0xa4c138682a772531':
+    friendly_name: Rain Sensor
+  '0x70b3d52b6005f633':
+    friendly_name: Prise Zigbee 1
+    measurement_poll_interval: 30
+    power_precision: 1
+    current_precision: 3
+    voltage_precision: 1
+    energy_precision: 3

@@ -1,1470 +1,2338 @@
-{
-  "version": 1,
-  "minor_version": 1,
-  "key": "lovelace.tableau_de_bord",
-  "data": {
-    "config": {
-      "views": [
-        {
-          "type": "sections",
-          "sections": [
-            {
-              "type": "grid",
-              "cards": [
-                {
-                  "type": "tile",
-                  "entity": "sensor.system_monitor_adresse_ipv4_enp0s1"
-                },
-                {
-                  "type": "tile",
-                  "entity": "sensor.myip"
-                },
-                {
-                  "type": "history-graph",
-                  "entities": [
-                    {
-                      "entity": "sensor.system_monitor_adresse_ipv4_enp0s1"
-                    },
-                    {
-                      "entity": "sensor.myip"
-                    }
-                  ],
-                  "title": "IP Locale"
-                },
-                {
-                  "graph": "none",
-                  "type": "sensor",
-                  "entity": "sensor.m5_vitesse_de_telechargement",
-                  "detail": 1,
-                  "name": "Download"
-                },
-                {
-                  "graph": "none",
-                  "type": "sensor",
-                  "entity": "sensor.m5_vitesse_de_telechargement_montant",
-                  "detail": 1,
-                  "name": "Upload"
-                },
-                {
-                  "type": "history-graph",
-                  "entities": [
-                    {
-                      "entity": "sensor.m5_vitesse_de_telechargement"
-                    },
-                    {
-                      "entity": "sensor.m5_vitesse_de_telechargement_montant"
-                    }
-                  ],
-                  "hours_to_show": 24
-                },
-                {
-                  "type": "tile",
-                  "vertical": false,
-                  "entity": "sensor.uptime"
-                },
-                {
-                  "type": "history-graph",
-                  "entities": [
-                    {
-                      "entity": "sensor.uptime"
-                    }
-                  ],
-                  "hours_to_show": 24
+views:
+  - title: Energie
+    path: energie
+    icon: mdi:lightning-bolt
+    cards:
+      - type: gauge
+        entity: sensor.em06_b1_power
+        min: 0
+        needle: false
+        name: Consommation Générale
+        max: 1000
+        severity:
+          green: 0
+          yellow: 200
+          red: 500
+      - type: gauge
+        min: 0
+        needle: false
+        name: Production
+        max: 3000
+        entity: sensor.production_solaire
+        severity:
+          green: 200
+          yellow: 1
+          red: 0
+      - type: gauge
+        min: 0
+        needle: false
+        name: Surplus
+        max: 3000
+        entity: sensor.surplus_production
+        severity:
+          green: 100
+          yellow: 10
+          red: 0
+      - type: gauge
+        min: 0
+        needle: false
+        name: Consommation Réseau
+        max: 1000
+        severity:
+          green: 0
+          yellow: 150
+          red: 500
+        entity: sensor.consommation_reseau
+      - type: gauge
+        min: 0
+        needle: false
+        name: Consommation réseau (EcoJoko)
+        max: 1000
+        severity:
+          green: 0
+          yellow: 150
+          red: 500
+        entity: sensor.ecojoko_consommation_temps_reel
+      - type: history-graph
+        entities:
+          - entity: sensor.ecojoko_consommation_reseau
+          - entity: sensor.energie_solar_j
+        hours_to_show: 24
+        min_y_axis: 0
+      - chart_type: line
+        period: day
+        type: statistics-graph
+        entities:
+          - sensor.conso_tr_mini_last_24h
+        stat_types:
+          - min
+        title: Consommation mini
+        hide_legend: true
+        days_to_show: 26
+      - type: custom:mini-graph-card
+        name: Conso minimum H24
+        entities:
+          - sensor.conso_tr_mini_last_24h
+        decimals: 0
+        height: 0
+        font_size: 120
+        align_state: center
+        align_header: center
+        show:
+          icon: false
+      - type: history-graph
+        entities:
+          - entity: sensor.em06_b1_power
+          - entity: sensor.consommation_reseau
+        hours_to_show: 24
+      - chart_type: line
+        period: hour
+        type: statistics-graph
+        entities:
+          - sensor.cumulus_3
+        stat_types:
+          - mean
+          - min
+          - max
+        title: Tension
+        hide_legend: true
+        days_to_show: 5
+      - show_name: true
+        show_icon: false
+        type: button
+        tap_action:
+          action: more-info
+        show_state: true
+        entity: sensor.em06_b1_power_factor
+        hold_action:
+          action: none
+        name: PF General
+      - chart_type: line
+        period: hour
+        type: statistics-graph
+        entities:
+          - sensor.consommation_non_suivie_moyenne
+        stat_types:
+          - mean
+        title: Consommation non suivie
+        hide_legend: true
+        days_to_show: 2
+      - chart_type: bar
+        period: day
+        type: statistics-graph
+        entities:
+          - sensor.ecojoko_consommation_temps_reel
+          - sensor.em06_b1_power
+        stat_types:
+          - mean
+        title: Consommation moyenne (j)
+        hide_legend: true
+        days_to_show: 15
+      - chart_type: bar
+        period: week
+        type: statistics-graph
+        entities:
+          - sensor.ecojoko_consommation_temps_reel
+          - sensor.em06_b1_power
+        stat_types:
+          - mean
+        title: Consommation moyenne (s)
+        hide_legend: true
+        days_to_show: 120
+      - chart_type: bar
+        period: month
+        type: statistics-graph
+        entities:
+          - sensor.ecojoko_consommation_temps_reel
+          - sensor.em06_b1_power
+        stat_types:
+          - mean
+        title: Consommation moyenne (m)
+        hide_legend: true
+        days_to_show: 120
+    type: custom:horizontal-layout
+  - icon: mdi:target-variant
+    cards:
+      - type: history-graph
+        entities:
+          - entity: input_boolean.ecs
+          - entity: input_boolean.frigo
+          - entity: input_boolean.climatisation
+          - entity: input_boolean.clim_salon
+          - entity: input_boolean.prise_salon
+          - entity: input_boolean.tv
+          - entity: input_boolean.lave_vaisselle
+          - entity: input_boolean.lave_linge
+          - entity: input_boolean.plaque
+          - entity: input_boolean.four
+          - entity: input_boolean.lumieres_rdc
+          - entity: input_boolean.lumieres_etage
+          - entity: input_boolean.prises_etage
+        hours_to_show: 36
+        title: Appareils
+      - type: entities
+        entities:
+          - entity: sensor.em06_b1_power
+          - entity: sensor.consommation_reseau
+            card_mod:
+              style: |
+                :host {
+                  {% if int(states('sensor.consommation_reseau')) | float(0) == 0 %}
+                    --paper-item-icon-color: #009900;
+                  {% endif %}
                 }
-              ]
-            },
-            {
-              "type": "grid",
-              "cards": [
-                {
-                  "type": "tile",
-                  "entity": "sensor.system_monitor_memoire_utilisee"
-                },
-                {
-                  "type": "tile",
-                  "entity": "sensor.system_monitor_utilisation_de_la_memoire"
-                },
-                {
-                  "type": "tile",
-                  "entity": "sensor.system_monitor_espace_d_echange_libre"
-                },
-                {
-                  "type": "tile",
-                  "entity": "sensor.system_monitor_utilisation_du_disque"
-                },
-                {
-                  "type": "tile",
-                  "entity": "sensor.home_assistant_v2_db_taille",
-                  "name": "Home Assistant"
-                },
-                {
-                  "type": "tile",
-                  "entity": "sensor.database"
-                },
-                {
-                  "type": "history-graph",
-                  "entities": [
-                    {
-                      "entity": "sensor.system_monitor_charge_5m"
-                    }
-                  ]
-                },
-                {
-                  "type": "history-graph",
-                  "entities": [
-                    {
-                      "entity": "sensor.system_monitor_utilisation_de_la_memoire"
-                    }
-                  ],
-                  "min_y_axis": 0
-                },
-                {
-                  "type": "custom:stack-in-card",
-                  "title": "Backup",
-                  "cards": [
-                    {
-                      "type": "entities",
-                      "entities": [
-                        {
-                          "attribute": "last_backup",
-                          "entity": "sensor.samba_backup",
-                          "icon": "mdi:file-clock-outline",
-                          "name": "Last Backup Samba",
-                          "type": "attribute"
-                        },
-                        {
-                          "entity": "sensor.samba_backup",
-                          "icon": "mdi:file-replace-outline",
-                          "name": "Backup Samba Status"
-                        },
-                        {
-                          "attribute": "total_backups_failed",
-                          "entity": "sensor.samba_backup",
-                          "icon": "mdi:file-cancel-outline",
-                          "name": "Failed Backups",
-                          "type": "attribute"
-                        }
-                      ],
-                      "show_header_toggle": false
-                    },
-                    {
-                      "type": "custom:button-card",
-                      "name": "Lancer un Backup Samba",
-                      "icon": "mdi:backup-restore",
-                      "size": "40px",
-                      "tap_action": {
-                        "action": "call-service",
-                        "service": "hassio.addon_stdin",
-                        "service_data": {
-                          "addon": "15d21743_samba_backup",
-                          "input": "trigger"
-                        }
-                      }
-                    },
-                    {
-                      "type": "custom:button-card",
-                      "name": "Lancer un Backup local",
-                      "icon": "mdi:backup-restore",
-                      "size": "40px",
-                      "action": "toggle",
-                      "entity": "input_button.backup"
-                    }
-                  ]
+          - type: divider
+          - entity: sensor.puissance_socle
+          - entity: sensor.consommation_suivie
+          - entity: sensor.consommation_non_suivie
+          - type: divider
+          - entity: sensor.mesureur_n1_puissance_a
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if int(states('sensor.mesureur_n1_puissance_a')) | float(0) > 30 %}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ]
-            },
-            {
-              "type": "grid",
-              "cards": [
-                {
-                  "type": "custom:flex-table-card",
-                  "title": "Devices",
-                  "entities": {
-                    "include": "device_tracker.*",
-                    "exclude": "device_tracker.*iphone*"
-                  },
-                  "clickable": true,
-                  "sort": "x.ip+",
-                  "columns": [
-                    {
-                      "name": "Name",
-                      "data": "x.friendly_name",
-                      "modify": "x.friendly_name"
-                    },
-                    {
-                      "name": "IP",
-                      "data": "x.ip",
-                      "modify": "x.ip"
-                    }
-                  ]
-                },
-              ]
-            }
-          ],
-          "max_columns": 4,
-          "title": "Supervision",
-          "cards": [],
-          "icon": "mdi:memory"
-        },
-        {
-          "title": "VOLETS RDC",
-          "icon": "mdi:home-floor-0",
-          "subview": false,
-          "cards": [],
-          "badges": [
-            {
-              "entity": "switch.lumiere_salon"
-            },
-            {
-              "entity": "scene.tout_fermer"
-            },
-            {
-              "entity": "scene.ouvrir_volet"
-            }
-          ],
-          "type": "sections",
-          "sections": [
-            {
-              "type": "grid",
-              "cards": [
-                {
-                  "features": [
-                    {
-                      "type": "cover-open-close"
-                    },
-                    {
-                      "type": "cover-position"
-                    }
-                  ],
-                  "type": "tile",
-                  "entity": "cover.volet_salon",
-                  "color": "primary",
-                  "vertical": true,
-                  "hide_state": false,
-                  "tap_action": {
-                    "action": "more-info"
-                  },
-                  "icon_tap_action": {
-                    "action": "toggle"
-                  }
-                },
-                {
-                  "features": [
-                    {
-                      "type": "cover-open-close"
-                    },
-                    {
-                      "type": "cover-position"
-                    }
-                  ],
-                  "type": "tile",
-                  "color": "primary",
-                  "vertical": true,
-                  "hide_state": false,
-                  "tap_action": {
-                    "action": "more-info"
-                  },
-                  "icon_tap_action": {
-                    "action": "toggle"
-                  },
-                  "entity": "cover.store_salon"
-                },
-                {
-                  "features": [
-                    {
-                      "type": "cover-open-close"
-                    },
-                    {
-                      "type": "cover-position"
-                    }
-                  ],
-                  "type": "tile",
-                  "entity": "cover.volet_couloir",
-                  "color": "primary",
-                  "vertical": true,
-                  "hide_state": false,
-                  "tap_action": {
-                    "action": "more-info"
-                  },
-                  "icon_tap_action": {
-                    "action": "toggle"
-                  }
-                },
-                {
-                  "features": [
-                    {
-                      "type": "cover-open-close"
-                    },
-                    {
-                      "type": "cover-position"
-                    }
-                  ],
-                  "type": "tile",
-                  "entity": "cover.volet_cuisine",
-                  "color": "primary",
-                  "vertical": true,
-                  "hide_state": false,
-                  "tap_action": {
-                    "action": "more-info"
-                  },
-                  "icon_tap_action": {
-                    "action": "toggle"
-                  }
-                },
-                {
-                  "features": [
-                    {
-                      "type": "cover-open-close"
-                    },
-                    {
-                      "type": "cover-position"
-                    }
-                  ],
-                  "type": "tile",
-                  "color": "primary",
-                  "vertical": true,
-                  "hide_state": false,
-                  "tap_action": {
-                    "action": "more-info"
-                  },
-                  "icon_tap_action": {
-                    "action": "toggle"
-                  },
-                  "entity": "cover.store_entree"
-                },
-                {
-                  "features": [
-                    {
-                      "type": "cover-open-close"
-                    },
-                    {
-                      "type": "cover-position"
-                    }
-                  ],
-                  "type": "tile",
-                  "color": "primary",
-                  "vertical": true,
-                  "hide_state": false,
-                  "tap_action": {
-                    "action": "more-info"
-                  },
-                  "icon_tap_action": {
-                    "action": "toggle"
-                  },
-                  "entity": "cover.porte_garage"
+          - entity: sensor.em06_a1_power
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if int(states('sensor.em06_a1_power')) | float(0) > 25 %}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ],
-              "title": "RDC"
-            }
-          ],
-          "max_columns": 4
-        },
-        {
-          "title": "VOLETS ETAGE",
-          "icon": "mdi:home-floor-1",
-          "subview": false,
-          "cards": [],
-          "badges": [
-            {
-              "entity": "scene.tout_fermer"
-            },
-            {
-              "entity": "scene.ouvrir_volet"
-            }
-          ],
-          "type": "sections",
-          "sections": [
-            {
-              "type": "grid",
-              "cards": [
-                {
-                  "features": [
-                    {
-                      "type": "cover-open-close"
-                    },
-                    {
-                      "type": "cover-position"
-                    }
-                  ],
-                  "type": "tile",
-                  "entity": "cover.volet_lisa",
-                  "color": "primary",
-                  "vertical": true,
-                  "hide_state": false,
-                  "tap_action": {
-                    "action": "more-info"
-                  },
-                  "icon_tap_action": {
-                    "action": "toggle"
-                  }
-                },
-                {
-                  "features": [
-                    {
-                      "type": "cover-open-close"
-                    },
-                    {
-                      "type": "cover-position"
-                    }
-                  ],
-                  "type": "tile",
-                  "entity": "cover.volet_leo",
-                  "color": "primary",
-                  "vertical": true,
-                  "hide_state": false,
-                  "tap_action": {
-                    "action": "more-info"
-                  },
-                  "icon_tap_action": {
-                    "action": "toggle"
-                  }
-                },
-                {
-                  "features": [
-                    {
-                      "type": "cover-open-close"
-                    },
-                    {
-                      "type": "cover-position"
-                    }
-                  ],
-                  "type": "tile",
-                  "entity": "cover.volet_parents",
-                  "color": "primary",
-                  "vertical": true,
-                  "hide_state": false,
-                  "tap_action": {
-                    "action": "more-info"
-                  },
-                  "icon_tap_action": {
-                    "action": "toggle"
-                  }
-                },
-                {
-                  "type": "tile",
-                  "entity": "cover.volet_bureau",
-                  "color": "primary",
-                  "vertical": true,
-                  "hide_state": false,
-                  "tap_action": {
-                    "action": "more-info"
-                  },
-                  "icon_tap_action": {
-                    "action": "toggle"
-                  },
-                  "features": [
-                    {
-                      "type": "cover-open-close"
-                    },
-                    {
-                      "type": "cover-position"
-                    }
-                  ]
-                },
-                {
-                  "features": [
-                    {
-                      "type": "cover-open-close"
-                    },
-                    {
-                      "type": "cover-position"
-                    }
-                  ],
-                  "type": "tile",
-                  "entity": "cover.volet_velux_lisa",
-                  "color": "primary",
-                  "vertical": true,
-                  "hide_state": false,
-                  "tap_action": {
-                    "action": "more-info"
-                  },
-                  "icon_tap_action": {
-                    "action": "toggle"
-                  }
-                },
-                {
-                  "features": [
-                    {
-                      "type": "cover-open-close"
-                    },
-                    {
-                      "type": "cover-position"
-                    }
-                  ],
-                  "type": "tile",
-                  "color": "primary",
-                  "vertical": true,
-                  "hide_state": false,
-                  "tap_action": {
-                    "action": "more-info"
-                  },
-                  "icon_tap_action": {
-                    "action": "toggle"
-                  },
-                  "entity": "cover.velux_lisa"
-                },
-                {
-                  "features": [
-                    {
-                      "type": "cover-open-close"
-                    },
-                    {
-                      "type": "cover-position"
-                    }
-                  ],
-                  "type": "tile",
-                  "color": "primary",
-                  "vertical": true,
-                  "hide_state": false,
-                  "tap_action": {
-                    "action": "more-info"
-                  },
-                  "icon_tap_action": {
-                    "action": "toggle"
-                  },
-                  "entity": "cover.velux_bureau"
-                },
-                {
-                  "features": [
-                    {
-                      "type": "cover-open-close"
-                    },
-                    {
-                      "type": "cover-position"
-                    }
-                  ],
-                  "type": "tile",
-                  "entity": "cover.volet_velux_bureau",
-                  "color": "primary",
-                  "vertical": true,
-                  "hide_state": false,
-                  "tap_action": {
-                    "action": "more-info"
-                  },
-                  "icon_tap_action": {
-                    "action": "toggle"
-                  }
+          - entity: sensor.double_clamp_meter_power_b
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if int(states('sensor.double_clamp_meter_power_b')) | float(0) > 20 %}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ]
-            }
-          ],
-          "max_columns": 10
-        },
-        {
-          "title": "Température/Clim",
-          "path": "temperature-clim",
-          "type": "sections",
-          "sections": [
-            {
-              "type": "grid",
-              "cards": [
-                {
-                  "graph": "line",
-                  "type": "sensor",
-                  "detail": 2,
-                  "hours_to_show": 24,
-                  "name": "Lisa",
-                  "entity": "sensor.chambre_lisa_temperature"
-                },
-                {
-                  "type": "tile",
-                  "entity": "climate.clim_lisa",
-                  "show_entity_picture": false,
-                  "vertical": true,
-                  "hide_state": false,
-                  "icon_tap_action": {
-                    "action": "toggle"
-                  },
-                  "icon": "mdi:air-conditioner"
-                },
-                {
-                  "graph": "line",
-                  "type": "sensor",
-                  "detail": 2,
-                  "hours_to_show": 24,
-                  "name": "Léo",
-                  "entity": "sensor.chambre_leo_temperature"
-                },
-                {
-                  "type": "tile",
-                  "entity": "climate.clim_leo",
-                  "show_entity_picture": false,
-                  "vertical": true,
-                  "hide_state": false,
-                  "icon_tap_action": {
-                    "action": "toggle"
-                  },
-                  "icon": "mdi:air-conditioner"
-                },
-                {
-                  "graph": "line",
-                  "type": "sensor",
-                  "detail": 2,
-                  "hours_to_show": 24,
-                  "name": "Entrée",
-                  "entity": "sensor.entree_temperature"
-                },
-                {
-                  "type": "tile",
-                  "entity": "climate.clim_entree",
-                  "show_entity_picture": false,
-                  "vertical": true,
-                  "hide_state": false,
-                  "icon_tap_action": {
-                    "action": "toggle"
-                  },
-                  "icon": "mdi:air-conditioner"
-                },
-                {
-                  "graph": "line",
-                  "type": "sensor",
-                  "detail": 2,
-                  "hours_to_show": 24,
-                  "name": "Parents",
-                  "entity": "sensor.chambre_parents_temperature"
-                },
-                {
-                  "type": "tile",
-                  "show_entity_picture": false,
-                  "vertical": true,
-                  "hide_state": false,
-                  "entity": "climate.clim_parents",
-                  "icon_tap_action": {
-                    "action": "toggle"
-                  },
-                  "icon": "mdi:air-conditioner"
-                },
-                {
-                  "graph": "line",
-                  "type": "sensor",
-                  "detail": 2,
-                  "entity": "sensor.salon_temperature",
-                  "hours_to_show": 24,
-                  "name": "Salon"
-                },
-                {
-                  "graph": "line",
-                  "type": "sensor",
-                  "detail": 2,
-                  "hours_to_show": 24,
-                  "name": "Extérieur",
-                  "entity": "sensor.exterieur_temperature"
-                },
-                {
-                  "graph": "line",
-                  "type": "sensor",
-                  "detail": 2,
-                  "entity": "sensor.ecojoko_temperature_exterieure",
-                  "hours_to_show": 24,
-                  "name": "Garage"
+          - entity: sensor.disjoncteur_sonnette_local_puissance
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if int(states('sensor.disjoncteur_sonnette_local_puissance')) | float(0) > 10 %}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ]
-            },
-            {
-              "type": "grid",
-              "cards": [
-                {
-                  "graph": "line",
-                  "type": "sensor",
-                  "detail": 1,
-                  "entity": "sensor.chambre_lisa_humidite"
-                },
-                {
-                  "graph": "line",
-                  "type": "sensor",
-                  "detail": 1,
-                  "entity": "sensor.chambre_leo_humidite"
-                },
-                {
-                  "graph": "line",
-                  "type": "sensor",
-                  "detail": 1,
-                  "entity": "sensor.chambre_parents_humidite"
-                },
-                {
-                  "graph": "line",
-                  "type": "sensor",
-                  "detail": 1,
-                  "entity": "sensor.salon_humidite"
-                },
-                {
-                  "graph": "line",
-                  "type": "sensor",
-                  "detail": 1,
-                  "entity": "sensor.entree_humidite"
+          - entity: sensor.prises_rdc
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if int(states('sensor.prises_rdc')) | float(0) > 20 %}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ]
-            }
-          ],
-          "max_columns": 4,
-          "icon": "mdi:fan-auto",
-          "cards": []
-        },
-        {
-          "title": "Energie",
-          "path": "energie",
-          "icon": "mdi:lightning-bolt",
-          "cards": [
-            {
-              "type": "gauge",
-              "entity": "sensor.ecojoko_consommation_temps_reel",
-              "max": 4000,
-              "min": 0,
-              "needle": true,
-              "name": "Consommation",
-              "severity": {
-                "green": 0,
-                "yellow": 250,
-                "red": 2000
-              }
-            },
-            {
-              "type": "history-graph",
-              "entities": [
-                {
-                  "entity": "sensor.ecojoko_consommation_temps_reel"
+        state_color: true
+      - show_name: true
+        show_icon: true
+        show_state: false
+        type: glance
+        entities:
+          - entity: input_boolean.ecs
+          - entity: input_boolean.frigo
+          - entity: input_boolean.climatisation
+          - entity: input_boolean.clim_salon
+          - entity: input_boolean.prise_salon
+          - entity: input_boolean.tv
+          - entity: input_boolean.lave_vaisselle
+          - entity: input_boolean.lave_linge
+          - entity: input_boolean.four
+          - entity: input_boolean.plaque
+        state_color: true
+        visibility:
+          - condition: user
+            users: []
+      - type: entities
+        entities:
+          - entity: sensor.em06_b1_power
+            secondary_info: last-updated
+          - entity: sensor.consommation_reseau
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if int(states('sensor.consommation_reseau')) | float(0) == 0 %}
+                    --paper-item-icon-color: #009900;
+                  {% endif %}
                 }
-              ],
-              "hours_to_show": 24
-            },
-            {
-              "type": "history-graph",
-              "entities": [
-                {
-                  "entity": "sensor.double_clamp_meter_power_b"
-                },
-                {
-                  "entity": "sensor.frigo_puissance"
-                },
-                {
-                  "entity": "sensor.disjoncteur_cumulus_puissance"
+          - type: divider
+          - entity: sensor.cumulus_2
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if states('input_boolean.ecs') =='on'%}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ],
-              "hours_to_show": 24
-            },
-            {
-              "type": "history-graph",
-              "entities": [
-                {
-                  "entity": "sensor.ecojoko_consommation_reseau"
+          - entity: sensor.prise_frigo_local_puissance
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if states('input_boolean.frigo') =='on'%}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ],
-              "hours_to_show": 24,
-              "min_y_axis": 0
-            },
-            {
-              "chart_type": "line",
-              "period": "hour",
-              "type": "statistics-graph",
-              "entities": [
-                "sensor.cumulus_3"
-              ],
-              "stat_types": [
-                "mean",
-                "min",
-                "max"
-              ],
-              "title": "Tension",
-              "days_to_show": 7
-            },
-            {
-              "type": "conditional",
-              "conditions": [
-                {
-                  "condition": "numeric_state",
-                  "entity": "sensor.double_clamp_meter_power_a",
-                  "above": 4
+          - entity: sensor.disjoncteur_3_puissance_2
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if states('input_boolean.climatisation') =='on'%}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ],
-              "card": {
-                "show_name": true,
-                "show_icon": false,
-                "type": "button",
-                "tap_action": {
-                  "action": "more-info"
-                },
-                "show_state": true,
-                "entity": "sensor.disjoncteur_cumulus_puissance",
-                "hold_action": {
-                  "action": "none"
-                },
-                "name": "Double Clamp A"
-              }
-            },
-            {
-              "type": "conditional",
-              "conditions": [
-                {
-                  "condition": "numeric_state",
-                  "entity": "sensor.disjoncteur_cumulus_puissance",
-                  "above": 4
+          - entity: sensor.disjoncteur_4_puissance_2
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if states('input_boolean.clim_salon') =='on'%}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ],
-              "card": {
-                "show_name": true,
-                "show_icon": false,
-                "type": "button",
-                "tap_action": {
-                  "action": "more-info"
-                },
-                "show_state": true,
-                "entity": "sensor.disjoncteur_cumulus_puissance",
-                "hold_action": {
-                  "action": "none"
-                },
-                "name": "Cumulus"
-              }
-            },
-            {
-              "type": "conditional",
-              "conditions": [
-                {
-                  "condition": "numeric_state",
-                  "entity": "sensor.frigo_puissance",
-                  "above": 1
+          - entity: sensor.lampe_salon
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if states('input_boolean.prise_salon') =='on'%}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ],
-              "card": {
-                "show_name": true,
-                "show_icon": false,
-                "type": "button",
-                "tap_action": {
-                  "action": "more-info"
-                },
-                "entity": "sensor.frigo_puissance",
-                "show_state": true,
-                "hold_action": {
-                  "action": "none"
+          - entity: sensor.prise_tv_puissance
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if states('input_boolean.tv') =='on'%}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              }
-            },
-            {
-              "type": "conditional",
-              "conditions": [
-                {
-                  "condition": "numeric_state",
-                  "entity": "sensor.double_clamp_meter_power_b",
-                  "above": 18
+          - entity: sensor.prise_lave_linge_local_puissance
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if states('input_boolean.lave_linge') =='on'%}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ],
-              "card": {
-                "show_name": true,
-                "show_icon": false,
-                "type": "button",
-                "tap_action": {
-                  "action": "more-info"
-                },
-                "show_state": true,
-                "hold_action": {
-                  "action": "none"
-                },
-                "name": "Baie Informatique",
-                "entity": "sensor.double_clamp_meter_power_b"
-              }
-            },
-            {
-              "type": "history-graph",
-              "entities": [
-                {
-                  "entity": "sensor.disjoncteur_cumulus_puissance"
-                },
-                {
-                  "entity": "sensor.double_clamp_meter_power_a"
+          - entity: sensor.prise_lave_vaiselle_local_puissance
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if states('input_boolean.lave_vaisselle') =='on'%}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ],
-              "hours_to_show": 24,
-              "min_y_axis": 0
-            },
-            {
-              "type": "custom:energy-flow-card-plus",
-              "entities": {
-                "battery": {
-                  "entity": {
-                    "consumption": "",
-                    "production": ""
-                  }
-                },
-                "grid": {
-                  "entity": {
-                    "consumption": "sensor.double_clamp_meter_total_energy_a"
-                  }
-                },
-                "home": {}
-              },
-              "clickable_entities": true,
-              "display_zero_lines": true,
-              "use_new_flow_rate_model": true,
-              "energy_date_selection": true,
-              "wh_decimals": 1,
-              "kwh_decimals": 0,
-              "min_flow_rate": 1,
-              "max_flow_rate": 6,
-              "max_expected_energy": 2000,
-              "min_expected_energy": 10,
-              "wh_kwh_threshold": 1000
-            }
-          ],
-          "type": "custom:horizontal-layout"
-        },
-        {
-          "title": "Caméras",
-          "path": "cameras",
-          "icon": "mdi:webcam",
-          "cards": [
-            {
-              "show_state": true,
-              "show_name": true,
-              "camera_view": "auto",
-              "type": "picture-entity",
-              "entity": "camera.camera_hub_g2hpro_7273",
-              "camera_image": "camera.camera_hub_g2hpro_7273"
-            },
-            {
-              "show_state": true,
-              "show_name": true,
-              "camera_view": "auto",
-              "type": "picture-entity",
-              "entity": "camera.camera_hub_g3_a121",
-              "camera_image": "camera.camera_hub_g3_a121"
-            }
-          ]
-        },
-        {
-          "title": "Météo",
-          "path": "meteo",
-          "cards": [
-            {
-              "type": "history-graph",
-              "entities": [
-                {
-                  "entity": "sensor.exterieur_temperature"
-                },
-                {
-                  "entity": "sensor.ecojoko_temperature_exterieure"
+          - entity: sensor.em06_b2_power
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if states('input_boolean.four') =='on'%}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ]
-            },
-            {
-              "type": "history-graph",
-              "entities": [
-                {
-                  "entity": "weather.forecast_maison"
+          - entity: sensor.em06_a2_power
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if states('input_boolean.plaque') =='on'%}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ]
-            },
-            {
-              "show_current": true,
-              "show_forecast": true,
-              "type": "weather-forecast",
-              "entity": "weather.forecast_maison",
-              "forecast_type": "hourly",
-              "secondary_info_attribute": "cloud_coverage"
-            },
-            {
-              "type": "history-graph",
-              "entities": [
-                {
-                  "entity": "sensor.energy_production_tomorrow"
-                },
-                {
-                  "entity": "sensor.energy_production_today"
-                },
-                {
-                  "entity": "sensor.energy_current_hour"
-                },
-                {
-                  "entity": "sensor.energy_next_hour"
+          - entity: sensor.bidirectional_energy_meter_power_a
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if states('input_boolean.prises_etage') =='on'%}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ],
-              "hours_to_show": 48
-            }
-          ],
-          "icon": "mdi:white-balance-sunny"
-        },
-        {
-          "title": "Automatisation",
-          "path": "automatisation",
-          "icon": "mdi:home-automation",
-          "cards": [
-            {
-              "type": "entities",
-              "entities": [
-                "input_boolean.automatisation"
-              ]
-            },
-            {
-              "type": "entities",
-              "entities": [
-                "input_boolean.mode_alarme"
-              ]
-            },
-            {
-              "type": "entities",
-              "entities": [
-                "input_button.depart_en_vacances"
-              ],
-              "show_header_toggle": false,
-              "state_color": false
-            },
-            {
-              "type": "entities",
-              "entities": [
-                "input_button.retour_de_vacances"
-              ]
-            },
-            {
-              "type": "entities",
-              "entities": [
-                {
-                  "entity": "switch.cumulus"
-                },
-                {
-                  "entity": "switch.frigo"
+          - entity: sensor.em06_c2_power
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if states('input_boolean.lumieres_rdc') =='on'%}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
+                }   
+          - entity: sensor.bidirectional_energy_meter_power_b
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if states('input_boolean.lumieres_etage') =='on'%}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "mdi:battery-outline",
-          "title": "Batteries",
-          "path": "devices",
-          "cards": [
-            {
-              "type": "custom:battery-state-card"
-            }
-          ]
-        },
-        {
-          "title": "Device",
-          "path": "device",
-          "icon": "mdi:account-group",
-          "cards": [
-            {
-              "type": "custom:mushroom-person-card",
-              "entity": "device_tracker.apple_8d_65_3e",
-              "secondary_info": "last-changed",
-              "fill_container": true,
-              "primary_info": "name",
-              "layout": "vertical",
-              "icon_type": "icon"
-            },
-            {
-              "type": "entity",
-              "entity": "device_tracker.gree_electric_appliances_of_zhuhai_06_04_59",
-              "attribute": "ip",
-              "state_color": true,
-              "icon": "mdi:air-conditioner"
-            },
-            {
-              "type": "entity",
-              "entity": "device_tracker.gree_electric_appliances_of_zhuhai_06_06_43",
-              "attribute": "ip",
-              "state_color": true,
-              "icon": "mdi:air-conditioner"
-            },
-            {
-              "type": "entity",
-              "entity": "device_tracker.gree_electric_appliances_of_zhuhai_06_05_3e",
-              "attribute": "ip",
-              "state_color": true,
-              "icon": "mdi:air-conditioner"
-            },
-            {
-              "type": "custom:bar-card",
-              "entities": [
-                {
-                  "entity": "sensor.chambre_leo_batterie"
-                },
-                {
-                  "entity": "sensor.chambre_lisa_batterie"
-                },
-                {
-                  "entity": "sensor.chambre_parents_batterie"
-                },
-                {
-                  "entity": "sensor.entree_batterie"
-                },
-                {
-                  "entity": "sensor.exterieur_batterie"
-                },
-                {
-                  "entity": "sensor.salon_batterie"
+          - entity: sensor.prise_zigbee_1_power
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if int(states('sensor.prise_zigbee_1_power')) | float(0) > 3 %}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ],
-              "severity": [
-                {
-                  "from": "1",
-                  "to": "20",
-                  "color": "#CC0000"
-                },
-                {
-                  "from": "21",
-                  "to": "50",
-                  "color": "#FF9900"
-                },
-                {
-                  "from": "51",
-                  "to": "80",
-                  "color": "#CCCC66"
-                },
-                {
-                  "from": "81",
-                  "to": "100",
-                  "color": "#66CC00"
+        state_color: true
+      - type: vertical-stack
+        cards:
+          - show_name: true
+            show_icon: true
+            show_state: true
+            title: ECS
+            type: glance
+            entities:
+              - entity: sensor.temps_allumage_ecs_today
+                icon: mdi:water-boiler
+                name: Jour
+              - entity: sensor.temps_allumage_ecs_hier
+                icon: mdi:water-boiler
+                name: Hier
+              - entity: sensor.temps_allumage_ecs_semaine
+                icon: mdi:water-boiler
+                name: Semaine
+              - entity: sensor.temps_allumage_ecs_mois
+                icon: mdi:water-boiler
+                name: Mois
+            state_color: true
+          - show_name: true
+            show_icon: true
+            show_state: true
+            title: Frigo
+            type: glance
+            entities:
+              - entity: sensor.temps_allumage_frigo_today
+                icon: mdi:fridge
+                name: Jour
+              - entity: sensor.temps_allumage_frigo_hier
+                icon: mdi:fridge
+                name: Hier
+              - entity: sensor.temps_allumage_frigo_semaine
+                icon: mdi:fridge
+                name: Semaine
+              - entity: sensor.temps_allumage_frigo_mois
+                icon: mdi:fridge
+                name: Mois
+            state_color: true
+          - show_name: true
+            show_icon: true
+            show_state: true
+            type: glance
+            entities:
+              - entity: sensor.temps_allumage_salon_today
+                icon: mdi:lightbulb
+                name: Jour
+              - entity: sensor.temps_allumage_salon_hier
+                icon: mdi:lightbulb
+                name: Hier
+              - entity: sensor.temps_allumage_salon_semaine
+                icon: mdi:lightbulb
+                name: Semaine
+              - entity: sensor.temps_allumage_salon_mois
+                icon: mdi:lightbulb
+                name: Mois
+            title: Salon
+            state_color: true
+          - show_name: true
+            show_icon: true
+            show_state: true
+            type: glance
+            entities:
+              - entity: sensor.temps_allumage_tv_today
+                icon: mdi:television
+                name: Jour
+              - entity: sensor.temps_allumage_tv_hier
+                icon: mdi:television
+                name: Hier
+              - entity: sensor.temps_allumage_tv_semaine
+                icon: mdi:television
+                name: Semaine
+              - entity: sensor.temps_allumage_tv_mois
+                icon: mdi:television
+                name: Mois
+            title: TV
+            state_color: true
+          - show_name: true
+            show_icon: true
+            show_state: true
+            type: glance
+            entities:
+              - entity: sensor.temps_allumage_ll_today
+                icon: mdi:washing-machine
+                name: Jour
+              - entity: sensor.temps_allumage_ll_hier
+                icon: mdi:washing-machine
+                name: Hier
+              - entity: sensor.temps_allumage_ll_semaine
+                icon: mdi:washing-machine
+                name: Semaine
+              - entity: sensor.temps_allumage_ll_mois
+                icon: mdi:washing-machine
+                name: Mois
+            title: Lave Linge
+            state_color: true
+          - show_name: true
+            show_icon: true
+            show_state: true
+            type: glance
+            entities:
+              - entity: sensor.temps_allumage_lv_today
+                icon: mdi:dishwasher
+                name: Jour
+              - entity: sensor.temps_allumage_lv_hier
+                icon: mdi:dishwasher
+                name: Hier
+              - entity: sensor.temps_allumage_lv_semaine
+                icon: mdi:dishwasher
+                name: Semaine
+              - entity: sensor.temps_allumage_lv_mois
+                icon: mdi:dishwasher
+                name: Mois
+            title: Lave Vaisselle
+            state_color: true
+          - show_name: true
+            show_icon: true
+            show_state: true
+            type: glance
+            entities:
+              - entity: sensor.temps_allumage_four_today
+                icon: mdi:stove
+                name: Jour
+              - entity: sensor.temps_allumage_four_hier
+                icon: mdi:stove
+                name: Hier
+              - entity: sensor.temps_allumage_four_semaine
+                icon: mdi:stove
+                name: Semaine
+              - entity: sensor.temps_allumage_four_mois
+                icon: mdi:stove
+                name: Mois
+            title: Four
+            state_color: true
+      - type: entities
+        entities:
+          - entity: sensor.shelly_em0_power
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if int(states('sensor.shelly_em0_power'))|float(0) > 0 %}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ]
-            },
-            {
-              "type": "custom:layout-card",
-              "layout_type": "masonry",
-              "layout": {},
-              "cards": [
-                {
-                  "show_name": true,
-                  "show_icon": true,
-                  "show_state": true,
-                  "type": "glance",
-                  "entities": [
-                    {
-                      "entity": "device_tracker.gree_electric_appliances_of_zhuhai_06_04_59"
-                    },
-                    {
-                      "entity": "device_tracker.gree_electric_appliances_of_zhuhai_06_06_43"
-                    },
-                    {
-                      "entity": "device_tracker.gree_electric_appliances_of_zhuhai_06_05_47"
-                    },
-                    {
-                      "entity": "device_tracker.gree_electric_appliances_of_zhuhai_06_05_3e"
-                    }
-                  ],
-                  "state_color": true,
-                  "attributes": "ip"
+          - entity: sensor.shelly_em1_power
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if int(states('sensor.shelly_em1_power'))|float(0) > 0 %}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
                 }
-              ]
-            },
-            {
-              "type": "custom:mushroom-climate-card",
-              "entity": "climate.clim_entree",
-              "fill_container": true,
-              "primary_info": "name",
-              "secondary_info": "state",
-              "icon_type": "icon",
-              "hvac_modes": [
-                "auto",
-                "off",
-                "heat",
-                "cool"
-              ],
-              "show_temperature_control": true,
-              "collapsible_controls": false,
-              "icon": "mdi:air-conditioner"
-            },
-            {
-              "type": "custom:layout-card",
-              "layout_type": "masonry",
-              "layout": {},
-              "cards": [
-                {
-                  "type": "custom:mushroom-number-card",
-                  "entity": "number.volet_leo_my_position"
-                },
-                {
-                  "type": "custom:mushroom-number-card",
-                  "entity": "number.volet_lisa_my_position"
-                },
-                {
-                  "type": "custom:mushroom-number-card",
-                  "entity": "number.volet_parents_my_position"
-                },
-                {
-                  "type": "custom:mushroom-number-card",
-                  "entity": "number.volet_bureau_my_position"
-                },
-                {
-                  "type": "custom:mushroom-number-card",
-                  "entity": "number.store_entree_my_position"
-                },
-                {
-                  "type": "custom:mushroom-number-card",
-                  "entity": "number.store_salon_my_position"
-                },
-                {
-                  "type": "custom:mushroom-number-card",
-                  "entity": "number.volet_velux_lisa_my_position"
-                },
-                {
-                  "type": "custom:mushroom-number-card",
-                  "entity": "number.volet_velux_bureau_my_position"
-                },
-                {
-                  "type": "custom:mushroom-number-card",
-                  "entity": "number.volet_couloir_my_position"
-                },
-                {
-                  "type": "custom:mushroom-number-card",
-                  "entity": "number.volet_cuisine_my_position"
+        state_color: true
+  - title: Statistiques
+    path: statistiques
+    icon: mdi:chart-timeline-variant-shimmer
+    cards:
+      - chart_type: bar
+        period: day
+        type: statistics-graph
+        entities:
+          - sensor.duree_cycle_frigo
+        stat_types:
+          - mean
+      - chart_type: bar
+        period: day
+        type: statistics-graph
+        entities:
+          - sensor.cycle_frigo
+        stat_types:
+          - max
+        logarithmic_scale: false
+        days_to_show: 10
+      - type: history-graph
+        entities:
+          - entity: sensor.duree_cycle_frigo_sensor
+        hours_to_show: 24
+      - type: history-graph
+        entities:
+          - entity: input_number.cycles_frigo
+      - type: statistic
+        entity: sensor.duree_cycle_frigo
+        period:
+          calendar:
+            period: week
+        stat_type: mean
+        name: Durée cycle Frigo (s)
+      - type: statistic
+        entity: sensor.cycle_frigo
+        period:
+          calendar:
+            period: week
+        stat_type: mean
+        name: Nb Cycles Frigo moyen (semaine)
+      - chart_type: bar
+        period: day
+        type: statistics-graph
+        entities:
+          - sensor.duree_cycle_ecs
+        stat_types:
+          - max
+      - chart_type: bar
+        period: day
+        type: statistics-graph
+        entities:
+          - sensor.temps_allumage_frigo_today
+        stat_types:
+          - max
+        days_to_show: 30
+      - chart_type: bar
+        period: day
+        type: statistics-graph
+        entities:
+          - sensor.temps_allumage_ecs_today
+        stat_types:
+          - max
+        days_to_show: 30
+      - type: statistic
+        entity: sensor.temps_allumage_frigo_today
+        period:
+          calendar:
+            period: week
+        stat_type: mean
+        name: Temps frigo moyen (semaine)
+      - chart_type: line
+        period: day
+        type: statistics-graph
+        entities:
+          - sensor.thermometre_frigo_temperature
+        days_to_show: 30
+        stat_types:
+          - mean
+  - title: HP/HC
+    path: hp-hc
+    icon: mdi:toggle-switch-variant-off
+    cards:
+      - type: glance
+        entities:
+          - entity: sensor.taux_hc_jour
+          - entity: input_number.taux_hc_j_1
+          - entity: sensor.taux_hc_semaine
+          - entity: sensor.taux_hc_mois
+          - entity: sensor.taux_hc_annee
+      - chart_type: bar
+        period: day
+        type: statistics-graph
+        entities:
+          - sensor.taux_hc_stat
+        stat_types:
+          - mean
+        days_to_show: 10
+        hide_legend: false
+      - chart_type: bar
+        period: hour
+        type: statistics-graph
+        entities:
+          - sensor.energie_consommee_j_hp
+          - sensor.energie_consommee_j_hc
+        stat_types:
+          - state
+        days_to_show: 2
+      - type: history-graph
+        entities:
+          - entity: sensor.taux_hc_sensor
+        hours_to_show: 200
+    badges: []
+  - title: Météo
+    path: meteo
+    cards:
+      - chart_type: line
+        period: hour
+        type: statistics-graph
+        entities:
+          - sensor.solcast_pv_forecast_puissance_en_1_heure
+          - sensor.em06_02_a1_power
+        stat_types:
+          - mean
+        days_to_show: 1
+      - type: history-graph
+        entities:
+          - entity: weather.talence
+      - type: history-graph
+        entities:
+          - entity: binary_sensor.rain_sensor_rain
+      - type: history-graph
+        entities:
+          - sensor.rain_sensor_illuminance
+      - type: history-graph
+        entities:
+          - entity: sensor.exterieur_temperature
+      - type: vertical-stack
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                name: Taux Solar (H-1)
+                entities:
+                  - input_number.taux_solar_h_1
+                decimals: 1
+                height: 0
+                font_size: 80
+                align_state: center
+                align_header: center
+                show:
+                  icon: false
+              - type: custom:mini-graph-card
+                name: Taux Solar (H)
+                entities:
+                  - sensor.taux_solar_heure
+                decimals: 1
+                height: 0
+                font_size: 80
+                align_state: center
+                align_header: center
+                show:
+                  icon: false
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                name: Taux Solar (J)
+                entities:
+                  - sensor.taux_solar_jour
+                decimals: 1
+                height: 0
+                font_size: 80
+                align_state: center
+                align_header: center
+                show:
+                  icon: false
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-entity-card
+                entity: sensor.energie_solar_j
+              - type: custom:mushroom-entity-card
+                entity: sensor.solcast_pv_forecast_previsions_pour_aujourd_hui
+                name: Prévisions Solaire (j)
+          - type: horizontal-stack
+            cards:
+              - type: button
+                entity: sensor.solcast_pv_forecast_previsions_pour_demain
+                name: J + 1
+                show_state: true
+                show_icon: false
+              - type: button
+                entity: sensor.solcast_pv_forecast_prevision_jour_3
+                name: J + 2
+                show_state: true
+                show_icon: false
+              - type: button
+                entity: sensor.solcast_pv_forecast_prevision_jour_4
+                name: J+3
+                show_state: true
+                show_icon: false
+              - type: button
+                entity: sensor.solcast_pv_forecast_prevision_jour_5
+                name: J+4
+                show_state: true
+                show_icon: false
+      - show_current: true
+        show_forecast: true
+        type: weather-forecast
+        entity: weather.talence
+        forecast_type: hourly
+      - chart_type: bar
+        period: day
+        type: statistics-graph
+        entities:
+          - sensor.taux_solar_sensor
+        stat_types:
+          - max
+        days_to_show: 30
+        hide_legend: false
+      - type: custom:apexcharts-card
+        now:
+          show: true
+          label: Now
+          color: red
+        yaxis:
+          - id: value
+            apex_config:
+              forceNiceScale: true
+              max: |
+                EVAL: function(max) { return max }
+              decimalsInFloat: 1
+              axisBorder:
+                show: false
+              title:
+                text: kWh
+                rotate: -90
+                offsetX: 4
+                offsetY: 0
+                style:
+                  fontSize: 11px
+                  font-weight: normal
+        apex_config:
+          chart:
+            height: 300
+            offsetY: 0
+            offsetX: -20
+            redrawOnParentResize: true
+          legend:
+            show: false
+          xaxis:
+            labels:
+              format: dd/MM
+              style:
+                fontSize: 11px
+          fill:
+            type: gradient
+            gradient:
+              type: vertical
+              shadeIntensity: 0
+              inverseColors: false
+              opacityFrom: 0.9
+              opacityTo: 0.7
+              stops:
+                - 1
+        span:
+          start: day
+          offset: +0h
+        graph_span: 5d
+        update_interval: 5min
+        header:
+          show: true
+        series:
+          - entity: sensor.solcast_pv_forecast_previsions_pour_aujourd_hui
+            show:
+              in_header: true
+              legend_value: true
+            name: today
+            yaxis_id: value
+            color: '#ffa600'
+            opacity: 1
+            stroke_width: 1
+            float_precision: 2
+            unit: kWh
+            group_by:
+              fill: zero
+              duration: 60min
+              start_with_last: false
+              func: last
+            data_generator: |
+              return entity.attributes.detailedForecast.map((entry) => {
+                 return [new Date(entry.period_start), entry.pv_estimate];
+               });
+          - entity: sensor.solcast_pv_forecast_previsions_pour_demain
+            show:
+              in_header: false
+              legend_value: false
+            name: Demain
+            yaxis_id: value
+            color: '#ffa600'
+            opacity: 1
+            stroke_width: 1
+            float_precision: 3
+            unit: kWh
+            group_by:
+              fill: zero
+              duration: 60min
+              start_with_last: false
+              func: last
+            data_generator: |
+              return entity.attributes.detailedForecast.map((entry) => {
+                 return [new Date(entry.period_start), entry.pv_estimate];
+               });
+          - entity: sensor.solcast_pv_forecast_prevision_jour_3
+            show:
+              in_header: false
+              legend_value: false
+            name: J+2
+            yaxis_id: value
+            color: '#ffa600'
+            opacity: 1
+            stroke_width: 1
+            float_precision: 3
+            unit: kWh
+            group_by:
+              fill: zero
+              duration: 60min
+              start_with_last: false
+              func: last
+            data_generator: |
+              return entity.attributes.detailedForecast.map((entry) => {
+                 return [new Date(entry.period_start), entry.pv_estimate];
+               });
+          - entity: sensor.solcast_pv_forecast_prevision_jour_4
+            show:
+              in_header: false
+              legend_value: false
+            name: J+3
+            yaxis_id: value
+            color: '#ffa600'
+            opacity: 1
+            stroke_width: 1
+            float_precision: 3
+            unit: kWh
+            group_by:
+              fill: zero
+              duration: 60min
+              start_with_last: false
+              func: last
+            data_generator: |
+              return entity.attributes.detailedForecast.map((entry) => {
+                 return [new Date(entry.period_start), entry.pv_estimate];
+               });              
+          - entity: sensor.solcast_pv_forecast_prevision_jour_5
+            show:
+              in_header: false
+              legend_value: false
+            name: J+4
+            yaxis_id: value
+            color: '#ffa600'
+            opacity: 1
+            stroke_width: 1
+            float_precision: 3
+            unit: kWh
+            group_by:
+              fill: zero
+              duration: 60min
+              start_with_last: false
+              func: last
+            data_generator: |
+              return entity.attributes.detailedForecast.map((entry) => {
+                 return [new Date(entry.period_start), entry.pv_estimate];
+               });
+          - entity: sensor.solcast_pv_forecast_prevision_jour_6
+            show:
+              in_header: false
+              legend_value: false
+            name: J+5
+            yaxis_id: value
+            color: '#ffa600'
+            opacity: 1
+            stroke_width: 1
+            float_precision: 3
+            unit: kWh
+            group_by:
+              fill: zero
+              duration: 60min
+              start_with_last: false
+              func: last
+            data_generator: |
+              return entity.attributes.detailedForecast.map((entry) => {
+                 return [new Date(entry.period_start), entry.pv_estimate];
+               });              
+          - entity: sensor.solcast_pv_forecast_prevision_jour_7
+            show:
+              in_header: false
+              legend_value: false
+            name: J+6
+            yaxis_id: value
+            color: '#ffa600'
+            opacity: 1
+            stroke_width: 1
+            float_precision: 3
+            unit: kWh
+            group_by:
+              fill: zero
+              duration: 60min
+              start_with_last: false
+              func: last
+            data_generator: |
+              return entity.attributes.detailedForecast.map((entry) => {
+                 return [new Date(entry.period_start), entry.pv_estimate];
+               });
+      - chart_type: bar
+        period: day
+        type: statistics-graph
+        entities:
+          - sensor.em06_02_a1_power
+          - sensor.solcast_pv_forecast_previsions_du_pic_aujourd_hui
+        stat_types:
+          - max
+        days_to_show: 10
+        title: Production Max
+      - chart_type: bar
+        period: day
+        type: statistics-graph
+        entities:
+          - sensor.energie_solar_j
+          - sensor.solcast_pv_forecast_previsions_pour_aujourd_hui
+        title: Énergie Produite
+        days_to_show: 10
+        stat_types:
+          - state
+    icon: mdi:white-balance-sunny
+  - icon: mdi:solar-panel
+    path: panneaux
+    title: Panneaux
+    cards:
+      - type: entities
+        entities:
+          - entity: sensor.estar_centrale
+            secondary_info: last-changed
+          - entity: sensor.estar_centrale_power
+            secondary_info: last-changed
+          - entity: sensor.estar_maj_data
+          - type: divider
+          - entity: binary_sensor.estar_dcu
+            secondary_info: last-changed
+          - type: attribute
+            entity: sensor.estar_dcu
+            attribute: model_no
+          - type: divider
+          - entity: binary_sensor.estar_mo1
+            secondary_info: last-changed
+          - type: attribute
+            entity: sensor.estar_mo1
+            attribute: model_no
+          - entity: binary_sensor.estar_mo2
+            secondary_info: last-changed
+          - type: attribute
+            entity: sensor.estar_mo2
+            attribute: model_no
+          - entity: binary_sensor.estar_mo3
+            secondary_info: last-changed
+          - type: attribute
+            entity: sensor.estar_mo3
+            attribute: model_no
+          - entity: binary_sensor.estar_mo4
+            secondary_info: last-changed
+          - type: attribute
+            entity: sensor.estar_mo4
+            attribute: model_no
+          - type: divider
+          - entity: sensor.estar_url
+            secondary_info: last-changed
+          - entity: sensor.estar_data
+            secondary_info: last-changed
+          - type: divider
+          - entity: sensor.estar_token
+            secondary_info: last-changed
+          - entity: input_text.estar_token_input
+            secondary_info: last-changed
+          - entity: input_text.estar_url
+            secondary_info: last-changed
+          - type: divider
+          - type: custom:button-card
+            name: Ouvrir le site WEB
+            tap_action:
+              action: url
+              url_path: https://monitor.estarpower.com/platform/login
+          - type: divider
+          - type: custom:button-card
+            name: Relancer REST
+            icon: mdi:backup-restore
+            size: 30px
+            tap_action:
+              action: call-service
+              service: rest.reload
+        state_color: true
+  - background:
+      image: /api/image/serve/0643e33258f2b97be2e5ea0596f0e129/original
+    cards: []
+    icon: mdi:alert-circle-check-outline
+    type: sections
+    max_columns: 3
+    dense_section_placement: false
+    sections:
+      - type: grid
+        cards:
+          - type: entities
+            entities:
+              - type: divider
+              - entity: device_tracker.chengdu_meross_technology_e9_2c_ef
+                secondary_info: last-updated
+              - type: divider
+              - entity: sensor.em06_b1_voltage
+                secondary_info: last-updated
+                name: Tension EM06-01
+              - type: divider
+              - entity: device_tracker.chengdu_meross_technology_e9_27_42
+                secondary_info: last-updated
+              - type: divider
+              - entity: sensor.em06_02_b1_voltage
+                secondary_info: last-updated
+                name: Tension EM06-02
+              - type: divider
+              - type: custom:button-card
+                name: Relancer REFOSS
+                tap_action:
+                  action: call-service
+                  service: homeassistant.reload_config_entry
+                  data:
+                    entity_id: sensor.em06_b1_voltage
+              - type: divider
+            state_color: true
+            title: REFOSS
+          - type: entities
+            entities:
+              - type: divider
+              - entity: device_tracker.espressif_e6_96_44
+                secondary_info: last-updated
+              - type: divider
+              - entity: sensor.shelly_em0_voltage
+                secondary_info: last-updated
+                name: Tension EM0
+              - type: divider
+              - entity: sensor.shelly_em1_voltage
+                secondary_info: last-updated
+                name: Tension EM0
+              - type: divider
+              - type: custom:button-card
+                name: Relancer SHELLY
+                tap_action:
+                  action: call-service
+                  service: homeassistant.reload_config_entry
+                  data:
+                    entity_id: sensor.shelly_em1_voltage
+            state_color: true
+            title: SHELLY
+          - type: entities
+            entities:
+              - type: divider
+              - entity: device_tracker.192_168_1_138
+                secondary_info: last-updated
+              - type: divider
+              - entity: device_tracker.tp_link_limited_35_d7_30
+                secondary_info: last-updated
+              - entity: device_tracker.tp_link_limited_35_d3_e4
+                secondary_info: last-updated
+              - type: divider
+              - entity: sensor.m5_vitesse_de_telechargement
+                secondary_info: last-updated
+                name: Download
+              - type: divider
+              - entity: sensor.m5_vitesse_de_telechargement_montant
+                secondary_info: last-updated
+                name: Upload
+              - type: divider
+              - type: custom:button-card
+                name: Relancer M5
+                tap_action:
+                  action: call-service
+                  service: homeassistant.reload_config_entry
+                  data:
+                    entity_id: sensor.m5_vitesse_de_telechargement
+            state_color: true
+            title: DECO M5
+        column_span: 1
+      - type: grid
+        cards:
+          - type: entities
+            entities:
+              - type: divider
+              - entity: device_tracker.tuya_smart_inc_91_29_af
+                secondary_info: last-updated
+              - type: divider
+              - entity: sensor.disjoncteur_cumulus_tension
+                secondary_info: last-updated
+                name: CLOUD
+                icon: mdi:cloud-outline
+              - type: divider
+              - entity: sensor.cumulus_3
+                secondary_info: last-updated
+                name: LOCAL
+                icon: mdi:network-outline
+              - type: divider
+              - entity: device_tracker.tuya_smart_inc_83_71_a4
+                secondary_info: last-updated
+              - type: divider
+              - entity: sensor.disjoncteur_frigo_tension
+                secondary_info: last-updated
+                name: CLOUD
+                icon: mdi:cloud-outline
+              - type: divider
+              - entity: sensor.disjoncteur_sonnette_local_tension
+                secondary_info: last-updated
+                name: LOCAL
+                icon: mdi:network-outline
+              - type: divider
+              - entity: device_tracker.tuya_smart_fe_80_4e
+                secondary_info: last-updated
+              - type: divider
+              - entity: sensor.disjoncteur_3_tension
+                secondary_info: last-updated
+                name: CLOUD
+                icon: mdi:cloud-outline
+              - type: divider
+              - entity: sensor.disjoncteur_3_tension_2
+                name: LOCAL
+                icon: mdi:network-outline
+                secondary_info: last-updated
+              - type: divider
+              - entity: device_tracker.tuya_smart_fe_77_9a
+                secondary_info: last-updated
+              - type: divider
+              - entity: sensor.disjoncteur_4_tension
+                secondary_info: last-updated
+                name: CLOUD
+                icon: mdi:cloud-outline
+              - type: divider
+              - entity: sensor.disjoncteur_4_tension_2
+                name: LOCAL
+                icon: mdi:network-outline
+                secondary_info: last-updated
+              - type: divider
+              - type: custom:button-card
+                name: Relancer CLOUD
+                tap_action:
+                  action: call-service
+                  service: homeassistant.reload_config_entry
+                  data:
+                    entity_id: sensor.disjoncteur_4_tension
+              - type: custom:button-card
+                name: Relancer LOCAL
+                tap_action:
+                  action: call-service
+                  service: homeassistant.reload_config_entry
+                  data:
+                    label_id: tuya_local
+            state_color: true
+            title: TUYA
+      - type: grid
+        cards:
+          - type: entities
+            entities:
+              - type: divider
+              - entity: device_tracker.espressif_inc_06_04_8c
+                secondary_info: last-updated
+              - type: divider
+              - entity: sensor.ecojoko
+              - type: divider
+              - entity: sensor.ecojoko_consommation_temps_reel
+                secondary_info: last-updated
+                name: EcoJoko
+              - type: divider
+              - type: custom:button-card
+                name: Relancer ECOJOKO
+                icon: mdi:backup-restore
+                size: 30px
+                tap_action:
+                  action: call-service
+                  service: homeassistant.reload_config_entry
+                  data:
+                    entity_id: sensor.ecojoko_consommation_temps_reel
+            state_color: true
+            title: ECOJOKO
+          - type: markdown
+            content: >
+              Ecojoko Consommation tempsreel : {% set seconds_difference =
+              (as_timestamp(now()) -
+              as_timestamp(states.sensor.ecojoko_consommation_temps_reel.last_updated))
+              %} {{seconds_difference | int}} sec
+          - type: entities
+            entities:
+              - type: divider
+              - entity: device_tracker.hunan_fn_link_technology_limited_f5_fc_c4
+                secondary_info: last-updated
+              - type: divider
+              - entity: switch.lumiere_salon
+                secondary_info: last-updated
+                name: Tahoma Switch
+              - type: divider
+              - type: custom:button-card
+                name: Relancer TAHOMA
+                tap_action:
+                  action: call-service
+                  service: homeassistant.reload_config_entry
+                  data:
+                    entity_id: switch.lumiere_salon
+            state_color: true
+            title: TAHOMA
+          - type: entities
+            entities:
+              - type: divider
+              - entity: device_tracker.espressif_cf_24_9c
+                secondary_info: last-updated
+              - type: divider
+              - entity: sensor.chambre_leo_temperature
+                secondary_info: last-updated
+                name: Chambre Léo
+              - entity: sensor.chambre_lisa_temperature
+                secondary_info: last-updated
+                name: Chambre Lisa
+              - entity: sensor.chambre_parents_temperature
+                secondary_info: last-updated
+                name: Chambre Parents
+              - entity: sensor.entree_temperature
+                secondary_info: last-updated
+                name: Entrée
+              - entity: sensor.salon_temperature
+                secondary_info: last-updated
+                name: Salon
+              - entity: sensor.exterieur_temperature
+                secondary_info: last-updated
+                name: Exterieur
+              - entity: sensor.thermometre_frigo_temperature
+                secondary_info: last-updated
+                name: Frigo
+              - type: divider
+              - type: custom:button-card
+                name: Relancer SWITCHBOT
+                tap_action:
+                  action: call-service
+                  service: homeassistant.reload_config_entry
+                  data:
+                    label_id: switchbot
+            state_color: true
+            title: SwitchBot
+  - type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: tile
+            entity: sensor.system_monitor_adresse_ipv4_enp0s1
+          - type: tile
+            entity: sensor.myip
+          - type: history-graph
+            entities:
+              - entity: sensor.system_monitor_adresse_ipv4_enp0s1
+              - entity: sensor.myip
+            title: IP Locale
+            hours_to_show: 4
+          - graph: none
+            type: sensor
+            entity: sensor.m5_vitesse_de_telechargement
+            detail: 1
+            name: Download
+          - graph: none
+            type: sensor
+            entity: sensor.m5_vitesse_de_telechargement_montant
+            detail: 1
+            name: Upload
+          - type: history-graph
+            entities:
+              - entity: sensor.m5_vitesse_de_telechargement
+              - entity: sensor.m5_vitesse_de_telechargement_montant
+            hours_to_show: 24
+          - type: tile
+            vertical: false
+            entity: sensor.uptime
+            layout_options:
+              grid_columns: 4
+              grid_rows: 1
+      - type: grid
+        cards:
+          - type: tile
+            entity: sensor.system_monitor_memoire_utilisee
+          - type: tile
+            entity: sensor.system_monitor_utilisation_de_la_memoire
+            name: Utilisation Mémoire
+            card_mod:
+              style: |
+                ha-card {
+                    {% set level = int(states('sensor.system_monitor_utilisation_de_la_memoire')) %}
+                    {% if level >= 50 %}
+                      --tile-color: red !important;
+                    {% elif level >= 25 %}
+                      --tile-color: orange !important;
+                    {% else %}
+                      --tile-color: green !important;
+                    {% endif %}
+                }         
+          - type: tile
+            entity: sensor.system_monitor_espace_d_echange_libre
+          - type: tile
+            entity: sensor.system_monitor_utilisation_du_disque
+            name: Utilisation Disque
+            card_mod:
+              style: |
+                ha-card {
+                    {% set level = int(states('sensor.system_monitor_utilisation_du_disque')) %}
+                    {% if level > 80 %}
+                      --tile-color: red !important;
+                    {% elif level > 50 %}
+                      --tile-color: orange !important;
+                    {% else %}
+                      --tile-color: green !important;
+                    {% endif %}
+                }         
+          - type: tile
+            entity: sensor.home_assistant_v2_db_taille
+            name: Home Assistant
+          - type: tile
+            entity: sensor.database
+          - type: history-graph
+            entities:
+              - entity: sensor.system_monitor_charge_5m
+          - type: history-graph
+            entities:
+              - entity: sensor.system_monitor_utilisation_de_la_memoire
+            min_y_axis: 0
+          - type: history-graph
+            entities:
+              - entity: sensor.uptime
+            hours_to_show: 24
+          - type: history-graph
+            entities:
+              - entity: sensor.double_clamp_meter_power_b
+            min_y_axis: 0
+            fit_y_data: false
+            max_y_axis: 40
+          - type: custom:stack-in-card
+            title: Backup Google Drive
+            cards:
+              - type: entities
+                entities:
+                  - entity: binary_sensor.backups_stale
+                    name: Backup Status
+                    card_mod:
+                      style: |
+                        :host {
+                            {% set level = states('binary_sensor.backups_stale') %}
+                            {% if level == "off" %}
+                              --card-mod-icon-color: green;
+                            {% else %}
+                              --card-mod-icon-color: red;
+                            {% endif %}
+                        }         
+                  - attribute: last_backup
+                    entity: sensor.backup_state
+                    icon: mdi:file-clock-outline
+                    name: Last Backup
+                    type: attribute
+                  - attribute: size_in_home_assistant
+                    entity: sensor.backup_state
+                    icon: mdi:harddisk
+                    name: Taille Home Assistant
+                    type: attribute
+                  - attribute: size_in_google_drive
+                    entity: sensor.backup_state
+                    icon: mdi:folder-google-drive
+                    name: Taille Drive
+                    type: attribute
+                  - attribute: free_space_in_google_drive
+                    entity: sensor.backup_state
+                    icon: mdi:google-drive
+                    name: Espace Drive
+                    type: attribute
+                show_header_toggle: false
+              - type: custom:button-card
+                name: Lancer un Backup Google
+                icon: mdi:backup-restore
+                size: 40px
+                tap_action:
+                  action: call-service
+                  service: hassio.addon_stdin
+                  service_data:
+                    addon: null
+                    input: trigger
+              - type: custom:button-card
+                name: Lancer un Backup local
+                icon: mdi:backup-restore
+                size: 40px
+                action: toggle
+                entity: input_button.backup
+      - type: grid
+        cards:
+          - type: custom:flex-table-card
+            title: Devices
+            entities:
+              include: device_tracker.*
+            clickable: true
+            sort: x.ip+
+            columns:
+              - name: Name
+                data: friendly_name
+              - name: IP
+                data: ip
+              - name: MAC
+                data: mac
+              - name: Date
+                data: last_time_reachable
+    max_columns: 4
+    title: Supervision
+    cards: []
+    icon: mdi:memory
+  - title: Automatisation
+    path: automatisation
+    icon: mdi:home-automation
+    cards:
+      - type: entities
+        entities:
+          - input_boolean.automatisation
+      - type: entities
+        entities:
+          - input_boolean.mode_alarme
+      - type: entities
+        entities:
+          - input_button.depart_en_vacances
+        show_header_toggle: false
+        state_color: false
+      - type: entities
+        entities:
+          - input_button.retour_de_vacances
+      - type: entities
+        entities:
+          - entity: switch.cumulus
+            name: Cumulus
+            icon: mdi:water-boiler
+          - entity: switch.prise_frigo_local
+            icon: mdi:fridge
+            name: Frigo
+          - entity: switch.prise_lave_vaisselle_local
+            name: Lave Vaisselle
+            icon: mdi:dishwasher
+          - entity: switch.prise_lave_linge_local
+            name: Lave Linge
+            icon: mdi:washing-machine
+          - entity: switch.prise_tv_local
+            name: Télévision
+            icon: mdi:television
+          - entity: switch.disjoncteur_sonnette_local_none
+            name: Sonnette
+            icon: mdi:doorbell-video
+          - entity: switch.shelly_em_switch
+          - entity: switch.disjoncteur_3_none
+            name: Clim Chambres
+            icon: mdi:thermometer-lines
+          - entity: switch.disjoncteur_4_none
+            name: Clim Salon
+            icon: mdi:thermometer-lines
+  - title: VOLETS RDC
+    icon: mdi:home-floor-0
+    subview: false
+    cards: []
+    badges:
+      - entity: switch.lumiere_salon
+      - entity: scene.tout_fermer
+      - entity: scene.ouvrir_volet
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: RDC
+          - features:
+              - type: cover-open-close
+              - type: cover-position
+            type: tile
+            entity: cover.volet_salon
+            color: primary
+            vertical: true
+            hide_state: false
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: toggle
+          - features:
+              - type: cover-open-close
+              - type: cover-position
+            type: tile
+            color: primary
+            vertical: true
+            hide_state: false
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: toggle
+            entity: cover.store_salon
+          - features:
+              - type: cover-open-close
+              - type: cover-position
+            type: tile
+            entity: cover.volet_couloir
+            color: primary
+            vertical: true
+            hide_state: false
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: toggle
+          - features:
+              - type: cover-open-close
+              - type: cover-position
+            type: tile
+            entity: cover.volet_cuisine
+            color: primary
+            vertical: true
+            hide_state: false
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: toggle
+          - features:
+              - type: cover-open-close
+              - type: cover-position
+            type: tile
+            color: primary
+            vertical: true
+            hide_state: false
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: toggle
+            entity: cover.store_entree
+          - features:
+              - type: cover-open-close
+              - type: cover-position
+            type: tile
+            color: primary
+            vertical: true
+            hide_state: false
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: toggle
+            entity: cover.porte_garage
+    max_columns: 4
+  - title: VOLETS ETAGE
+    icon: mdi:home-floor-1
+    subview: false
+    cards: []
+    badges:
+      - entity: scene.tout_fermer
+      - entity: scene.ouvrir_volet
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - features:
+              - type: cover-open-close
+              - type: cover-position
+            type: tile
+            entity: cover.volet_lisa
+            color: primary
+            vertical: true
+            hide_state: false
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: toggle
+          - features:
+              - type: cover-open-close
+              - type: cover-position
+            type: tile
+            entity: cover.volet_leo
+            color: primary
+            vertical: true
+            hide_state: false
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: toggle
+          - features:
+              - type: cover-open-close
+              - type: cover-position
+            type: tile
+            entity: cover.volet_parents
+            color: primary
+            vertical: true
+            hide_state: false
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: toggle
+          - type: tile
+            entity: cover.volet_bureau
+            color: primary
+            vertical: true
+            hide_state: false
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: toggle
+            features:
+              - type: cover-open-close
+              - type: cover-position
+          - features:
+              - type: cover-open-close
+              - type: cover-position
+            type: tile
+            entity: cover.volet_velux_lisa
+            color: primary
+            vertical: true
+            hide_state: false
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: toggle
+          - features:
+              - type: cover-open-close
+              - type: cover-position
+            type: tile
+            color: primary
+            vertical: true
+            hide_state: false
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: toggle
+            entity: cover.velux_lisa
+          - features:
+              - type: cover-open-close
+              - type: cover-position
+            type: tile
+            color: primary
+            vertical: true
+            hide_state: false
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: toggle
+            entity: cover.velux_bureau
+          - features:
+              - type: cover-open-close
+              - type: cover-position
+            type: tile
+            color: primary
+            vertical: true
+            hide_state: false
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: toggle
+            entity: cover.volet_velux_bureau
+          - features:
+              - type: cover-open-close
+              - type: cover-position
+            type: tile
+            color: primary
+            vertical: true
+            hide_state: false
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: toggle
+            entity: cover.fenetre_salle_de_bains
+          - features:
+              - type: cover-open-close
+              - type: cover-position
+            type: tile
+            color: primary
+            vertical: true
+            hide_state: false
+            tap_action:
+              action: more-info
+            icon_tap_action:
+              action: toggle
+            entity: cover.volet_velux_salle_de_bains
+    max_columns: 10
+  - title: Température/Clim
+    path: temperature-clim
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - graph: line
+            type: sensor
+            detail: 2
+            hours_to_show: 24
+            name: Lisa
+            entity: sensor.chambre_lisa_temperature
+          - type: tile
+            entity: climate.clim_lisa
+            show_entity_picture: false
+            vertical: true
+            hide_state: false
+            icon_tap_action:
+              action: toggle
+            icon: mdi:air-conditioner
+            state_content:
+              - state
+              - last_changed
+            features:
+              - type: target-temperature
+          - graph: line
+            type: sensor
+            detail: 2
+            hours_to_show: 24
+            name: Léo
+            entity: sensor.chambre_leo_temperature
+          - type: tile
+            entity: climate.clim_leo
+            show_entity_picture: false
+            vertical: true
+            hide_state: false
+            icon_tap_action:
+              action: toggle
+            icon: mdi:air-conditioner
+          - graph: line
+            type: sensor
+            detail: 2
+            hours_to_show: 24
+            name: Entrée
+            entity: sensor.entree_temperature
+          - type: tile
+            entity: climate.clim_entree
+            show_entity_picture: false
+            vertical: true
+            hide_state: false
+            icon_tap_action:
+              action: toggle
+            icon: mdi:air-conditioner
+          - graph: line
+            type: sensor
+            detail: 2
+            hours_to_show: 24
+            name: Parents
+            entity: sensor.chambre_parents_temperature
+          - type: tile
+            show_entity_picture: false
+            vertical: true
+            hide_state: false
+            entity: climate.clim_parents
+            icon_tap_action:
+              action: toggle
+            icon: mdi:air-conditioner
+          - graph: line
+            type: sensor
+            detail: 2
+            entity: sensor.salon_temperature
+            hours_to_show: 24
+            name: Salon
+          - graph: line
+            type: sensor
+            detail: 2
+            hours_to_show: 24
+            name: Extérieur
+            entity: sensor.exterieur_temperature
+          - graph: line
+            type: sensor
+            detail: 2
+            entity: sensor.ecojoko_temperature_exterieure
+            hours_to_show: 24
+            name: Garage
+          - graph: line
+            type: sensor
+            detail: 2
+            hours_to_show: 24
+            name: Cuisine
+            entity: sensor.capteur_frigo_temperature
+          - graph: line
+            type: sensor
+            detail: 2
+            hours_to_show: 24
+            name: Frigo
+            entity: sensor.thermometre_frigo_temperature
+      - type: grid
+        cards:
+          - graph: line
+            type: sensor
+            detail: 1
+            entity: sensor.chambre_lisa_humidite
+          - graph: line
+            type: sensor
+            detail: 1
+            entity: sensor.chambre_leo_humidite
+          - graph: line
+            type: sensor
+            detail: 1
+            entity: sensor.chambre_parents_humidite
+          - graph: line
+            type: sensor
+            detail: 1
+            entity: sensor.salon_humidite
+          - graph: line
+            type: sensor
+            detail: 1
+            entity: sensor.entree_humidite
+      - type: grid
+        cards:
+          - type: custom:layout-card
+            layout_type: masonry
+            layout: {}
+            cards:
+              - type: entities
+                entities:
+                  - climate.clim_leo
+                  - sensor.chambre_leo_temperature
+                  - climate.clim_lisa
+                  - sensor.chambre_lisa_temperature
+                  - climate.clim_entree
+                  - sensor.entree_temperature
+                  - climate.clim_parents
+                  - sensor.chambre_parents_temperature
+      - type: grid
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: vertical-stack
+                cards:
+                  - graph: line
+                    type: sensor
+                    detail: 2
+                    hours_to_show: 24
+                    entity: sensor.meter_plus_16c6
+                  - graph: line
+                    type: sensor
+                    detail: 2
+                    hours_to_show: 24
+                    entity: sensor.meter_plus_d2cd
+                  - graph: line
+                    type: sensor
+                    detail: 2
+                    hours_to_show: 24
+                    entity: sensor.meter_plus_938f
+                  - graph: line
+                    type: sensor
+                    detail: 2
+                    hours_to_show: 24
+                    entity: sensor.meter_plus_6b44
+              - type: vertical-stack
+                cards:
+                  - graph: line
+                    type: sensor
+                    detail: 2
+                    hours_to_show: 24
+                    entity: sensor.meter_plus_e778
+                  - graph: line
+                    type: sensor
+                    detail: 2
+                    hours_to_show: 24
+                    entity: sensor.indoor_outdoor_meter_6a71
+                  - graph: line
+                    type: sensor
+                    detail: 2
+                    hours_to_show: 24
+                    entity: sensor.indoor_outdoor_meter_510d
+    max_columns: 4
+    icon: mdi:fan-auto
+    cards: []
+  - title: Caméras
+    path: cameras
+    icon: mdi:webcam
+    cards:
+      - show_state: true
+        show_name: true
+        camera_view: auto
+        type: picture-entity
+        entity: camera.camera_hub_g2hpro_7273
+        camera_image: camera.camera_hub_g2hpro_7273
+      - show_state: true
+        show_name: true
+        camera_view: auto
+        type: picture-entity
+        entity: camera.camera_hub_g3_a121
+        camera_image: camera.camera_hub_g3_a121
+  - icon: mdi:battery-outline
+    title: Batteries
+    path: devices
+    cards:
+      - type: custom:battery-state-card
+  - title: Device
+    path: device
+    icon: mdi:account-group
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-person-card
+                entity: device_tracker.iphone_de_mat
+                secondary_info: last-changed
+                fill_container: true
+                primary_info: name
+                layout: vertical
+                icon_type: icon
+              - type: custom:mushroom-person-card
+                entity: device_tracker.apple_8d_65_3e
+                secondary_info: last-changed
+                fill_container: true
+                primary_info: name
+                layout: vertical
+                icon_type: icon
+              - type: history-graph
+                entities:
+                  - entity: device_tracker.iphone_de_mat
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-person-card
+                entity: device_tracker.nmap_tracker_72_41_95_68_25_16
+                secondary_info: last-changed
+                fill_container: true
+                primary_info: name
+                layout: vertical
+                icon_type: icon
+              - type: custom:mushroom-person-card
+                entity: device_tracker.apple_a9_f1_0a
+                secondary_info: last-changed
+                fill_container: true
+                primary_info: name
+                layout: vertical
+                icon_type: icon
+              - type: history-graph
+                entities:
+                  - entity: device_tracker.nmap_tracker_72_41_95_68_25_16
+  - title: Ping
+    path: ping
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.176_129_131_234_temps_daller_retour_maximum
+                name: Internet
+                height: 50
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.8_8_8_8_temps_daller_retour_maximum
+                name: DNS
+                height: 50
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.192_168_1_138_temps_daller_retour_maximum
+                name: DECO LAN
+                height: 50
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.192_168_1_254_temps_daller_retour_maximum
+                name: BBOX
+                height: 50
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.192_168_1_84_temps_daller_retour_maximum
+                name: NUC ETH1
+                height: 50
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.192_168_68_1_temps_daller_retour_maximum
+                name: DECO Entrée
+                height: 50
+          - type: horizontal-stack
+            cards:
+              - type: custom:mini-graph-card
+                entities:
+                  - sensor.192_168_68_250_temps_daller_retour_maximum
+                name: DECO Salon
+                height: 50
+  - title: ULANZI
+    path: ulanzi
+    icon: mdi:overscan
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: entities
+            entities:
+              - entity: input_number.test_level_1
+                name: Echelle
+          - type: iframe
+            url: http://192.168.68.130/screen
+            aspect_ratio: 33%
+            visibility:
+              - condition: state
+                entity: light.awtrix_matrix
+                state: 'on'
+            card_mod:
+              style: |
+                div#root iframe  {
+                  transform: scale({{states("input_number.test_level_1")|float / 100|float}});
+                  transform-origin: 0 0;
+                  width: 1000px;
+                  height: 320px;
                 }
-              ]
-            },
-            {
-              "type": "custom:bar-card",
-              "entities": [
-                {
-                  "entity": "number.volet_lisa_my_position"
-                },
-                {
-                  "entity": "number.volet_leo_my_position"
-                },
-                {
-                  "entity": "number.volet_parents_my_position"
-                },
-                {
-                  "entity": "number.volet_salon_my_position"
-                },
-                {
-                  "entity": "number.volet_couloir_my_position"
-                },
-                {
-                  "entity": "number.volet_salon_my_position"
-                },
-                {
-                  "entity": "number.store_entree_my_position"
-                },
-                {
-                  "entity": "number.store_salon_my_position"
-                },
-                {
-                  "entity": "number.volet_velux_lisa_my_position"
-                },
-                {
-                  "entity": "number.volet_velux_bureau_my_position"
-                }
-              ],
-              "severity": [
-                {
-                  "from": "1",
-                  "to": "20",
-                  "color": "#CC0000"
-                },
-                {
-                  "from": "21",
-                  "to": "50",
-                  "color": "#FF9900"
-                },
-                {
-                  "from": "51",
-                  "to": "80",
-                  "color": "#CCCC66"
-                },
-                {
-                  "from": "81",
-                  "to": "100",
-                  "color": "#66CC00"
-                }
-              ]
-            },
-            {
-              "type": "custom:layout-card",
-              "layout_type": "masonry",
-              "layout": {},
-              "cards": [
-                {
-                  "type": "entities",
-                  "entities": [
-                    "climate.clim_leo",
-                    "sensor.chambre_leo_temperature",
-                    "climate.clim_lisa",
-                    "sensor.chambre_lisa_temperature",
-                    "climate.clim_entree",
-                    "sensor.entree_temperature",
-                    "climate.clim_parents",
-                    "sensor.chambre_parents_temperature"
-                  ],
-                  "attributes": "ip"
-                },
-                {
-                  "type": "entities",
-                  "entities": [
-                    "sensor.chambre_leo_temperature",
-                    "climate.clim_lisa",
-                    "climate.clim_entree",
-                    "climate.clim_parents"
-                  ],
-                  "attributes": "ip"
-                },
-                {
-                  "type": "custom:mushroom-climate-card",
-                  "entity": "climate.clim_entree",
-                  "icon": "mdi:air-conditioner",
-                  "fill_container": true,
-                  "show_temperature_control": true,
-                  "collapsible_controls": false,
-                  "hvac_modes": [
-                    "heat",
-                    "cool",
-                    "off"
-                  ],
-                  "icon_type": "icon",
-                  "secondary_info": "state",
-                  "primary_info": "name",
-                  "layout": "vertical"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "mdi:water-boiler",
-          "cards": [
-            {
-              "type": "history-graph",
-              "entities": [
-                {
-                  "entity": "input_boolean.ecs"
-                },
-                {
-                  "entity": "input_boolean.frigo"
-                },
-                {
-                  "entity": "input_boolean.prise_salon"
-                }
-              ],
-              "title": "Consommation",
-              "hours_to_show": 36
-            },
-            {
-              "type": "history-graph",
-              "entities": [
-                {
-                  "entity": "sensor.frigo_2"
-                },
-                {
-                  "entity": "sensor.cumulus_2"
-                }
-              ],
-              "hours_to_show": 12
-            },
-            {
-              "show_name": true,
-              "show_icon": true,
-              "show_state": true,
-              "type": "glance",
-              "entities": [
-                {
-                  "entity": "input_boolean.ecs"
-                },
-                {
-                  "entity": "input_boolean.frigo"
-                },
-                {
-                  "entity": "input_boolean.prise_salon"
-                }
-              ],
-              "state_color": true
-            },
-            {
-              "type": "entities",
-              "entities": [
-                {
-                  "entity": "sensor.cumulus_2"
-                },
-                {
-                  "entity": "sensor.frigo_2"
-                }
-              ]
-            },
-            {
-              "show_name": true,
-              "show_icon": true,
-              "show_state": true,
-              "title": "ECS",
-              "type": "glance",
-              "entities": [
-                {
-                  "entity": "sensor.temps_allumage_ecs_today",
-                  "icon": "mdi:water-boiler",
-                  "name": "Jour"
-                },
-                {
-                  "entity": "sensor.temps_allumage_ecs_hier",
-                  "icon": "mdi:water-boiler",
-                  "name": "Hier"
-                },
-                {
-                  "entity": "sensor.temps_allumage_ecs_semaine",
-                  "icon": "mdi:water-boiler",
-                  "name": "Semaine"
-                },
-                {
-                  "entity": "sensor.temps_allumage_ecs_mois",
-                  "icon": "mdi:water-boiler",
-                  "name": "Mois"
-                }
-              ]
-            },
-            {
-              "show_name": true,
-              "show_icon": true,
-              "show_state": true,
-              "title": "Frigo",
-              "type": "glance",
-              "entities": [
-                {
-                  "entity": "sensor.temps_allumage_frigo_today",
-                  "icon": "mdi:fridge",
-                  "name": "Jour"
-                },
-                {
-                  "entity": "sensor.temps_allumage_frigo_hier",
-                  "icon": "mdi:fridge",
-                  "name": "Hier"
-                },
-                {
-                  "entity": "sensor.temps_allumage_frigo_semaine",
-                  "icon": "mdi:fridge",
-                  "name": "Semaine"
-                },
-                {
-                  "entity": "sensor.temps_allumage_frigo_mois",
-                  "icon": "mdi:fridge",
-                  "name": "Mois"
-                }
-              ]
-            },
-            {
-              "show_name": true,
-              "show_icon": true,
-              "show_state": true,
-              "type": "glance",
-              "entities": [
-                {
-                  "entity": "sensor.temps_allumage_salon_today",
-                  "icon": "mdi:power-plug",
-                  "name": "Jour"
-                },
-                {
-                  "entity": "sensor.temps_allumage_salon_hier",
-                  "icon": "mdi:power-plug",
-                  "name": "Hier"
-                },
-                {
-                  "entity": "sensor.temps_allumage_salon_semaine",
-                  "icon": "mdi:power-plug",
-                  "name": "Semaine"
-                },
-                {
-                  "entity": "sensor.temps_allumage_salon_mois",
-                  "icon": "mdi:power-plug",
-                  "name": "Mois"
-                }
-              ],
-              "title": "Salon"
-            }
-          ]
-        }
-      ]
-    }
-  }
-}
+      - type: vertical-stack
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: button
+                show_name: false
+                entity: button.awtrix_previous_app
+              - show_name: false
+                type: button
+                entity: light.awtrix_matrix
+                show_state: true
+                icon_height: 60px
+              - show_name: false
+                show_icon: true
+                type: button
+                entity: button.awtrix_next_app
+                name: Next
+          - type: horizontal-stack
+            cards:
+              - type: entities
+                entities:
+                  - entity: switch.awtrix_transition
+                    name: Transitions
+              - type: entities
+                entities:
+                  - entity: select.awtrix_transition_effect
+                    name: Transitions
+          - type: vertical-stack
+            cards:
+              - type: entities
+                entities:
+                  - entity: select.awtrix_brightness_mode
+                    name: Brigthness
+                  - entity: sensor.awtrix_2e487c_illuminance
+                    name: Lumière
+                  - entity: sensor.awtrix_2e487c_battery
+                    name: Batterie
+                  - entity: sensor.awtrix_2e487c_temperature
+                    name: Temperature
+                  - entity: sensor.awtrix_2e487c_humidity
+                    name: Uptime
+                  - entity: sensor.awtrix_2e487c_uptime
+                    name: Uptime
+                  - entity: sensor.awtrix_2e487c_ip_address
+                    name: IP
+                  - entity: sensor.awtrix_2e487c_version
+                    name: Version
+      - type: iframe
+        url: http://192.168.68.130/
+        aspect_ratio: 180%
+  - icon: mdi:stack-exchange
+    path: vu-meter
+    title: Vu Meter
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: vertical-stack
+                cards:
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_11", "rgb_color") if is_state('light.wled1_segment_11', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_10", "rgb_color") if is_state('light.wled1_segment_10', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_9", "rgb_color") if is_state('light.wled1_segment_9', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_8", "rgb_color") if is_state('light.wled1_segment_8', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_7", "rgb_color") if is_state('light.wled1_segment_7', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_6", "rgb_color") if is_state('light.wled1_segment_6', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_5", "rgb_color") if is_state('light.wled1_segment_5', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_4", "rgb_color") if is_state('light.wled1_segment_4', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;} 
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_3", "rgb_color") if is_state('light.wled1_segment_3', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}        
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_2", "rgb_color") if is_state('light.wled1_segment_2', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}       
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_1", "rgb_color") if is_state('light.wled1_segment_1', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}        
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_0", "rgb_color") if is_state('light.wled1_segment_0', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}         
+                            
+                  - type: custom:mini-graph-card
+                    name: Production
+                    entities:
+                      - sensor.production_solaire
+                    decimals: 0
+                    height: 0
+                    font_size: 100
+                    align_state: center
+                    align_header: center
+                    show:
+                      icon: false
+              - type: vertical-stack
+                cards:
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_23", "rgb_color") if is_state('light.wled1_segment_23', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_22", "rgb_color") if is_state('light.wled1_segment_22', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_21", "rgb_color") if is_state('light.wled1_segment_21', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_20", "rgb_color") if is_state('light.wled1_segment_20', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_19", "rgb_color") if is_state('light.wled1_segment_19', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_18", "rgb_color") if is_state('light.wled1_segment_18', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_17", "rgb_color") if is_state('light.wled1_segment_17', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_16", "rgb_color") if is_state('light.wled1_segment_16', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_15", "rgb_color") if is_state('light.wled1_segment_15', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_14", "rgb_color") if is_state('light.wled1_segment_14', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_13", "rgb_color") if is_state('light.wled1_segment_13', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:button-card
+                    card_mod:
+                      style: |
+                        ha-card  {
+                          background-color: rgba{{state_attr("light.wled1_segment_12", "rgb_color") if is_state('light.wled1_segment_12', 'on') else '(224, 224, 224)'}};
+                          height:10px !important;
+                          width: 20
+                          border: 1px solid grey !important;}
+                  - type: custom:mini-graph-card
+                    name: Surplus
+                    entities:
+                      - sensor.surplus_production
+                    decimals: 0
+                    height: 0
+                    font_size: 100
+                    align_state: center
+                    align_header: center
+                    show:
+                      icon: false
+          - type: entities
+            entities:
+              - light.wled1_principal
+              - select.wled1_prereglage
+              - number.wled1_intensite
+              - button.wled1_redemarrer
+              - switch.wled1_veilleuse
+              - number.wled1_vitesse
+              - sensor.wled1_courant_estime
+              - sensor.wled1_ip
+      - type: iframe
+        url: http://192.168.68.134
+        aspect_ratio: 200%
