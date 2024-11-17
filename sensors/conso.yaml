@@ -14,12 +14,26 @@ template:
         unit_of_measurement: "W"
         state: "{{ (states('sensor.em06_c1_power') | float(0) -states('sensor.lampe_salon') | float(0) - states('sensor.prise_tv_puissance') | float(0) - states('sensor.prise_lave_vaiselle_local_puissance') | float(0)) | round(1) }}"
 
+      - name: "mesureur_n1_puissance_b"
+        unique_id: "mesureur_n1_puissance_b"
+        device_class: power # Exemples de valeurs possibles
+        state_class: measurement
+        unit_of_measurement: "W"
+        state: "{{ (states('sensor.double_clamp_meter_power_b') | float(0) - states('sensor.prise_lave_linge_local_puissance') | float(0)) | round(1) }}"
+
+      - name: "mesureur_n1_puissance_a"
+        unique_id: "mesureur_n1_puissance_a"
+        device_class: power # Exemples de valeurs possibles
+        state_class: measurement
+        unit_of_measurement: "W"
+        state: "{{ (states('sensor.double_clamp_meter_power_a')) | round(1) }}"
+
       - name: "Puissance socle"
         unique_id: "puissance_socle"
         device_class: power # Exemples de valeurs possibles
         state_class: measurement
         unit_of_measurement: "W"
-        state: "{{ (states('sensor.mesureur_n1_puissance_a') | float(0) + states('sensor.disjoncteur_sonnette_local_puissance') | float(0) + states('sensor.em06_a1_power') | float(0) + states('sensor.double_clamp_meter_power_b') | float(0) + states('sensor.prises_rdc') | float(0)) | round(1) }}"
+        state: "{{ (states('sensor.double_clamp_meter_power_a') | float(0) + states('sensor.disjoncteur_sonnette_local_puissance') | float(0) + states('sensor.em06_a1_power') | float(0) + states('sensor.prises_entree') | float(0) + states('sensor.prises_rdc') | float(0)) | round(1) }}"
 
       - name: "Consommation non suivie"
         unique_id: "consommation_non_suivie"

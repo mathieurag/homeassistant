@@ -43,16 +43,17 @@ views:
           yellow: 150
           red: 500
         entity: sensor.consommation_reseau
-      - type: gauge
-        min: 0
-        needle: false
-        name: Consommation réseau (EcoJoko)
-        max: 1000
-        severity:
-          green: 0
-          yellow: 150
-          red: 500
-        entity: sensor.ecojoko_consommation_temps_reel
+      - type: custom:mini-graph-card
+        name: Conso minimum H24
+        entities:
+          - sensor.conso_tr_mini_last_24h
+        decimals: 0
+        height: 0
+        font_size: 120
+        align_state: center
+        align_header: center
+        show:
+          icon: false
       - type: history-graph
         entities:
           - entity: sensor.ecojoko_consommation_reseau
@@ -69,17 +70,6 @@ views:
         title: Consommation mini
         hide_legend: true
         days_to_show: 26
-      - type: custom:mini-graph-card
-        name: Conso minimum H24
-        entities:
-          - sensor.conso_tr_mini_last_24h
-        decimals: 0
-        height: 0
-        font_size: 120
-        align_state: center
-        align_header: center
-        show:
-          icon: false
       - type: history-graph
         entities:
           - entity: sensor.em06_b1_power
@@ -174,13 +164,6 @@ views:
         entities:
           - entity: sensor.em06_b1_power
           - entity: sensor.consommation_reseau
-            card_mod:
-              style: |
-                :host {
-                  {% if int(states('sensor.consommation_reseau')) | float(0) == 0 %}
-                    --paper-item-icon-color: #009900;
-                  {% endif %}
-                }
           - type: divider
           - entity: sensor.puissance_socle
           - entity: sensor.consommation_suivie
@@ -188,49 +171,14 @@ views:
           - type: divider
           - entity: sensor.mesureur_n1_puissance_a
             secondary_info: last-updated
-            card_mod:
-              style: |
-                :host {
-                  {% if int(states('sensor.mesureur_n1_puissance_a')) | float(0) > 30 %}
-                    --paper-item-icon-color: #fcb944;
-                  {% endif %}
-                }
           - entity: sensor.em06_a1_power
             secondary_info: last-updated
-            card_mod:
-              style: |
-                :host {
-                  {% if int(states('sensor.em06_a1_power')) | float(0) > 25 %}
-                    --paper-item-icon-color: #fcb944;
-                  {% endif %}
-                }
-          - entity: sensor.double_clamp_meter_power_b
+          - entity: sensor.mesureur_n1_puissance_b
             secondary_info: last-updated
-            card_mod:
-              style: |
-                :host {
-                  {% if int(states('sensor.double_clamp_meter_power_b')) | float(0) > 20 %}
-                    --paper-item-icon-color: #fcb944;
-                  {% endif %}
-                }
           - entity: sensor.disjoncteur_sonnette_local_puissance
             secondary_info: last-updated
-            card_mod:
-              style: |
-                :host {
-                  {% if int(states('sensor.disjoncteur_sonnette_local_puissance')) | float(0) > 10 %}
-                    --paper-item-icon-color: #fcb944;
-                  {% endif %}
-                }
           - entity: sensor.prises_rdc
             secondary_info: last-updated
-            card_mod:
-              style: |
-                :host {
-                  {% if int(states('sensor.prises_rdc')) | float(0) > 20 %}
-                    --paper-item-icon-color: #fcb944;
-                  {% endif %}
-                }
         state_color: true
       - show_name: true
         show_icon: true
@@ -547,120 +495,43 @@ views:
                     --paper-item-icon-color: #fcb944;
                   {% endif %}
                 }
+          - entity: sensor.em06_02_a2_power
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if int(states('sensor.em06_02_a2_power'))|float(0) > 0 %}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
+                }
+          - entity: sensor.em06_02_b2_power
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if int(states('sensor.em06_02_b2_power'))|float(0) > 0 %}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
+                }
+          - entity: sensor.em06_02_c2_power
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if int(states('sensor.em06_02_c2_power'))|float(0) > 0 %}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
+                }
+          - entity: sensor.em06_02_c1_power
+            secondary_info: last-updated
+            card_mod:
+              style: |
+                :host {
+                  {% if int(states('sensor.em06_02_c1_power'))|float(0) > 0 %}
+                    --paper-item-icon-color: #fcb944;
+                  {% endif %}
+                }
         state_color: true
-  - title: Statistiques
-    path: statistiques
-    icon: mdi:chart-timeline-variant-shimmer
-    cards:
-      - chart_type: bar
-        period: day
-        type: statistics-graph
-        entities:
-          - sensor.duree_cycle_frigo
-        stat_types:
-          - mean
-      - chart_type: bar
-        period: day
-        type: statistics-graph
-        entities:
-          - sensor.cycle_frigo
-        stat_types:
-          - max
-        logarithmic_scale: false
-        days_to_show: 10
-      - type: history-graph
-        entities:
-          - entity: sensor.duree_cycle_frigo_sensor
-        hours_to_show: 24
-      - type: history-graph
-        entities:
-          - entity: input_number.cycles_frigo
-      - type: statistic
-        entity: sensor.duree_cycle_frigo
-        period:
-          calendar:
-            period: week
-        stat_type: mean
-        name: Durée cycle Frigo (s)
-      - type: statistic
-        entity: sensor.cycle_frigo
-        period:
-          calendar:
-            period: week
-        stat_type: mean
-        name: Nb Cycles Frigo moyen (semaine)
-      - chart_type: bar
-        period: day
-        type: statistics-graph
-        entities:
-          - sensor.duree_cycle_ecs
-        stat_types:
-          - max
-      - chart_type: bar
-        period: day
-        type: statistics-graph
-        entities:
-          - sensor.temps_allumage_frigo_today
-        stat_types:
-          - max
-        days_to_show: 30
-      - chart_type: bar
-        period: day
-        type: statistics-graph
-        entities:
-          - sensor.temps_allumage_ecs_today
-        stat_types:
-          - max
-        days_to_show: 30
-      - type: statistic
-        entity: sensor.temps_allumage_frigo_today
-        period:
-          calendar:
-            period: week
-        stat_type: mean
-        name: Temps frigo moyen (semaine)
-      - chart_type: line
-        period: day
-        type: statistics-graph
-        entities:
-          - sensor.thermometre_frigo_temperature
-        days_to_show: 30
-        stat_types:
-          - mean
-  - title: HP/HC
-    path: hp-hc
-    icon: mdi:toggle-switch-variant-off
-    cards:
-      - type: glance
-        entities:
-          - entity: sensor.taux_hc_jour
-          - entity: input_number.taux_hc_j_1
-          - entity: sensor.taux_hc_semaine
-          - entity: sensor.taux_hc_mois
-          - entity: sensor.taux_hc_annee
-      - chart_type: bar
-        period: day
-        type: statistics-graph
-        entities:
-          - sensor.taux_hc_stat
-        stat_types:
-          - mean
-        days_to_show: 10
-        hide_legend: false
-      - chart_type: bar
-        period: hour
-        type: statistics-graph
-        entities:
-          - sensor.energie_consommee_j_hp
-          - sensor.energie_consommee_j_hc
-        stat_types:
-          - state
-        days_to_show: 2
-      - type: history-graph
-        entities:
-          - entity: sensor.taux_hc_sensor
-        hours_to_show: 200
-    badges: []
   - title: Météo
     path: meteo
     cards:
@@ -734,6 +605,11 @@ views:
           - type: horizontal-stack
             cards:
               - type: button
+                entity: sensor.solcast_pv_forecast_previsions_pour_aujourd_hui
+                name: J
+                show_state: true
+                show_icon: false
+              - type: button
                 entity: sensor.solcast_pv_forecast_previsions_pour_demain
                 name: J + 1
                 show_state: true
@@ -753,6 +629,199 @@ views:
                 name: J+4
                 show_state: true
                 show_icon: false
+          - type: custom:apexcharts-card
+            now:
+              show: true
+              label: Now
+              color: red
+            yaxis:
+              - id: value
+                apex_config:
+                  forceNiceScale: true
+                  max: |
+                    EVAL: function(max) { return max }
+                  decimalsInFloat: 1
+                  axisBorder:
+                    show: false
+                  title:
+                    text: kWh
+                    rotate: -90
+                    offsetX: 4
+                    offsetY: 0
+                    style:
+                      fontSize: 11px
+                      font-weight: normal
+            apex_config:
+              chart:
+                height: 300
+                offsetY: 0
+                offsetX: -20
+                redrawOnParentResize: true
+              legend:
+                show: false
+              xaxis:
+                labels:
+                  format: dd/MM
+                  style:
+                    fontSize: 11px
+              fill:
+                type: gradient
+                gradient:
+                  type: vertical
+                  shadeIntensity: 0
+                  inverseColors: false
+                  opacityFrom: 0.9
+                  opacityTo: 0.7
+                  stops:
+                    - 1
+            span:
+              start: day
+              offset: +0h
+            graph_span: 5d
+            update_interval: 5min
+            header:
+              show: true
+            series:
+              - entity: sensor.solcast_pv_forecast_previsions_pour_aujourd_hui
+                show:
+                  in_header: true
+                  legend_value: true
+                name: today
+                yaxis_id: value
+                color: '#ffa600'
+                opacity: 1
+                stroke_width: 1
+                float_precision: 2
+                unit: kWh
+                group_by:
+                  fill: zero
+                  duration: 60min
+                  start_with_last: false
+                  func: last
+                data_generator: |
+                  return entity.attributes.detailedForecast.map((entry) => {
+                     return [new Date(entry.period_start), entry.pv_estimate];
+                   });
+              - entity: sensor.solcast_pv_forecast_previsions_pour_demain
+                show:
+                  in_header: false
+                  legend_value: false
+                name: Demain
+                yaxis_id: value
+                color: '#ffa600'
+                opacity: 1
+                stroke_width: 1
+                float_precision: 3
+                unit: kWh
+                group_by:
+                  fill: zero
+                  duration: 60min
+                  start_with_last: false
+                  func: last
+                data_generator: |
+                  return entity.attributes.detailedForecast.map((entry) => {
+                     return [new Date(entry.period_start), entry.pv_estimate];
+                   });
+              - entity: sensor.solcast_pv_forecast_prevision_jour_3
+                show:
+                  in_header: false
+                  legend_value: false
+                name: J+2
+                yaxis_id: value
+                color: '#ffa600'
+                opacity: 1
+                stroke_width: 1
+                float_precision: 3
+                unit: kWh
+                group_by:
+                  fill: zero
+                  duration: 60min
+                  start_with_last: false
+                  func: last
+                data_generator: |
+                  return entity.attributes.detailedForecast.map((entry) => {
+                     return [new Date(entry.period_start), entry.pv_estimate];
+                   });
+              - entity: sensor.solcast_pv_forecast_prevision_jour_4
+                show:
+                  in_header: false
+                  legend_value: false
+                name: J+3
+                yaxis_id: value
+                color: '#ffa600'
+                opacity: 1
+                stroke_width: 1
+                float_precision: 3
+                unit: kWh
+                group_by:
+                  fill: zero
+                  duration: 60min
+                  start_with_last: false
+                  func: last
+                data_generator: |
+                  return entity.attributes.detailedForecast.map((entry) => {
+                     return [new Date(entry.period_start), entry.pv_estimate];
+                   });              
+              - entity: sensor.solcast_pv_forecast_prevision_jour_5
+                show:
+                  in_header: false
+                  legend_value: false
+                name: J+4
+                yaxis_id: value
+                color: '#ffa600'
+                opacity: 1
+                stroke_width: 1
+                float_precision: 3
+                unit: kWh
+                group_by:
+                  fill: zero
+                  duration: 60min
+                  start_with_last: false
+                  func: last
+                data_generator: |
+                  return entity.attributes.detailedForecast.map((entry) => {
+                     return [new Date(entry.period_start), entry.pv_estimate];
+                   });
+              - entity: sensor.solcast_pv_forecast_prevision_jour_6
+                show:
+                  in_header: false
+                  legend_value: false
+                name: J+5
+                yaxis_id: value
+                color: '#ffa600'
+                opacity: 1
+                stroke_width: 1
+                float_precision: 3
+                unit: kWh
+                group_by:
+                  fill: zero
+                  duration: 60min
+                  start_with_last: false
+                  func: last
+                data_generator: |
+                  return entity.attributes.detailedForecast.map((entry) => {
+                     return [new Date(entry.period_start), entry.pv_estimate];
+                   });              
+              - entity: sensor.solcast_pv_forecast_prevision_jour_7
+                show:
+                  in_header: false
+                  legend_value: false
+                name: J+6
+                yaxis_id: value
+                color: '#ffa600'
+                opacity: 1
+                stroke_width: 1
+                float_precision: 3
+                unit: kWh
+                group_by:
+                  fill: zero
+                  duration: 60min
+                  start_with_last: false
+                  func: last
+                data_generator: |
+                  return entity.attributes.detailedForecast.map((entry) => {
+                     return [new Date(entry.period_start), entry.pv_estimate];
+                  });
       - show_current: true
         show_forecast: true
         type: weather-forecast
@@ -767,199 +836,6 @@ views:
           - max
         days_to_show: 30
         hide_legend: false
-      - type: custom:apexcharts-card
-        now:
-          show: true
-          label: Now
-          color: red
-        yaxis:
-          - id: value
-            apex_config:
-              forceNiceScale: true
-              max: |
-                EVAL: function(max) { return max }
-              decimalsInFloat: 1
-              axisBorder:
-                show: false
-              title:
-                text: kWh
-                rotate: -90
-                offsetX: 4
-                offsetY: 0
-                style:
-                  fontSize: 11px
-                  font-weight: normal
-        apex_config:
-          chart:
-            height: 300
-            offsetY: 0
-            offsetX: -20
-            redrawOnParentResize: true
-          legend:
-            show: false
-          xaxis:
-            labels:
-              format: dd/MM
-              style:
-                fontSize: 11px
-          fill:
-            type: gradient
-            gradient:
-              type: vertical
-              shadeIntensity: 0
-              inverseColors: false
-              opacityFrom: 0.9
-              opacityTo: 0.7
-              stops:
-                - 1
-        span:
-          start: day
-          offset: +0h
-        graph_span: 5d
-        update_interval: 5min
-        header:
-          show: true
-        series:
-          - entity: sensor.solcast_pv_forecast_previsions_pour_aujourd_hui
-            show:
-              in_header: true
-              legend_value: true
-            name: today
-            yaxis_id: value
-            color: '#ffa600'
-            opacity: 1
-            stroke_width: 1
-            float_precision: 2
-            unit: kWh
-            group_by:
-              fill: zero
-              duration: 60min
-              start_with_last: false
-              func: last
-            data_generator: |
-              return entity.attributes.detailedForecast.map((entry) => {
-                 return [new Date(entry.period_start), entry.pv_estimate];
-               });
-          - entity: sensor.solcast_pv_forecast_previsions_pour_demain
-            show:
-              in_header: false
-              legend_value: false
-            name: Demain
-            yaxis_id: value
-            color: '#ffa600'
-            opacity: 1
-            stroke_width: 1
-            float_precision: 3
-            unit: kWh
-            group_by:
-              fill: zero
-              duration: 60min
-              start_with_last: false
-              func: last
-            data_generator: |
-              return entity.attributes.detailedForecast.map((entry) => {
-                 return [new Date(entry.period_start), entry.pv_estimate];
-               });
-          - entity: sensor.solcast_pv_forecast_prevision_jour_3
-            show:
-              in_header: false
-              legend_value: false
-            name: J+2
-            yaxis_id: value
-            color: '#ffa600'
-            opacity: 1
-            stroke_width: 1
-            float_precision: 3
-            unit: kWh
-            group_by:
-              fill: zero
-              duration: 60min
-              start_with_last: false
-              func: last
-            data_generator: |
-              return entity.attributes.detailedForecast.map((entry) => {
-                 return [new Date(entry.period_start), entry.pv_estimate];
-               });
-          - entity: sensor.solcast_pv_forecast_prevision_jour_4
-            show:
-              in_header: false
-              legend_value: false
-            name: J+3
-            yaxis_id: value
-            color: '#ffa600'
-            opacity: 1
-            stroke_width: 1
-            float_precision: 3
-            unit: kWh
-            group_by:
-              fill: zero
-              duration: 60min
-              start_with_last: false
-              func: last
-            data_generator: |
-              return entity.attributes.detailedForecast.map((entry) => {
-                 return [new Date(entry.period_start), entry.pv_estimate];
-               });              
-          - entity: sensor.solcast_pv_forecast_prevision_jour_5
-            show:
-              in_header: false
-              legend_value: false
-            name: J+4
-            yaxis_id: value
-            color: '#ffa600'
-            opacity: 1
-            stroke_width: 1
-            float_precision: 3
-            unit: kWh
-            group_by:
-              fill: zero
-              duration: 60min
-              start_with_last: false
-              func: last
-            data_generator: |
-              return entity.attributes.detailedForecast.map((entry) => {
-                 return [new Date(entry.period_start), entry.pv_estimate];
-               });
-          - entity: sensor.solcast_pv_forecast_prevision_jour_6
-            show:
-              in_header: false
-              legend_value: false
-            name: J+5
-            yaxis_id: value
-            color: '#ffa600'
-            opacity: 1
-            stroke_width: 1
-            float_precision: 3
-            unit: kWh
-            group_by:
-              fill: zero
-              duration: 60min
-              start_with_last: false
-              func: last
-            data_generator: |
-              return entity.attributes.detailedForecast.map((entry) => {
-                 return [new Date(entry.period_start), entry.pv_estimate];
-               });              
-          - entity: sensor.solcast_pv_forecast_prevision_jour_7
-            show:
-              in_header: false
-              legend_value: false
-            name: J+6
-            yaxis_id: value
-            color: '#ffa600'
-            opacity: 1
-            stroke_width: 1
-            float_precision: 3
-            unit: kWh
-            group_by:
-              fill: zero
-              duration: 60min
-              start_with_last: false
-              func: last
-            data_generator: |
-              return entity.attributes.detailedForecast.map((entry) => {
-                 return [new Date(entry.period_start), entry.pv_estimate];
-               });
       - chart_type: bar
         period: day
         type: statistics-graph
@@ -980,7 +856,133 @@ views:
         days_to_show: 10
         stat_types:
           - state
+      - type: custom:plotly-graph
+        hours_to_show: 12
+        refresh_interval: 10
+        layout:
+          yaxis:
+            fixedrange: true
+        entities:
+          - entity: sensor.rain_sensor_illuminance
+            yaxis: y1
+            name: Ensoleillement
+            line:
+              color: orange
+          - entity: sensor.production_solaire
+            yaxis: y2
+            name: Puissance Solaire
+            line:
+              color: red
+          - entity: sensor.solcast_pv_forecast_puissance_maintenant
+            yaxis: y2
+            name: Puissance Prévue
+            line:
+              color: grey
     icon: mdi:white-balance-sunny
+  - type: sections
+    max_columns: 4
+    title: Routeur
+    path: routeur
+    icon: mdi:sun-compass
+    sections:
+      - type: grid
+        cards:
+          - type: statistic
+            entity: sensor.cumulus_kwh
+            period:
+              calendar:
+                period: day
+            stat_type: change
+            grid_options:
+              columns: full
+          - type: heading
+            heading_style: subtitle
+          - type: tile
+            entity: switch.wifi_smart_meter_switch_3_switch
+            name: Routeur Solaire
+          - type: tile
+            entity: sensor.wifi_smart_meter_switch_3_puissance
+            name: Routeur Solaire
+            card_mod:
+              style: |
+                ha-card {
+                  {% if int(states('sensor.wifi_smart_meter_switch_3_puissance')) > 0 %}
+                      --tile-color: orange !important;
+                  {% endif %}
+                }         
+          - type: tile
+            entity: switch.cumulus
+          - type: tile
+            entity: sensor.cumulus_2
+            card_mod:
+              style: |
+                ha-card {
+                  {% if states('input_boolean.ecs') =='on'%}
+                      --tile-color: green !important;
+                  {% endif %}
+                }         
+          - type: tile
+            entity: sensor.production_solaire
+            card_mod:
+              style: |
+                ha-card {
+                  {% if int(states('sensor.production_solaire')) > 0 %}
+                      --tile-color: green !important;
+                  {% endif %}
+                }         
+          - type: tile
+            entity: sensor.surplus_production
+            card_mod:
+              style: |
+                ha-card {
+                  {% if int(states('sensor.surplus_production')) > 0 %}
+                      --tile-color: green !important;
+                  {% endif %}
+          - chart_type: line
+            period: 5minute
+            type: statistics-graph
+            entities:
+              - sensor.cumulus_2
+              - sensor.production_solaire
+              - sensor.surplus_production
+            days_to_show: 0.5
+            stat_types:
+              - mean
+          - type: history-graph
+            entities:
+              - entity: input_boolean.ecs_chaud
+            hours_to_show: 13
+          - type: history-graph
+            entities:
+              - entity: sensor.sonde_temperature_owon_temperature
+            hours_to_show: 13
+      - type: grid
+        cards:
+          - type: heading
+            heading_style: subtitle
+          - chart_type: bar
+            period: day
+            type: statistics-graph
+            entities:
+              - sensor.cumulus_kwh
+            stat_types:
+              - change
+            days_to_show: 10
+          - type: history-graph
+            entities:
+              - entity: input_boolean.ecs_chaud
+                name: ECS
+            hours_to_show: 264
+          - chart_type: bar
+            period: hour
+            type: statistics-graph
+            entities:
+              - sensor.cumulus_kwh
+              - sensor.energie_solar_j
+              - sensor.surplus_production_kwh
+            stat_types:
+              - change
+            days_to_show: 0.5
   - icon: mdi:solar-panel
     path: panneaux
     title: Panneaux
@@ -1046,6 +1048,592 @@ views:
               action: call-service
               service: rest.reload
         state_color: true
+  - title: Automatisation
+    path: automatisation
+    icon: mdi:home-automation
+    cards:
+      - type: entities
+        entities:
+          - entity: input_boolean.automatisation
+          - entity: input_boolean.mode_chauffage
+          - entity: input_boolean.mode_alarme
+          - entity: input_button.depart_en_vacances
+          - entity: input_button.retour_de_vacances
+        state_color: true
+      - type: entities
+        entities:
+          - entity: switch.cumulus
+            name: Cumulus
+            icon: mdi:water-boiler
+          - entity: switch.disjoncteur_5_local_none
+            name: Routeur Solaire
+            icon: mdi:solar-power-variant-outline
+          - entity: switch.prise_frigo_local
+            icon: mdi:fridge
+            name: Frigo
+          - entity: switch.prise_lave_vaisselle_local
+            name: Lave Vaisselle
+            icon: mdi:dishwasher
+          - entity: switch.prise_lave_linge_local
+            name: Lave Linge
+            icon: mdi:washing-machine
+          - entity: switch.prise_tv_local
+            name: Télévision
+            icon: mdi:television
+          - entity: switch.disjoncteur_sonnette_local_none
+            name: Sonnette
+            icon: mdi:doorbell-video
+          - entity: switch.shelly_em_switch
+          - entity: switch.disjoncteur_3_none
+            name: Clim Chambres
+            icon: mdi:thermometer-lines
+          - entity: switch.disjoncteur_4_none
+            name: Clim Salon
+            icon: mdi:thermometer-lines
+      - type: custom:bubble-card
+        card_type: button
+        entity: automation.alerte_tp_link
+        sub_button: []
+        show_icon: true
+        scrolling_effect: false
+        show_state: false
+        show_name: true
+        show_attribute: true
+        show_last_changed: false
+        tap_action:
+          action: toggle
+        button_action:
+          tap_action:
+            action: more-info
+        attribute: last_triggered
+  - title: Température/Clim
+    path: temperature-clim
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: horizontal-stack
+            cards:
+              - graph: line
+                type: sensor
+                detail: 2
+                hours_to_show: 24
+                name: Lisa
+                entity: sensor.chambre_lisa_temperature
+              - features:
+                  - type: target-temperature
+                type: tile
+                entity: climate.clim_lisa
+                show_entity_picture: false
+                vertical: true
+                hide_state: false
+                icon_tap_action:
+                  action: toggle
+                icon: mdi:air-conditioner
+                state_content:
+                  - current_temperature
+                  - last_changed
+          - type: horizontal-stack
+            cards:
+              - graph: line
+                type: sensor
+                detail: 2
+                hours_to_show: 24
+                entity: sensor.chambre_leo_temperature
+                name: Léo
+              - features:
+                  - type: target-temperature
+                type: tile
+                entity: climate.clim_leo
+                show_entity_picture: false
+                vertical: true
+                hide_state: false
+                icon_tap_action:
+                  action: toggle
+                icon: mdi:air-conditioner
+                state_content:
+                  - current_temperature
+                  - last_changed
+          - type: horizontal-stack
+            cards:
+              - graph: line
+                type: sensor
+                detail: 2
+                hours_to_show: 24
+                name: Entrée
+                entity: sensor.entree_temperature
+              - features:
+                  - type: target-temperature
+                type: tile
+                entity: climate.clim_entree
+                show_entity_picture: false
+                vertical: true
+                hide_state: false
+                icon_tap_action:
+                  action: toggle
+                icon: mdi:air-conditioner
+                state_content:
+                  - current_temperature
+                  - last_changed
+          - type: horizontal-stack
+            cards:
+              - graph: line
+                type: sensor
+                detail: 2
+                hours_to_show: 24
+                name: Parents
+                entity: sensor.chambre_parents_temperature
+              - features:
+                  - type: target-temperature
+                type: tile
+                entity: climate.clim_parents
+                show_entity_picture: false
+                vertical: true
+                hide_state: false
+                icon_tap_action:
+                  action: toggle
+                icon: mdi:air-conditioner
+                state_content:
+                  - current_temperature
+                  - last_changed
+          - type: entities
+            entities:
+              - type: custom:button-card
+                name: Relancer Switchbot
+                tap_action:
+                  action: call-service
+                  service: homeassistant.reload_config_entry
+                  data:
+                    label_id: switchbot
+              - type: custom:button-card
+                name: Relancer Gree Climate
+                tap_action:
+                  action: call-service
+                  service: homeassistant.reload_config_entry
+                  data:
+                    label_id: clim
+          - graph: line
+            type: sensor
+            detail: 2
+            entity: sensor.salon_temperature
+            hours_to_show: 24
+            name: Salon
+          - graph: line
+            type: sensor
+            detail: 2
+            hours_to_show: 24
+            name: Extérieur
+            entity: sensor.exterieur_temperature
+          - graph: line
+            type: sensor
+            detail: 2
+            entity: sensor.awtrix_2e487c_temperature
+            hours_to_show: 24
+            name: Garage
+          - graph: line
+            type: sensor
+            detail: 2
+            hours_to_show: 24
+            name: Cuisine
+            entity: sensor.capteur_frigo_temperature
+          - graph: line
+            type: sensor
+            detail: 2
+            hours_to_show: 24
+            name: Frigo
+            entity: sensor.thermometre_frigo_temperature
+      - type: grid
+        cards:
+          - graph: line
+            type: sensor
+            detail: 1
+            entity: sensor.chambre_lisa_humidite
+          - graph: line
+            type: sensor
+            detail: 1
+            entity: sensor.chambre_leo_humidite
+          - graph: line
+            type: sensor
+            detail: 1
+            entity: sensor.chambre_parents_humidite
+          - graph: line
+            type: sensor
+            detail: 1
+            entity: sensor.salon_humidite
+          - graph: line
+            type: sensor
+            detail: 1
+            entity: sensor.entree_humidite
+          - type: custom:mini-graph-card
+            name: Temperature Clim Lisa
+            entities:
+              - entity: sensor.chambre_lisa_temperature
+                color: green
+                line_width: 1
+                name: Thermomètre
+              - entity: climate.clim_lisa
+                attribute: current_temperature
+                color: lightblue
+                line_width: 1
+                name: Valeur Clim
+              - entity: input_number.seuil_temperature_chambres
+                color: red
+                show_fill: false
+                name: Référence
+            line_width: 1
+            font_size: 75
+            hours_to_show: 12
+            points_per_hour: 12
+            height: 300
+          - type: custom:mini-graph-card
+            name: Temperature Clim Entree
+            entities:
+              - entity: sensor.entree_temperature
+                color: green
+                line_width: 1
+                name: Thermomètre
+              - entity: climate.clim_entree
+                attribute: current_temperature
+                color: lightblue
+                line_width: 1
+                name: Valeur Clim
+              - entity: input_number.seuil_temperature_entree
+                color: red
+                show_fill: false
+                name: Référence
+            line_width: 1
+            font_size: 75
+            hours_to_show: 12
+            points_per_hour: 12
+            height: 300
+          - type: custom:mini-graph-card
+            name: Temperature Clim Léo
+            entities:
+              - entity: sensor.chambre_leo_temperature
+                color: green
+                line_width: 1
+                name: Thermomètre
+              - entity: climate.clim_leo
+                attribute: current_temperature
+                color: lightblue
+                line_width: 1
+                name: Valeur Clim
+              - entity: input_number.seuil_temperature_chambres
+                color: red
+                show_fill: false
+                name: Référence
+            line_width: 1
+            font_size: 75
+            hours_to_show: 12
+            points_per_hour: 12
+            height: 300
+      - type: grid
+        cards:
+          - type: custom:layout-card
+            layout_type: masonry
+            layout: {}
+            cards:
+              - type: entities
+                entities:
+                  - climate.clim_leo
+                  - sensor.chambre_leo_temperature
+                  - climate.clim_lisa
+                  - sensor.chambre_lisa_temperature
+                  - climate.clim_entree
+                  - sensor.entree_temperature
+                  - climate.clim_parents
+                  - sensor.chambre_parents_temperature
+      - type: grid
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: vertical-stack
+                cards:
+                  - graph: line
+                    type: sensor
+                    detail: 2
+                    hours_to_show: 24
+                    entity: sensor.meter_plus_16c6
+                  - graph: line
+                    type: sensor
+                    detail: 2
+                    hours_to_show: 24
+                    entity: sensor.meter_plus_d2cd
+                  - graph: line
+                    type: sensor
+                    detail: 2
+                    hours_to_show: 24
+                    entity: sensor.meter_plus_938f
+                  - graph: line
+                    type: sensor
+                    detail: 2
+                    hours_to_show: 24
+                    entity: sensor.meter_plus_6b44
+              - type: vertical-stack
+                cards:
+                  - graph: line
+                    type: sensor
+                    detail: 2
+                    hours_to_show: 24
+                    entity: sensor.meter_plus_e778
+                  - graph: line
+                    type: sensor
+                    detail: 2
+                    hours_to_show: 24
+                    entity: sensor.indoor_outdoor_meter_6a71
+                  - graph: line
+                    type: sensor
+                    detail: 2
+                    hours_to_show: 24
+                    entity: sensor.indoor_outdoor_meter_510d
+    max_columns: 4
+    icon: mdi:fan-auto
+    cards: []
+  - type: sections
+    max_columns: 4
+    title: Chauffage/Clim
+    path: chauffage-clim
+    icon: mdi:thermometer-auto
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading_style: title
+          - type: entities
+            entities:
+              - entity: input_boolean.mode_chauffage
+              - type: divider
+              - entity: schedule.calendrier_chauffage_chambres
+              - type: attribute
+                entity: schedule.calendrier_chauffage_chambres
+                attribute: next_event
+                icon: mdi:reload
+                name: Activation
+              - entity: schedule.calendrier_chauffage_entree
+              - type: attribute
+                entity: schedule.calendrier_chauffage_entree
+                attribute: next_event
+                icon: mdi:reload
+                name: Activation
+              - type: divider
+              - entity: switch.disjoncteur_3_none
+                name: Clim Chambres
+                icon: mdi:thermometer-lines
+              - entity: switch.disjoncteur_4_none
+                name: Clim Salon
+                icon: mdi:thermometer-lines
+            state_color: true
+          - type: entities
+            entities:
+              - entity: input_number.consigne_chauffage_chambres
+              - entity: input_number.seuil_temperature_chambres
+              - entity: input_number.consigne_chauffage_entree
+              - entity: input_number.seuil_temperature_entree
+            visibility:
+              - condition: state
+                entity: input_boolean.mode_chauffage
+                state: 'on'
+          - type: entities
+            entities:
+              - entity: sensor.em06_b1_power
+                secondary_info: last-updated
+              - entity: sensor.consommation_reseau
+                secondary_info: last-updated
+                card_mod:
+                  style: |
+                    :host {
+                      {% if int(states('sensor.consommation_reseau')) | float(0) == 0 %}
+                        --paper-item-icon-color: #009900;
+                      {% endif %}
+                    }
+              - type: divider
+              - entity: sensor.disjoncteur_3_puissance_2
+                secondary_info: last-updated
+                card_mod:
+                  style: |
+                    :host {
+                      {% if states('input_boolean.climatisation') =='on'%}
+                        --paper-item-icon-color: #fcb944;
+                      {% endif %}
+                    }
+              - entity: sensor.disjoncteur_4_puissance_2
+                secondary_info: last-updated
+                card_mod:
+                  style: |
+                    :host {
+                      {% if states('input_boolean.clim_salon') =='on'%}
+                        --paper-item-icon-color: #fcb944;
+                      {% endif %}
+                    }
+            state_color: true
+  - type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: tile
+            entity: sensor.system_monitor_adresse_ipv4_enp0s1
+          - type: tile
+            entity: sensor.myip
+          - type: history-graph
+            entities:
+              - entity: sensor.system_monitor_adresse_ipv4_enp0s1
+              - entity: sensor.myip
+            title: IP Locale
+            hours_to_show: 4
+          - graph: none
+            type: sensor
+            entity: sensor.m5_vitesse_de_telechargement
+            detail: 1
+            name: Download
+          - graph: none
+            type: sensor
+            entity: sensor.m5_vitesse_de_telechargement_montant
+            detail: 1
+            name: Upload
+          - type: history-graph
+            entities:
+              - entity: sensor.m5_vitesse_de_telechargement
+              - entity: sensor.m5_vitesse_de_telechargement_montant
+            hours_to_show: 24
+          - type: tile
+            vertical: false
+            entity: sensor.uptime
+            layout_options:
+              grid_columns: 4
+              grid_rows: 1
+      - type: grid
+        cards:
+          - type: tile
+            entity: sensor.system_monitor_memoire_utilisee
+          - type: tile
+            entity: sensor.system_monitor_utilisation_de_la_memoire
+            name: Utilisation Mémoire
+            card_mod:
+              style: |
+                ha-card {
+                    {% set level = int(states('sensor.system_monitor_utilisation_de_la_memoire')) %}
+                    {% if level >= 50 %}
+                      --tile-color: red !important;
+                    {% elif level >= 30 %}
+                      --tile-color: orange !important;
+                    {% else %}
+                      --tile-color: green !important;
+                    {% endif %}
+                }         
+          - type: tile
+            entity: sensor.system_monitor_espace_d_echange_libre
+          - type: tile
+            entity: sensor.system_monitor_utilisation_du_disque
+            name: Utilisation Disque
+            card_mod:
+              style: |
+                ha-card {
+                    {% set level = int(states('sensor.system_monitor_utilisation_du_disque')) %}
+                    {% if level > 80 %}
+                      --tile-color: red !important;
+                    {% elif level > 50 %}
+                      --tile-color: orange !important;
+                    {% else %}
+                      --tile-color: green !important;
+                    {% endif %}
+                }         
+          - type: tile
+            entity: sensor.home_assistant_v2_db_taille
+            name: Home Assistant
+          - type: tile
+            entity: sensor.database
+          - type: history-graph
+            entities:
+              - entity: sensor.system_monitor_charge_5m
+          - type: history-graph
+            entities:
+              - entity: sensor.system_monitor_utilisation_de_la_memoire
+            min_y_axis: 0
+          - type: history-graph
+            entities:
+              - entity: sensor.uptime
+            hours_to_show: 24
+          - type: history-graph
+            entities:
+              - entity: sensor.mesureur_n1_puissance_b
+            min_y_axis: 0
+            fit_y_data: false
+            max_y_axis: 40
+          - type: custom:stack-in-card
+            title: Backup Google Drive
+            cards:
+              - type: entities
+                entities:
+                  - entity: binary_sensor.backups_stale
+                    name: Backup Status
+                    card_mod:
+                      style: |
+                        :host {
+                            {% set level = states('binary_sensor.backups_stale') %}
+                            {% if level == "off" %}
+                              --card-mod-icon-color: green;
+                            {% else %}
+                              --card-mod-icon-color: red;
+                            {% endif %}
+                        }         
+                  - attribute: last_backup
+                    entity: sensor.backup_state
+                    icon: mdi:file-clock-outline
+                    name: Last Backup
+                    type: attribute
+                  - attribute: size_in_home_assistant
+                    entity: sensor.backup_state
+                    icon: mdi:harddisk
+                    name: Taille Home Assistant
+                    type: attribute
+                  - attribute: size_in_google_drive
+                    entity: sensor.backup_state
+                    icon: mdi:folder-google-drive
+                    name: Taille Drive
+                    type: attribute
+                  - attribute: free_space_in_google_drive
+                    entity: sensor.backup_state
+                    icon: mdi:google-drive
+                    name: Espace Drive
+                    type: attribute
+                show_header_toggle: false
+              - type: custom:button-card
+                name: Lancer un Backup Google
+                icon: mdi:backup-restore
+                size: 40px
+                tap_action:
+                  action: call-service
+                  service: hassio.addon_stdin
+                  service_data:
+                    addon: null
+                    input: trigger
+              - type: custom:button-card
+                name: Lancer un Backup local
+                icon: mdi:backup-restore
+                size: 40px
+                action: toggle
+                entity: input_button.backup
+      - type: grid
+        cards:
+          - type: custom:flex-table-card
+            title: Devices
+            entities:
+              include: device_tracker.*
+            clickable: true
+            sort: x.ip+
+            columns:
+              - name: Name
+                data: friendly_name
+              - name: IP
+                data: ip
+              - name: MAC
+                data: mac
+              - name: Date
+                data: last_time_reachable
+    max_columns: 4
+    title: Supervision
+    cards: []
+    icon: mdi:memory
   - background:
       image: /api/image/serve/0643e33258f2b97be2e5ea0596f0e129/original
     cards: []
@@ -1295,219 +1883,104 @@ views:
                     label_id: switchbot
             state_color: true
             title: SwitchBot
-  - type: sections
-    sections:
-      - type: grid
-        cards:
-          - type: tile
-            entity: sensor.system_monitor_adresse_ipv4_enp0s1
-          - type: tile
-            entity: sensor.myip
-          - type: history-graph
-            entities:
-              - entity: sensor.system_monitor_adresse_ipv4_enp0s1
-              - entity: sensor.myip
-            title: IP Locale
-            hours_to_show: 4
-          - graph: none
-            type: sensor
-            entity: sensor.m5_vitesse_de_telechargement
-            detail: 1
-            name: Download
-          - graph: none
-            type: sensor
-            entity: sensor.m5_vitesse_de_telechargement_montant
-            detail: 1
-            name: Upload
-          - type: history-graph
-            entities:
-              - entity: sensor.m5_vitesse_de_telechargement
-              - entity: sensor.m5_vitesse_de_telechargement_montant
-            hours_to_show: 24
-          - type: tile
-            vertical: false
-            entity: sensor.uptime
-            layout_options:
-              grid_columns: 4
-              grid_rows: 1
-      - type: grid
-        cards:
-          - type: tile
-            entity: sensor.system_monitor_memoire_utilisee
-          - type: tile
-            entity: sensor.system_monitor_utilisation_de_la_memoire
-            name: Utilisation Mémoire
-            card_mod:
-              style: |
-                ha-card {
-                    {% set level = int(states('sensor.system_monitor_utilisation_de_la_memoire')) %}
-                    {% if level >= 50 %}
-                      --tile-color: red !important;
-                    {% elif level >= 25 %}
-                      --tile-color: orange !important;
-                    {% else %}
-                      --tile-color: green !important;
-                    {% endif %}
-                }         
-          - type: tile
-            entity: sensor.system_monitor_espace_d_echange_libre
-          - type: tile
-            entity: sensor.system_monitor_utilisation_du_disque
-            name: Utilisation Disque
-            card_mod:
-              style: |
-                ha-card {
-                    {% set level = int(states('sensor.system_monitor_utilisation_du_disque')) %}
-                    {% if level > 80 %}
-                      --tile-color: red !important;
-                    {% elif level > 50 %}
-                      --tile-color: orange !important;
-                    {% else %}
-                      --tile-color: green !important;
-                    {% endif %}
-                }         
-          - type: tile
-            entity: sensor.home_assistant_v2_db_taille
-            name: Home Assistant
-          - type: tile
-            entity: sensor.database
-          - type: history-graph
-            entities:
-              - entity: sensor.system_monitor_charge_5m
-          - type: history-graph
-            entities:
-              - entity: sensor.system_monitor_utilisation_de_la_memoire
-            min_y_axis: 0
-          - type: history-graph
-            entities:
-              - entity: sensor.uptime
-            hours_to_show: 24
-          - type: history-graph
-            entities:
-              - entity: sensor.double_clamp_meter_power_b
-            min_y_axis: 0
-            fit_y_data: false
-            max_y_axis: 40
-          - type: custom:stack-in-card
-            title: Backup Google Drive
-            cards:
-              - type: entities
-                entities:
-                  - entity: binary_sensor.backups_stale
-                    name: Backup Status
-                    card_mod:
-                      style: |
-                        :host {
-                            {% set level = states('binary_sensor.backups_stale') %}
-                            {% if level == "off" %}
-                              --card-mod-icon-color: green;
-                            {% else %}
-                              --card-mod-icon-color: red;
-                            {% endif %}
-                        }         
-                  - attribute: last_backup
-                    entity: sensor.backup_state
-                    icon: mdi:file-clock-outline
-                    name: Last Backup
-                    type: attribute
-                  - attribute: size_in_home_assistant
-                    entity: sensor.backup_state
-                    icon: mdi:harddisk
-                    name: Taille Home Assistant
-                    type: attribute
-                  - attribute: size_in_google_drive
-                    entity: sensor.backup_state
-                    icon: mdi:folder-google-drive
-                    name: Taille Drive
-                    type: attribute
-                  - attribute: free_space_in_google_drive
-                    entity: sensor.backup_state
-                    icon: mdi:google-drive
-                    name: Espace Drive
-                    type: attribute
-                show_header_toggle: false
-              - type: custom:button-card
-                name: Lancer un Backup Google
-                icon: mdi:backup-restore
-                size: 40px
-                tap_action:
-                  action: call-service
-                  service: hassio.addon_stdin
-                  service_data:
-                    addon: null
-                    input: trigger
-              - type: custom:button-card
-                name: Lancer un Backup local
-                icon: mdi:backup-restore
-                size: 40px
-                action: toggle
-                entity: input_button.backup
-      - type: grid
-        cards:
-          - type: custom:flex-table-card
-            title: Devices
-            entities:
-              include: device_tracker.*
-            clickable: true
-            sort: x.ip+
-            columns:
-              - name: Name
-                data: friendly_name
-              - name: IP
-                data: ip
-              - name: MAC
-                data: mac
-              - name: Date
-                data: last_time_reachable
-    max_columns: 4
-    title: Supervision
-    cards: []
-    icon: mdi:memory
-  - title: Automatisation
-    path: automatisation
-    icon: mdi:home-automation
+  - title: HP/HC
+    path: hp-hc
+    icon: mdi:toggle-switch-variant-off
     cards:
-      - type: entities
+      - type: glance
         entities:
-          - input_boolean.automatisation
-      - type: entities
+          - entity: sensor.taux_hc_jour
+          - entity: input_number.taux_hc_j_1
+          - entity: sensor.taux_hc_semaine
+          - entity: sensor.taux_hc_mois
+          - entity: sensor.taux_hc_annee
+      - chart_type: bar
+        period: day
+        type: statistics-graph
         entities:
-          - input_boolean.mode_alarme
-      - type: entities
+          - sensor.taux_hc_stat
+        stat_types:
+          - mean
+        days_to_show: 10
+        hide_legend: false
+      - chart_type: bar
+        period: hour
+        type: statistics-graph
         entities:
-          - input_button.depart_en_vacances
-        show_header_toggle: false
-        state_color: false
-      - type: entities
+          - sensor.energie_consommee_j_hp
+          - sensor.energie_consommee_j_hc
+        stat_types:
+          - state
+        days_to_show: 2
+      - type: history-graph
         entities:
-          - input_button.retour_de_vacances
-      - type: entities
+          - entity: sensor.taux_hc_sensor
+        hours_to_show: 200
+    badges: []
+  - title: Statistiques
+    path: statistiques
+    icon: mdi:chart-timeline-variant-shimmer
+    cards:
+      - chart_type: bar
+        period: day
+        type: statistics-graph
         entities:
-          - entity: switch.cumulus
-            name: Cumulus
-            icon: mdi:water-boiler
-          - entity: switch.prise_frigo_local
-            icon: mdi:fridge
-            name: Frigo
-          - entity: switch.prise_lave_vaisselle_local
-            name: Lave Vaisselle
-            icon: mdi:dishwasher
-          - entity: switch.prise_lave_linge_local
-            name: Lave Linge
-            icon: mdi:washing-machine
-          - entity: switch.prise_tv_local
-            name: Télévision
-            icon: mdi:television
-          - entity: switch.disjoncteur_sonnette_local_none
-            name: Sonnette
-            icon: mdi:doorbell-video
-          - entity: switch.shelly_em_switch
-          - entity: switch.disjoncteur_3_none
-            name: Clim Chambres
-            icon: mdi:thermometer-lines
-          - entity: switch.disjoncteur_4_none
-            name: Clim Salon
-            icon: mdi:thermometer-lines
+          - sensor.duree_cycle_frigo
+        stat_types:
+          - mean
+      - chart_type: bar
+        period: day
+        type: statistics-graph
+        entities:
+          - sensor.cycle_frigo
+        stat_types:
+          - max
+        logarithmic_scale: false
+        days_to_show: 10
+      - type: history-graph
+        entities:
+          - entity: sensor.duree_cycle_frigo_sensor
+        hours_to_show: 24
+      - type: history-graph
+        entities:
+          - entity: input_number.cycles_frigo
+      - type: statistic
+        entity: sensor.duree_cycle_frigo
+        period:
+          calendar:
+            period: week
+        stat_type: mean
+        name: Durée cycle Frigo (s)
+      - type: statistic
+        entity: sensor.cycle_frigo
+        period:
+          calendar:
+            period: week
+        stat_type: mean
+        name: Nb Cycles Frigo moyen (semaine)
+      - chart_type: bar
+        period: day
+        type: statistics-graph
+        entities:
+          - sensor.temps_allumage_frigo_today
+        stat_types:
+          - max
+        days_to_show: 30
+      - type: statistic
+        entity: sensor.temps_allumage_frigo_today
+        period:
+          calendar:
+            period: week
+        stat_type: mean
+        name: Temps frigo moyen (semaine)
+      - chart_type: line
+        period: day
+        type: statistics-graph
+        entities:
+          - sensor.thermometre_frigo_temperature
+        days_to_show: 30
+        stat_types:
+          - mean
   - title: VOLETS RDC
     icon: mdi:home-floor-0
     subview: false
@@ -1727,187 +2200,6 @@ views:
               action: toggle
             entity: cover.volet_velux_salle_de_bains
     max_columns: 10
-  - title: Température/Clim
-    path: temperature-clim
-    type: sections
-    sections:
-      - type: grid
-        cards:
-          - graph: line
-            type: sensor
-            detail: 2
-            hours_to_show: 24
-            name: Lisa
-            entity: sensor.chambre_lisa_temperature
-          - type: tile
-            entity: climate.clim_lisa
-            show_entity_picture: false
-            vertical: true
-            hide_state: false
-            icon_tap_action:
-              action: toggle
-            icon: mdi:air-conditioner
-            state_content:
-              - state
-              - last_changed
-            features:
-              - type: target-temperature
-          - graph: line
-            type: sensor
-            detail: 2
-            hours_to_show: 24
-            name: Léo
-            entity: sensor.chambre_leo_temperature
-          - type: tile
-            entity: climate.clim_leo
-            show_entity_picture: false
-            vertical: true
-            hide_state: false
-            icon_tap_action:
-              action: toggle
-            icon: mdi:air-conditioner
-          - graph: line
-            type: sensor
-            detail: 2
-            hours_to_show: 24
-            name: Entrée
-            entity: sensor.entree_temperature
-          - type: tile
-            entity: climate.clim_entree
-            show_entity_picture: false
-            vertical: true
-            hide_state: false
-            icon_tap_action:
-              action: toggle
-            icon: mdi:air-conditioner
-          - graph: line
-            type: sensor
-            detail: 2
-            hours_to_show: 24
-            name: Parents
-            entity: sensor.chambre_parents_temperature
-          - type: tile
-            show_entity_picture: false
-            vertical: true
-            hide_state: false
-            entity: climate.clim_parents
-            icon_tap_action:
-              action: toggle
-            icon: mdi:air-conditioner
-          - graph: line
-            type: sensor
-            detail: 2
-            entity: sensor.salon_temperature
-            hours_to_show: 24
-            name: Salon
-          - graph: line
-            type: sensor
-            detail: 2
-            hours_to_show: 24
-            name: Extérieur
-            entity: sensor.exterieur_temperature
-          - graph: line
-            type: sensor
-            detail: 2
-            entity: sensor.ecojoko_temperature_exterieure
-            hours_to_show: 24
-            name: Garage
-          - graph: line
-            type: sensor
-            detail: 2
-            hours_to_show: 24
-            name: Cuisine
-            entity: sensor.capteur_frigo_temperature
-          - graph: line
-            type: sensor
-            detail: 2
-            hours_to_show: 24
-            name: Frigo
-            entity: sensor.thermometre_frigo_temperature
-      - type: grid
-        cards:
-          - graph: line
-            type: sensor
-            detail: 1
-            entity: sensor.chambre_lisa_humidite
-          - graph: line
-            type: sensor
-            detail: 1
-            entity: sensor.chambre_leo_humidite
-          - graph: line
-            type: sensor
-            detail: 1
-            entity: sensor.chambre_parents_humidite
-          - graph: line
-            type: sensor
-            detail: 1
-            entity: sensor.salon_humidite
-          - graph: line
-            type: sensor
-            detail: 1
-            entity: sensor.entree_humidite
-      - type: grid
-        cards:
-          - type: custom:layout-card
-            layout_type: masonry
-            layout: {}
-            cards:
-              - type: entities
-                entities:
-                  - climate.clim_leo
-                  - sensor.chambre_leo_temperature
-                  - climate.clim_lisa
-                  - sensor.chambre_lisa_temperature
-                  - climate.clim_entree
-                  - sensor.entree_temperature
-                  - climate.clim_parents
-                  - sensor.chambre_parents_temperature
-      - type: grid
-        cards:
-          - type: horizontal-stack
-            cards:
-              - type: vertical-stack
-                cards:
-                  - graph: line
-                    type: sensor
-                    detail: 2
-                    hours_to_show: 24
-                    entity: sensor.meter_plus_16c6
-                  - graph: line
-                    type: sensor
-                    detail: 2
-                    hours_to_show: 24
-                    entity: sensor.meter_plus_d2cd
-                  - graph: line
-                    type: sensor
-                    detail: 2
-                    hours_to_show: 24
-                    entity: sensor.meter_plus_938f
-                  - graph: line
-                    type: sensor
-                    detail: 2
-                    hours_to_show: 24
-                    entity: sensor.meter_plus_6b44
-              - type: vertical-stack
-                cards:
-                  - graph: line
-                    type: sensor
-                    detail: 2
-                    hours_to_show: 24
-                    entity: sensor.meter_plus_e778
-                  - graph: line
-                    type: sensor
-                    detail: 2
-                    hours_to_show: 24
-                    entity: sensor.indoor_outdoor_meter_6a71
-                  - graph: line
-                    type: sensor
-                    detail: 2
-                    hours_to_show: 24
-                    entity: sensor.indoor_outdoor_meter_510d
-    max_columns: 4
-    icon: mdi:fan-auto
-    cards: []
   - title: Caméras
     path: cameras
     icon: mdi:webcam
@@ -2029,7 +2321,7 @@ views:
         cards:
           - type: entities
             entities:
-              - entity: input_number.test_level_1
+              - entity: input_number.zoom
                 name: Echelle
           - type: iframe
             url: http://192.168.68.130/screen
@@ -2050,10 +2342,14 @@ views:
         cards:
           - type: horizontal-stack
             cards:
-              - type: button
-                show_name: false
-                entity: button.awtrix_previous_app
               - show_name: false
+                show_icon: true
+                type: button
+                entity: button.awtrix_previous_app
+                tap_action:
+                  action: toggle
+              - show_name: false
+                show_icon: true
                 type: button
                 entity: light.awtrix_matrix
                 show_state: true
@@ -2063,6 +2359,8 @@ views:
                 type: button
                 entity: button.awtrix_next_app
                 name: Next
+                tap_action:
+                  action: toggle
           - type: horizontal-stack
             cards:
               - type: entities
@@ -2086,7 +2384,7 @@ views:
                   - entity: sensor.awtrix_2e487c_temperature
                     name: Temperature
                   - entity: sensor.awtrix_2e487c_humidity
-                    name: Uptime
+                    name: Humidité
                   - entity: sensor.awtrix_2e487c_uptime
                     name: Uptime
                   - entity: sensor.awtrix_2e487c_ip_address
@@ -2159,7 +2457,7 @@ views:
                       style: |
                         ha-card  {
                           background-color: rgba{{state_attr("light.wled1_segment_5", "rgb_color") if is_state('light.wled1_segment_5', 'on') else '(224, 224, 224)'}};
-                          height:10px !important;
+                          height: 10px !important;
                           width: 20
                           border: 1px solid grey !important;}
                   - type: custom:button-card
@@ -2336,3 +2634,34 @@ views:
       - type: iframe
         url: http://192.168.68.134
         aspect_ratio: 200%
+  - type: sections
+    max_columns: 4
+    title: ESP32
+    path: esp32
+    icon: mdi:chip
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading_style: subtitle
+          - type: vertical-stack
+            cards:
+              - show_name: true
+                show_icon: true
+                show_state: true
+                type: glance
+                entities:
+                  - entity: sensor.esp32_test_tension_esp32
+                    name: GPIO32
+                  - entity: sensor.esp32_test_tension_esp32_33
+                    name: GPIO33
+                  - entity: sensor.esp32_test_tension_esp32_34
+                    name: GPIO34
+                  - entity: sensor.esp32_test_tension_esp32_35
+                    name: GPIO35
+                  - entity: sensor.esp32_test_tension_esp32_36
+                    name: GPIO36
+                  - entity: sensor.esp32_test_tension_esp32_37
+                    name: GPIO37
+                state_color: false
+                columns: 6

@@ -52,3 +52,11 @@ devices:
     current_precision: 3
     voltage_precision: 1
     energy_precision: 3
+  '0x3c6a2cfffed4a7de':
+    friendly_name: Sonde température OWON
+    temperature_precision: 2
+availability:
+  active:
+    timeout: 10
+  passive:
+    timeout: 120
