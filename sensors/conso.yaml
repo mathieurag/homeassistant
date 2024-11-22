@@ -74,23 +74,16 @@ template:
         unit_of_measurement: "W"
         state: "{% if states('sensor.em06_b1_power') | float(0) < 85 -%} 100 {%- else -%} {{states('sensor.em06_b1_power') | float(0)}} {%- endif %}"
 
-      - name: "Surplus Production"
-        unique_id: "surplus_production"
-        device_class: power # Exemples de valeurs possibles
-        state_class: measurement
-        unit_of_measurement: "W"
-        state: "{% if int(states('sensor.em06_02_a1_power')) | float(0) > int(states('sensor.em06_b1_power')) -%} {{(int(states('sensor.em06_02_a1_power')) - int(states('sensor.em06_b1_power'))) | float(0)}} {%- else -%} 0 {%- endif %}"
-
-      - name: "Production Solaire"
-        unique_id: "production_solaire"
-        device_class: power # Exemples de valeurs possibles
-        state_class: measurement
-        unit_of_measurement: "W"
-        state: "{% if int(states('sensor.em06_02_a1_power')) | float(0) > 0 -%} {{ int(states('sensor.em06_02_a1_power')) | float(0)}} {%- else -%} 0 {%- endif %}"
-
       - name: "Consommation réseau Absolue"
         unique_id: "consommation_reseau_abs"
         device_class: power # Exemples de valeurs possibles
         state_class: measurement
         unit_of_measurement: "W"
         state: "{% if int(states('sensor.em06_02_b1_power')) | float(0) > 0 -%} {{ int(states('sensor.em06_02_b1_power')) | float(0)}} {%- else -%} 0 {%- endif %}"
+
+      - name: "Taux de chauffe ECS"
+        unique_id: "taux_chauffe_ecs"
+        unit_of_measurement: "%"
+        device_class: power_factor # Exemples de valeurs possibles
+        state_class: measurement # Exemples de valeurs possibles
+        state: "{{ (100*(float(states('sensor.sonde_temperature_owon_temperature')) - float(states('input_number.tmin_ecs')) )/ (float(states('input_number.tmax_ecs'))-float(states('input_number.tmin_ecs')) ) )| round(0) }}"
