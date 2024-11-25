@@ -1,3449 +1,3586 @@
-- id: "1719750374699"
+- id: '1719750374699'
   alias: Sauvegarde manuelle
-  description: ""
+  description: ''
   trigger:
-    - platform: state
-      entity_id:
-        - input_button.backup
-      from:
-      to:
+  - platform: state
+    entity_id:
+    - input_button.backup
+    from:
+    to:
   condition: []
   action:
-    - service: hassio.backup_full
-      data:
-        compressed: true
-        homeassistant_exclude_database: false
+  - service: hassio.backup_full
+    data:
+      compressed: true
+      homeassistant_exclude_database: false
   mode: single
-- id: "1719771464619"
+- id: '1719771464619'
   alias: Changement IP Fixe
-  description: ""
+  description: ''
   trigger:
-    - platform: state
-      entity_id:
-        - sensor.myip
+  - platform: state
+    entity_id:
+    - sensor.myip
   condition:
-    - condition: state
-      entity_id: sensor.myip
-      state: not unknown
-    - condition: state
-      entity_id: sensor.myip
-      state: not unavailable
+  - condition: state
+    entity_id: sensor.myip
+    state: not unknown
+  - condition: state
+    entity_id: sensor.myip
+    state: not unavailable
   action:
-    - metadata: {}
-      data:
-        message: "Nouvelle IP Fixe : {{states('sensor.myip')}}"
-      action: notify.notify
+  - metadata: {}
+    data:
+      message: 'Nouvelle IP Fixe : {{states(''sensor.myip'')}}'
+    action: notify.notify
   mode: single
-- id: "1719775557204"
+- id: '1719775557204'
   alias: Départ en vacances
-  description: "Fermeture de tous les volets/stores/fenêtres sauf Garage
+  description: 'Fermeture de tous les volets/stores/fenêtres sauf Garage
 
-    Activation du mode alarme sur ouvertures/caméras"
+    Activation du mode alarme sur ouvertures/caméras'
   triggers:
-    - entity_id:
-        - input_button.depart_en_vacances
-      trigger: state
+  - entity_id:
+    - input_button.depart_en_vacances
+    trigger: state
   conditions:
-    - condition: state
-      entity_id: input_boolean.automatisation
-      state: "on"
+  - condition: state
+    entity_id: input_boolean.automatisation
+    state: 'on'
   actions:
-    - device_id: 2bd1859f74267146aa2087e82d1ffd4f
-      domain: button
-      entity_id: 38477b2ac9f932c74d15d3041385d4cb
-      type: press
-    - metadata: {}
-      data: {}
-      target:
-        entity_id: input_boolean.mode_alarme
-      action: input_boolean.turn_on
-    - type: turn_off
-      device_id: 62be3297a0c0d75c708f1a2e49911819
-      entity_id: 84ede9c070c6abc84dbd5367e484c988
-      domain: switch
+  - device_id: 2bd1859f74267146aa2087e82d1ffd4f
+    domain: button
+    entity_id: 38477b2ac9f932c74d15d3041385d4cb
+    type: press
+  - metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.mode_alarme
+    action: input_boolean.turn_on
+  - type: turn_off
+    device_id: 62be3297a0c0d75c708f1a2e49911819
+    entity_id: 84ede9c070c6abc84dbd5367e484c988
+    domain: switch
   mode: single
-- id: "1719776952844"
+- id: '1719776952844'
   alias: Retour de vacances
   description: Active le Chauffe eau et désactive les alarmes
   trigger:
-    - platform: state
-      entity_id:
-        - input_button.retour_de_vacances
+  - platform: state
+    entity_id:
+    - input_button.retour_de_vacances
   condition:
-    - condition: state
-      entity_id: input_boolean.automatisation
-      state: "on"
+  - condition: state
+    entity_id: input_boolean.automatisation
+    state: 'on'
   action:
-    - type: turn_on
-      device_id: 62be3297a0c0d75c708f1a2e49911819
-      entity_id: 84ede9c070c6abc84dbd5367e484c988
-      domain: switch
-    - service: input_boolean.turn_off
-      metadata: {}
-      data: {}
-      target:
-        entity_id: input_boolean.mode_alarme
+  - type: turn_on
+    device_id: 62be3297a0c0d75c708f1a2e49911819
+    entity_id: 84ede9c070c6abc84dbd5367e484c988
+    domain: switch
+  - service: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.mode_alarme
   mode: single
-- id: "1719836236088"
+- id: '1719836236088'
   alias: Alerte Mémoire
-  description: ""
+  description: ''
   triggers:
-    - entity_id:
-        - sensor.system_monitor_utilisation_de_la_memoire
-      above: 50
-      trigger: numeric_state
+  - entity_id:
+    - sensor.system_monitor_utilisation_de_la_memoire
+    above: 50
+    trigger: numeric_state
   conditions: []
   actions:
-    - action: notify.persistent_notification
-      data:
-        message: "Utilisation de la mémoire > 50% :     {{states('sensor.system_monitor_utilisation_de_la_memoire')}}%"
-    - action: notify.mobile_app_iphone_de_mat_old
-      data:
-        message: "Utilisation de la mémoire > 50% :         {{states('sensor.system_monitor_utilisation_de_la_memoire')}}%"
+  - action: notify.persistent_notification
+    data:
+      message: 'Utilisation de la mémoire > 50% :     {{states(''sensor.system_monitor_utilisation_de_la_memoire'')}}%'
+  - action: notify.mobile_app_iphone_de_mat_old
+    data:
+      message: 'Utilisation de la mémoire > 50% :         {{states(''sensor.system_monitor_utilisation_de_la_memoire'')}}%'
   mode: single
-- id: "1719836323085"
+- id: '1719836323085'
   alias: Alerte CPU
-  description: ""
+  description: ''
   triggers:
-    - entity_id:
-        - sensor.system_monitor_charge_5m
-      above: 1
-      trigger: numeric_state
+  - entity_id:
+    - sensor.system_monitor_charge_5m
+    above: 1
+    trigger: numeric_state
   conditions: []
   actions:
-    - metadata: {}
-      data:
-        message: "Utilisation du CPU importante : {{states('sensor.system_monitor_charge_5m')}}"
-      action: notify.mobile_app_iphone_de_mat_old
-    - metadata: {}
-      data:
-        message: "Utilisation du CPU importante : {{states('sensor.system_monitor_charge_5m')}}"
-      action: persistent_notification.create
+  - metadata: {}
+    data:
+      message: 'Utilisation du CPU importante : {{states(''sensor.system_monitor_charge_5m'')}}'
+    action: notify.mobile_app_iphone_de_mat_old
+  - metadata: {}
+    data:
+      message: 'Utilisation du CPU importante : {{states(''sensor.system_monitor_charge_5m'')}}'
+    action: persistent_notification.create
   mode: single
-- id: "1719836425210"
+- id: '1719836425210'
   alias: Alerte Swap
-  description: ""
+  description: ''
   trigger:
-    - platform: numeric_state
-      entity_id:
-        - sensor.system_monitor_espace_d_echange_libre
-      below: 650
+  - platform: numeric_state
+    entity_id:
+    - sensor.system_monitor_espace_d_echange_libre
+    below: 650
   condition: []
   action:
-    - service: notify.send_message
-      metadata: {}
-      data:
-        message:
-          "Utilisation du SWAP < 10Mo : {{states('sensor.system_monitor_utilisation_de_la_memoire')}}
-          Mo restants"
+  - service: notify.send_message
+    metadata: {}
+    data:
+      message: 'Utilisation du SWAP < 10Mo : {{states(''sensor.system_monitor_utilisation_de_la_memoire'')}}
+        Mo restants'
   mode: single
-- id: "1719933755667"
+- id: '1719933755667'
   alias: Début ECS
-  description: ""
+  description: ''
   triggers:
-    - entity_id:
-        - sensor.disjoncteur_cumulus_puissance
-      above: 4
-      trigger: numeric_state
-      for:
-        hours: 0
-        minutes: 1
-        seconds: 0
-    - entity_id:
-        - sensor.cumulus_2
-      above: 4
-      trigger: numeric_state
-      for:
-        hours: 0
-        minutes: 1
-        seconds: 0
+  - entity_id:
+    - sensor.disjoncteur_cumulus_puissance
+    above: 4
+    trigger: numeric_state
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  - entity_id:
+    - sensor.cumulus_2
+    above: 4
+    trigger: numeric_state
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
   conditions:
-    - condition: template
-      value_template:
-        "{{ now() - state_attr('automation.debut_ecs', 'last_triggered')
-        > timedelta(minutes=15) }}"
+  - condition: template
+    value_template: '{{ now() - state_attr(''automation.debut_ecs'', ''last_triggered'')
+      > timedelta(minutes=15) }}'
   actions:
-    - metadata: {}
-      data: {}
-      target:
-        entity_id: input_boolean.ecs
-      action: input_boolean.turn_on
-    - action: input_number.set_value
-      metadata: {}
-      data:
-        value: "{{ states('sensor.cumulus_kwh') | float(0) }}"
-      target:
-        entity_id: input_number.debut_ecs
-  mode: single
-- id: "1719951431038"
-  alias: Fin ECS
-  description: ""
-  triggers:
-    - entity_id:
-        - sensor.disjoncteur_cumulus_puissance
-      below: 4
-      trigger: numeric_state
-      for:
-        hours: 0
-        minutes: 15
-        seconds: 0
-    - entity_id:
-        - sensor.cumulus_2
-      below: 4
-      trigger: numeric_state
-      for:
-        hours: 0
-        minutes: 15
-        seconds: 0
-  conditions:
-    - condition: state
+  - metadata: {}
+    data: {}
+    target:
       entity_id: input_boolean.ecs
-      state: "on"
-    - condition: template
-      value_template:
-        "{{ now() - state_attr('automation.debut_ecs', 'last_triggered')
-        > timedelta(minutes=20) }}"
-  actions:
-    - metadata: {}
-      data: {}
-      target:
-        entity_id: input_boolean.ecs
-      action: input_boolean.turn_off
-    - action: input_number.set_value
-      metadata: {}
-      data:
-        value: "{{ states('sensor.cumulus_kwh') | float(0) }}"
-      target:
-        entity_id: input_number.fin_ecs
-    - action: automation.trigger
-      metadata: {}
-      data:
-        skip_condition: true
-      target:
-        entity_id: automation.cycle_ecs
-      enabled: true
+    action: input_boolean.turn_on
+  - action: input_number.set_value
+    metadata: {}
+    data:
+      value: '{{ states(''sensor.cumulus_kwh'') | float(0) }}'
+    target:
+      entity_id: input_number.debut_ecs
   mode: single
-- id: "1719951775105"
+- id: '1719951431038'
+  alias: Fin ECS
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.disjoncteur_cumulus_puissance
+    below: 4
+    trigger: numeric_state
+    for:
+      hours: 0
+      minutes: 15
+      seconds: 0
+  - entity_id:
+    - sensor.cumulus_2
+    below: 4
+    trigger: numeric_state
+    for:
+      hours: 0
+      minutes: 15
+      seconds: 0
+  conditions:
+  - condition: state
+    entity_id: input_boolean.ecs
+    state: 'on'
+  - condition: template
+    value_template: '{{ now() - state_attr(''automation.debut_ecs'', ''last_triggered'')
+      > timedelta(minutes=20) }}'
+  actions:
+  - metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.ecs
+    action: input_boolean.turn_off
+  - action: input_number.set_value
+    metadata: {}
+    data:
+      value: '{{ states(''sensor.cumulus_kwh'') | float(0) }}'
+    target:
+      entity_id: input_number.fin_ecs
+  - action: automation.trigger
+    metadata: {}
+    data:
+      skip_condition: true
+    target:
+      entity_id: automation.cycle_ecs
+    enabled: true
+  mode: single
+- id: '1719951775105'
   alias: Début Frigo
-  description: ""
+  description: ''
   triggers:
-    - entity_id:
-        - sensor.prise_frigo_local_puissance
-        - sensor.prise_frigo_puissance
-      above: 3
-      trigger: numeric_state
+  - entity_id:
+    - sensor.prise_frigo_local_puissance
+    - sensor.prise_frigo_puissance
+    above: 3
+    trigger: numeric_state
   conditions:
-    - condition: state
-      entity_id: input_boolean.frigo
-      state: "off"
+  - condition: state
+    entity_id: input_boolean.frigo
+    state: 'off'
   actions:
-    - metadata: {}
-      data: {}
-      target:
-        entity_id: input_boolean.frigo
-      action: input_boolean.turn_on
-    - action: input_number.set_value
-      metadata: {}
-      data:
-        value: "{{ states('sensor.frigo_wh') | float(0) }}"
-      target:
-        entity_id: input_number.debut_frigo
-    - action: input_datetime.set_datetime
-      target:
-        entity_id: input_datetime.dernier_cycle_frigo
-      data:
-        datetime: "{{state_attr('automation.fin_frigo','last_triggered')}}"
+  - metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.frigo
+    action: input_boolean.turn_on
+  - action: input_number.set_value
+    metadata: {}
+    data:
+      value: '{{ states(''sensor.frigo_wh'') | float(0) }}'
+    target:
+      entity_id: input_number.debut_frigo
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.dernier_cycle_frigo
+    data:
+      datetime: '{{state_attr(''automation.fin_frigo'',''last_triggered'')}}'
   mode: single
-- id: "1719951809758"
+- id: '1719951809758'
   alias: Fin Frigo
-  description: ""
+  description: ''
   trigger:
-    - platform: numeric_state
-      entity_id:
-        - sensor.prise_frigo_puissance
-        - sensor.prise_frigo_local_puissance
-      below: 3
+  - platform: numeric_state
+    entity_id:
+    - sensor.prise_frigo_puissance
+    - sensor.prise_frigo_local_puissance
+    below: 3
   condition:
-    - condition: state
-      entity_id: input_boolean.frigo
-      state: "on"
+  - condition: state
+    entity_id: input_boolean.frigo
+    state: 'on'
   action:
-    - data: {}
-      target:
-        entity_id: input_boolean.frigo
-      action: input_boolean.turn_off
-    - action: input_number.set_value
-      metadata: {}
-      data:
-        value: "{{ states('sensor.frigo_wh') | float(0) }}"
-      target:
-        entity_id: input_number.fin_frigo
-    - action: automation.trigger
-      metadata: {}
-      data:
-        skip_condition: true
-      target:
-        entity_id: automation.cycle_frigo
+  - data: {}
+    target:
+      entity_id: input_boolean.frigo
+    action: input_boolean.turn_off
+  - action: input_number.set_value
+    metadata: {}
+    data:
+      value: '{{ states(''sensor.frigo_wh'') | float(0) }}'
+    target:
+      entity_id: input_number.fin_frigo
+  - action: automation.trigger
+    metadata: {}
+    data:
+      skip_condition: true
+    target:
+      entity_id: automation.cycle_frigo
   mode: single
-- id: "1720013652767"
+- id: '1720013652767'
   alias: Début Prise Salon
-  description: ""
+  description: ''
   triggers:
-    - entity_id:
-        - switch.lumiere_salon
-      to: "on"
-      trigger: state
+  - entity_id:
+    - switch.lumiere_salon
+    to: 'on'
+    trigger: state
   conditions:
-    - condition: state
-      entity_id: input_boolean.prise_salon
-      state: "off"
+  - condition: state
+    entity_id: input_boolean.prise_salon
+    state: 'off'
   actions:
-    - metadata: {}
-      data: {}
-      target:
-        entity_id: input_boolean.prise_salon
-      action: input_boolean.turn_on
+  - metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.prise_salon
+    action: input_boolean.turn_on
   mode: single
-- id: "1720013745679"
+- id: '1720013745679'
   alias: Fin Prise Salon
-  description: ""
+  description: ''
   triggers:
-    - entity_id:
-        - switch.lumiere_salon
-      to: "off"
-      trigger: state
+  - entity_id:
+    - switch.lumiere_salon
+    to: 'off'
+    trigger: state
   conditions:
-    - condition: state
-      entity_id: input_boolean.prise_salon
-      state: "on"
+  - condition: state
+    entity_id: input_boolean.prise_salon
+    state: 'on'
   actions:
-    - target:
-        entity_id:
-          - input_boolean.prise_salon
-      data: {}
-      action: input_boolean.turn_off
+  - target:
+      entity_id:
+      - input_boolean.prise_salon
+    data: {}
+    action: input_boolean.turn_off
   mode: single
-- id: "1720778515127"
+- id: '1720778515127'
   alias: Suppression données EcoJoko
   description: Suppression données EcoJoko
   triggers:
-    - at: 00:04:00
-      trigger: time
+  - at: 00:04:00
+    trigger: time
   conditions: []
   actions:
-    - data:
-        entity_id:
-          - sensor.ecojoko_consommation_reseau
-        keep_days: 1
-      action: recorder.purge_entities
-    - action: shell_command.supp_ecojoko
-      data: {}
-      response_variable: Count
+  - data:
+      entity_id:
+      - sensor.ecojoko_consommation_reseau
+      keep_days: 1
+    action: recorder.purge_entities
+  - action: shell_command.supp_ecojoko
+    data: {}
+    response_variable: Count
   mode: single
-- id: "1720780669285"
+- id: '1720780669285'
   alias: Suppression données (purge recorder)
   description: Suppression données quotidiennes
   triggers:
-    - at: 00:04:00
-      trigger: time
+  - at: 00:04:00
+    trigger: time
   conditions: []
   actions:
-    - data:
-        keep_days: 1
-        entity_id:
-          - sensor.consommation_non_suivie_moyenne
-          - sensor.consommation_suivie
-          - sensor.consommation_non_suivie
-          - sensor.puissance_socle
-          - sensor.puissance_suivie
-          - sensor.four
-          - sensor.prises_rdc
-          - sensor.prises_rdc_2
-          - sensor.em06_01_b1
-          - sensor.awtrix_2e487c_uptime
-          - sensor.8_8_8_8_temps_daller_retour_maximum
-          - sensor.google_com_temps_daller_retour_maximum
-          - sensor.176_129_131_234_temps_daller_retour_maximum
-          - sensor.awtrix_2e487c_wifi_strength
-          - sensor.taux_solar_heure
-          - sensor.awtrix_2e487c_free_ram
-          - sensor.taux_solar_jour
-          - sensor.conso_mini
-          - sensor.consommation_non_suivie_kwh
-          - sensor.consommation_non_suivie_2
-        domains: climate
-        entity_globs:
-          - switch.clim_*_xfan
-          - switch.clim_*_quiet
-          - switch.clim_*_panel_light
-          - switch.clim_*_fresh_air
-          - sensor.*frequence*
-          - sensor.*voltage*
-          - sensor.*tension*
-          - sensor.*courant*
-          - sensor.*current*
-          - sensor.energie_consommee*
-          - sensor.energy_total*
-          - sensor.system_monitor*
-          - sensor.m5*
-          - sensor.*power_factor*
-          - sensor.em06*_this_month_energy
-          - sensor.*_temps_daller_retour_m*
-          - sensor.energie_solar*
-          - sensor.conso_mini*
-      action: recorder.purge_entities
+  - data:
+      keep_days: 1
+      entity_id:
+      - sensor.consommation_non_suivie_moyenne
+      - sensor.consommation_suivie
+      - sensor.consommation_non_suivie
+      - sensor.puissance_socle
+      - sensor.puissance_suivie
+      - sensor.four
+      - sensor.prises_rdc
+      - sensor.prises_rdc_2
+      - sensor.em06_01_b1
+      - sensor.awtrix_2e487c_uptime
+      - sensor.8_8_8_8_temps_daller_retour_maximum
+      - sensor.google_com_temps_daller_retour_maximum
+      - sensor.176_129_131_234_temps_daller_retour_maximum
+      - sensor.awtrix_2e487c_wifi_strength
+      - sensor.taux_solar_heure
+      - sensor.awtrix_2e487c_free_ram
+      - sensor.taux_solar_jour
+      - sensor.conso_mini
+      - sensor.consommation_non_suivie_kwh
+      - sensor.consommation_non_suivie_2
+      domains: climate
+      entity_globs:
+      - switch.clim_*_xfan
+      - switch.clim_*_quiet
+      - switch.clim_*_panel_light
+      - switch.clim_*_fresh_air
+      - sensor.*frequence*
+      - sensor.*voltage*
+      - sensor.*tension*
+      - sensor.*courant*
+      - sensor.*current*
+      - sensor.energie_consommee*
+      - sensor.energy_total*
+      - sensor.system_monitor*
+      - sensor.m5*
+      - sensor.*power_factor*
+      - sensor.em06*_this_month_energy
+      - sensor.*_temps_daller_retour_m*
+      - sensor.energie_solar*
+      - sensor.conso_mini*
+    action: recorder.purge_entities
   mode: single
-- id: "1724796582689"
+- id: '1724796582689'
   alias: Alerte conso minimum
-  description: ""
+  description: ''
   triggers:
-    - at: "23:00:00"
-      trigger: time
+  - at: '23:00:00'
+    trigger: time
   conditions:
-    - condition: numeric_state
-      entity_id: sensor.conso_tr_mini_last_24h
-      above: 99
+  - condition: numeric_state
+    entity_id: sensor.conso_tr_mini_last_24h
+    above: 99
   actions:
-    - data:
-        message: "Conso mini du jour > 100W : {{states('sensor.conso_tr_mini_last_24h')}}"
-      action: notify.notify
+  - data:
+      message: 'Conso mini du jour > 100W : {{states(''sensor.conso_tr_mini_last_24h'')}}'
+    action: notify.notify
   mode: single
-- id: "1725127161330"
+- id: '1725127161330'
   alias: Début TV
-  description: ""
+  description: ''
   triggers:
-    - entity_id:
-        - sensor.prise_tv_cloud_puissance
-        - sensor.prise_tv_puissance
-      above: 3
-      trigger: numeric_state
+  - entity_id:
+    - sensor.prise_tv_cloud_puissance
+    - sensor.prise_tv_puissance
+    above: 3
+    trigger: numeric_state
   conditions:
-    - condition: state
+  - condition: state
+    entity_id: input_boolean.tv
+    state: 'off'
+  actions:
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
       entity_id: input_boolean.tv
-      state: "off"
-  actions:
-    - metadata: {}
-      data: {}
-      action: input_boolean.turn_on
-      target:
-        entity_id: input_boolean.tv
   mode: single
-- id: "1725127378854"
+- id: '1725127378854'
   alias: Fin TV
-  description: ""
+  description: ''
   trigger:
-    - platform: numeric_state
-      entity_id:
-        - sensor.prise_tv_puissance
-        - sensor.prise_tv_cloud_puissance
-      below: 10
+  - platform: numeric_state
+    entity_id:
+    - sensor.prise_tv_puissance
+    - sensor.prise_tv_cloud_puissance
+    below: 10
   condition: []
   action:
-    - data: {}
-      action: input_boolean.turn_off
-      target:
-        entity_id: input_boolean.tv
+  - data: {}
+    action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.tv
   mode: single
-- id: "1725127433392"
+- id: '1725127433392'
   alias: Début Lave Vaisselle
-  description: ""
+  description: ''
   trigger:
-    - platform: numeric_state
-      entity_id:
-        - sensor.prise_lave_vaiselle_local_puissance
-        - sensor.prise_lave_vaisselle_cloud_puissance
-      above: 15
+  - platform: numeric_state
+    entity_id:
+    - sensor.prise_lave_vaiselle_local_puissance
+    - sensor.prise_lave_vaisselle_cloud_puissance
+    above: 15
   condition: []
   action:
-    - metadata: {}
-      data: {}
-      action: input_boolean.turn_on
-      target:
-        entity_id: input_boolean.lave_vaisselle
-  mode: single
-- id: "1725127461592"
-  alias: Début Lave Linge
-  description: ""
-  triggers:
-    - entity_id:
-        - sensor.prise_lave_linge_local_puissance
-        - sensor.prise_lave_linge_puissance
-      above: 15
-      trigger: numeric_state
-  conditions:
-    - condition: state
-      entity_id: input_boolean.lave_linge
-      state: "off"
-  actions:
-    - metadata: {}
-      data: {}
-      action: input_boolean.turn_on
-      target:
-        entity_id: input_boolean.lave_linge
-  mode: single
-- id: "1725127533248"
-  alias: Début Four
-  description: ""
-  triggers:
-    - entity_id:
-        - sensor.em06_b2_power
-      above: 10
-      trigger: numeric_state
-  conditions:
-    - condition: state
-      entity_id: input_boolean.four
-      state: "off"
-  actions:
-    - metadata: {}
-      data: {}
-      action: input_boolean.turn_on
-      target:
-        entity_id: input_boolean.four
-  mode: single
-- id: "1725127596650"
-  alias: Fin Lave Linge
-  description: ""
-  trigger:
-    - platform: numeric_state
-      entity_id:
-        - sensor.prise_lave_linge_local_puissance
-        - sensor.prise_lave_linge_puissance
-      below: 10
-      for:
-        hours: 0
-        minutes: 1
-        seconds: 0
-  condition:
-    - condition: state
-      entity_id: input_boolean.lave_linge
-      state: "on"
-  action:
-    - data: {}
-      action: input_boolean.turn_off
-      target:
-        entity_id: input_boolean.lave_linge
-  mode: single
-- id: "1725127616602"
-  alias: Fin Lave Vaisselle
-  description: ""
-  triggers:
-    - entity_id:
-        - sensor.prise_lave_vaisselle_cloud_puissance
-        - sensor.prise_lave_vaisselle_cloud_puissance
-      below: 5
-      for:
-        hours: 0
-        minutes: 5
-        seconds: 0
-      trigger: numeric_state
-    - entity_id:
-        - sensor.prise_lave_vaiselle_local_puissance
-      below: 5
-      for:
-        hours: 0
-        minutes: 5
-        seconds: 0
-      trigger: numeric_state
-  conditions:
-    - condition: state
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
       entity_id: input_boolean.lave_vaisselle
-      state: "on"
-  actions:
-    - data: {}
-      action: input_boolean.turn_off
-      target:
-        entity_id: input_boolean.lave_vaisselle
   mode: single
-- id: "1725127649202"
-  alias: Fin Four
-  description: ""
-  trigger:
-    - platform: numeric_state
-      entity_id:
-        - sensor.em06_b2_power
-      below: 10
-  condition:
-    - condition: state
+- id: '1725127461592'
+  alias: Début Lave Linge
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.prise_lave_linge_local_puissance
+    - sensor.prise_lave_linge_puissance
+    above: 15
+    trigger: numeric_state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.lave_linge
+    state: 'off'
+  actions:
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.lave_linge
+  mode: single
+- id: '1725127533248'
+  alias: Début Four
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.em06_b2_power
+    above: 10
+    trigger: numeric_state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.four
+    state: 'off'
+  actions:
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
       entity_id: input_boolean.four
-      state: "on"
-  action:
-    - data: {}
-      action: input_boolean.turn_off
-      target:
-        entity_id: input_boolean.four
   mode: single
-- id: "1725135323812"
+- id: '1725127596650'
+  alias: Fin Lave Linge
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.prise_lave_linge_local_puissance
+    - sensor.prise_lave_linge_puissance
+    below: 10
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  condition:
+  - condition: state
+    entity_id: input_boolean.lave_linge
+    state: 'on'
+  action:
+  - data: {}
+    action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.lave_linge
+  mode: single
+- id: '1725127616602'
+  alias: Fin Lave Vaisselle
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.prise_lave_vaisselle_cloud_puissance
+    - sensor.prise_lave_vaisselle_cloud_puissance
+    below: 5
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: numeric_state
+  - entity_id:
+    - sensor.prise_lave_vaiselle_local_puissance
+    below: 5
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: numeric_state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.lave_vaisselle
+    state: 'on'
+  actions:
+  - data: {}
+    action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.lave_vaisselle
+  mode: single
+- id: '1725127649202'
+  alias: Fin Four
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.em06_b2_power
+    below: 10
+  condition:
+  - condition: state
+    entity_id: input_boolean.four
+    state: 'on'
+  action:
+  - data: {}
+    action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.four
+  mode: single
+- id: '1725135323812'
   alias: Début Clim
-  description: ""
+  description: ''
   trigger:
-    - platform: numeric_state
-      entity_id:
-        - sensor.disjoncteur_3_puissance
-        - sensor.disjoncteur_3_puissance_2
-      above: 49.8
+  - platform: numeric_state
+    entity_id:
+    - sensor.disjoncteur_3_puissance
+    - sensor.disjoncteur_3_puissance_2
+    above: 49.8
   condition: []
   action:
-    - metadata: {}
-      data: {}
-      action: input_boolean.turn_on
-      target:
-        entity_id: input_boolean.climatisation
-  mode: single
-- id: "1725135356249"
-  alias: Fin Clim
-  description: ""
-  trigger:
-    - platform: numeric_state
-      entity_id:
-        - sensor.disjoncteur_3_puissance_2
-        - sensor.disjoncteur_3_puissance
-      below: 49.9
-  condition:
-    - condition: state
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
       entity_id: input_boolean.climatisation
-      state: "on"
-  action:
-    - data: {}
-      action: input_boolean.turn_off
-      target:
-        entity_id: input_boolean.climatisation
   mode: single
-- id: "1725138072700"
+- id: '1725135356249'
+  alias: Fin Clim
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.disjoncteur_3_puissance_2
+    - sensor.disjoncteur_3_puissance
+    below: 49.9
+  condition:
+  - condition: state
+    entity_id: input_boolean.climatisation
+    state: 'on'
+  action:
+  - data: {}
+    action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.climatisation
+  mode: single
+- id: '1725138072700'
   alias: Début Clim Salon
-  description: ""
+  description: ''
   triggers:
-    - entity_id:
-        - sensor.disjoncteur_4_puissance_2
-        - sensor.disjoncteur_4_puissance
-      above: 49.8
-      trigger: numeric_state
+  - entity_id:
+    - sensor.disjoncteur_4_puissance_2
+    - sensor.disjoncteur_4_puissance
+    above: 49.8
+    trigger: numeric_state
   conditions:
-    - condition: state
-      entity_id: input_boolean.clim_salon
-      state: "off"
+  - condition: state
+    entity_id: input_boolean.clim_salon
+    state: 'off'
   actions:
-    - metadata: {}
-      data: {}
-      action: input_boolean.turn_on
-      target:
-        entity_id: input_boolean.clim_salon
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.clim_salon
   mode: single
-- id: "1725138108554"
+- id: '1725138108554'
   alias: Fin Clim Salon
-  description: ""
+  description: ''
   trigger:
-    - platform: numeric_state
-      entity_id:
-        - sensor.disjoncteur_4_puissance_2
-        - sensor.disjoncteur_4_puissance
-      below: 49.9
+  - platform: numeric_state
+    entity_id:
+    - sensor.disjoncteur_4_puissance_2
+    - sensor.disjoncteur_4_puissance
+    below: 49.9
   condition:
-    - condition: state
+  - condition: state
+    entity_id: input_boolean.clim_salon
+    state: 'on'
+  action:
+  - data: {}
+    action: input_boolean.turn_off
+    target:
       entity_id: input_boolean.clim_salon
-      state: "on"
-  action:
-    - data: {}
-      action: input_boolean.turn_off
-      target:
-        entity_id: input_boolean.clim_salon
   mode: single
-- id: "1725223267378"
+- id: '1725223267378'
   alias: Alerte TV non éteinte
-  description: ""
+  description: ''
   trigger:
-    - platform: time
-      at: 00:30:00
+  - platform: time
+    at: 00:30:00
   condition:
-    - condition: numeric_state
-      entity_id: sensor.prise_tv_puissance
-      above: 1
-    - condition: numeric_state
-      entity_id: sensor.prise_tv_cloud_puissance
-      above: 1
+  - condition: numeric_state
+    entity_id: sensor.prise_tv_puissance
+    above: 1
+  - condition: numeric_state
+    entity_id: sensor.prise_tv_cloud_puissance
+    above: 1
   action:
-    - data:
-        message: "TV non éteinte : {{states('sensor.prise_tv_puissance')}}W"
-      action: notify.notify
-    - action: switch.turn_off
-      target:
-        device_id:
-          - ccfd320c2ae171b9cbca0e8d97e04e9d
-      data: {}
+  - data:
+      message: 'TV non éteinte : {{states(''sensor.prise_tv_puissance'')}}W'
+    action: notify.notify
+  - action: switch.turn_off
+    target:
+      device_id:
+      - ccfd320c2ae171b9cbca0e8d97e04e9d
+    data: {}
   mode: single
-- id: "1725788391315"
+- id: '1725788391315'
   alias: Alerte Disjoncteur Cumulus Local
-  description: ""
+  description: ''
   trigger:
-    - platform: state
-      entity_id:
-        - sensor.cumulus_3
-      for:
-        hours: 0
-        minutes: 30
-        seconds: 0
+  - platform: state
+    entity_id:
+    - sensor.cumulus_3
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
   action:
-    - data:
-        message: Pas de réponse de Tuya Local sur Disjoncteur Cumulus
-      action: notify.notify
-    - delay:
-        hours: 0
-        minutes: 5
-        seconds: 0
-        milliseconds: 0
+  - data:
+      message: Pas de réponse de Tuya Local sur Disjoncteur Cumulus
+    action: notify.notify
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
   mode: single
-- id: "1725794082259"
+- id: '1725794082259'
   alias: Début Plaque
-  description: ""
+  description: ''
   trigger:
-    - platform: numeric_state
-      entity_id:
-        - sensor.em06_a2_power
-      above: 10
+  - platform: numeric_state
+    entity_id:
+    - sensor.em06_a2_power
+    above: 10
   condition: []
   action:
-    - metadata: {}
-      data: {}
-      action: input_boolean.turn_on
-      target:
-        entity_id:
-          - input_boolean.plaque
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
+      entity_id:
+      - input_boolean.plaque
   mode: single
-- id: "1725794111545"
+- id: '1725794111545'
   alias: Fin Plaque
-  description: ""
+  description: ''
   trigger:
-    - platform: numeric_state
-      entity_id:
-        - sensor.em06_a2_power
-      below: 10
+  - platform: numeric_state
+    entity_id:
+    - sensor.em06_a2_power
+    below: 10
   condition: []
   action:
-    - data: {}
-      action: input_boolean.turn_off
-      target:
-        entity_id: input_boolean.plaque
+  - data: {}
+    action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.plaque
   mode: single
-- id: "1725824309622"
+- id: '1725824309622'
   alias: Alerte Prise TV
-  description: ""
+  description: ''
   trigger:
-    - platform: state
-      entity_id:
-        - sensor.prise_tv_local_tension
-      for:
-        hours: 0
-        minutes: 30
-        seconds: 0
+  - platform: state
+    entity_id:
+    - sensor.prise_tv_local_tension
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
   condition: []
   action:
-    - data:
-        message: Pas de réponse de Tuya Local sur Prise TV
-      action: notify.notify
-    - action: homeassistant.reload_config_entry
-      metadata: {}
-      data: {}
-      target:
-        device_id: ccfd320c2ae171b9cbca0e8d97e04e9d
-    - delay:
-        hours: 0
-        minutes: 5
-        seconds: 0
-        milliseconds: 0
+  - data:
+      message: Pas de réponse de Tuya Local sur Prise TV
+    action: notify.notify
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id: ccfd320c2ae171b9cbca0e8d97e04e9d
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
   mode: single
-- id: "1725824732571"
+- id: '1725824732571'
   alias: Alerte Lave Linge
-  description: ""
+  description: ''
   trigger:
-    - platform: state
-      entity_id:
-        - sensor.prise_lave_linge_local_tension
-      for:
-        hours: 0
-        minutes: 30
-        seconds: 0
+  - platform: state
+    entity_id:
+    - sensor.prise_lave_linge_local_tension
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
   condition: []
   action:
-    - data:
-        message: Pas de réponse de Tuya Local sur Prise Lave Linge
-      action: notify.notify
-    - action: homeassistant.reload_config_entry
-      metadata: {}
-      data: {}
-      target:
-        device_id: d4d1a674deef9c59116468790efc2b84
-    - delay:
-        hours: 0
-        minutes: 5
-        seconds: 0
-        milliseconds: 0
+  - data:
+      message: Pas de réponse de Tuya Local sur Prise Lave Linge
+    action: notify.notify
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id: d4d1a674deef9c59116468790efc2b84
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
   mode: single
-- id: "1725824762140"
+- id: '1725824762140'
   alias: Alerte Lave Vaisselle
-  description: ""
+  description: ''
   trigger:
-    - platform: state
-      entity_id:
-        - sensor.prise_lave_vaiselle_local_tension
-      for:
-        hours: 0
-        minutes: 30
-        seconds: 0
+  - platform: state
+    entity_id:
+    - sensor.prise_lave_vaiselle_local_tension
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
   condition: []
   action:
-    - data:
-        message: Pas de réponse de Tuya Local sur Prise Lave Vaisselle
-      action: notify.notify
-    - action: homeassistant.reload_config_entry
-      metadata: {}
-      data: {}
-      target:
-        device_id: d4d1a674deef9c59116468790efc2b84
-    - delay:
-        hours: 0
-        minutes: 5
-        seconds: 0
-        milliseconds: 0
+  - data:
+      message: Pas de réponse de Tuya Local sur Prise Lave Vaisselle
+    action: notify.notify
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id: d4d1a674deef9c59116468790efc2b84
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
   mode: single
-- id: "1725824803245"
+- id: '1725824803245'
   alias: Alerte Prise Frigo
-  description: ""
+  description: ''
   trigger:
-    - platform: state
-      entity_id:
-        - sensor.prise_frigo_local_tension
-      for:
-        hours: 0
-        minutes: 15
-        seconds: 0
+  - platform: state
+    entity_id:
+    - sensor.prise_frigo_local_tension
+    for:
+      hours: 0
+      minutes: 15
+      seconds: 0
   condition: []
   action:
-    - data:
-        message: Pas de réponse de Tuya Local sur Prise Frigo
-      action: notify.notify
-    - action: homeassistant.reload_config_entry
-      metadata: {}
-      data: {}
-      target:
-        device_id: e6e71c3420d1962f3698349154b8a91c
+  - data:
+      message: Pas de réponse de Tuya Local sur Prise Frigo
+    action: notify.notify
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id: e6e71c3420d1962f3698349154b8a91c
   mode: single
-- id: "1725825001282"
+- id: '1725825001282'
   alias: Alerte Mesureur n2
-  description: ""
+  description: ''
   trigger:
-    - platform: state
-      entity_id:
-        - sensor.bidirectional_energy_meter_tension
-      for:
-        hours: 0
-        minutes: 30
-        seconds: 0
+  - platform: state
+    entity_id:
+    - sensor.bidirectional_energy_meter_tension
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
   condition: []
   action:
-    - data:
-        message: Pas de réponse de Tuya Local sur Mesureur n2
-      action: notify.notify
-    - action: homeassistant.reload_config_entry
-      metadata: {}
-      data: {}
-      target:
-        device_id: ec387d4e4ebf0006d56be89fc2b09d1a
-    - delay:
-        hours: 0
-        minutes: 5
-        seconds: 0
-        milliseconds: 0
+  - data:
+      message: Pas de réponse de Tuya Local sur Mesureur n2
+    action: notify.notify
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id: ec387d4e4ebf0006d56be89fc2b09d1a
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
   mode: single
-- id: "1725825034602"
+- id: '1725825034602'
   alias: Alerte Tuya Local
-  description: ""
+  description: ''
   triggers:
-    - entity_id:
-        - sensor.cumulus_3
-      for:
-        hours: 0
-        minutes: 5
-        seconds: 0
-      trigger: state
-    - entity_id:
-        - sensor.disjoncteur_sonnette_local_tension
-      for:
-        hours: 0
-        minutes: 5
-        seconds: 0
-      trigger: state
-    - entity_id:
-        - sensor.disjoncteur_3_tension_2
-      for:
-        hours: 0
-        minutes: 5
-        seconds: 0
-      trigger: state
-    - entity_id:
-        - sensor.disjoncteur_4_tension_2
-      for:
-        hours: 0
-        minutes: 5
-        seconds: 0
-      trigger: state
-    - entity_id:
-        - sensor.disjoncteur_5_local_tension
-      for:
-        hours: 0
-        minutes: 5
-        seconds: 0
-      trigger: state
-    - entity_id:
-        - sensor.double_clamp_meter_voltage_a
-      for:
-        hours: 0
-        minutes: 5
-        seconds: 0
-      trigger: state
-    - entity_id:
-        - sensor.bidirectional_energy_meter_tension
-      for:
-        hours: 0
-        minutes: 5
-        seconds: 0
-      trigger: state
-    - entity_id:
-        - sensor.prise_frigo_local_tension
-      for:
-        hours: 0
-        minutes: 5
-        seconds: 0
-      trigger: state
-    - entity_id:
-        - sensor.prise_lave_linge_local_tension
-      for:
-        hours: 0
-        minutes: 5
-        seconds: 0
-      trigger: state
-    - entity_id:
-        - sensor.prise_lave_vaiselle_local_tension
-      for:
-        hours: 0
-        minutes: 5
-        seconds: 0
-      trigger: state
-    - entity_id:
-        - sensor.prise_tv_local_tension
-      for:
-        hours: 0
-        minutes: 5
-        seconds: 0
-      trigger: state
+  - entity_id:
+    - sensor.cumulus_3
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: state
+  - entity_id:
+    - sensor.disjoncteur_sonnette_local_tension
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: state
+  - entity_id:
+    - sensor.disjoncteur_3_tension_2
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: state
+  - entity_id:
+    - sensor.disjoncteur_4_tension_2
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: state
+  - entity_id:
+    - sensor.disjoncteur_5_local_tension
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: state
+  - entity_id:
+    - sensor.double_clamp_meter_voltage_a
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: state
+  - entity_id:
+    - sensor.bidirectional_energy_meter_tension
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: state
+  - entity_id:
+    - sensor.prise_frigo_local_tension
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: state
+  - entity_id:
+    - sensor.prise_lave_linge_local_tension
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: state
+  - entity_id:
+    - sensor.prise_lave_vaiselle_local_tension
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: state
+  - entity_id:
+    - sensor.prise_tv_local_tension
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: state
   conditions: []
   actions:
-    - action: homeassistant.reload_config_entry
-      metadata: {}
-      data: {}
-      target:
-        entity_id: "{{ trigger.entity_id }}"
-    - delay:
-        hours: 0
-        minutes: 1
-        seconds: 0
-        milliseconds: 0
-    - if:
-        - condition: template
-          value_template: "{{is_state(trigger.entity_id,'unknown') or is_state(trigger.entity_id,'unavailable')}}"
-      then:
-        - action: notify.persistent_notification
-          metadata: {}
-          data:
-            title: Tuya Local
-            message:
-              "Pas de réponse de {{ trigger.to_state.name.split(' ')[0] }} {{
-              trigger.to_state.name.split(' ')[1] }} : {{states(trigger.entity_id)}}"
-        - action: notify.mobile_app_iphone_de_mat_old
-          metadata: {}
-          data:
-            title: Tuya Local
-            message:
-              "Pas de réponse de {{ trigger.to_state.name.split(' ')[0] }} {{
-              trigger.to_state.name.split(' ')[1] }} : {{states(trigger.entity_id)}}"
-  mode: single
-- id: "1725956019083"
-  alias: Alerte EcoJoko
-  description: ""
-  triggers:
-    - entity_id:
-        - sensor.ecojoko
-      for:
-        hours: 0
-        minutes: 15
-        seconds: 0
-      trigger: state
-      to: unavailable
-    - entity_id:
-        - sensor.ecojoko
-      for:
-        hours: 0
-        minutes: 15
-        seconds: 0
-      trigger: state
-      to: unknown
-  conditions: []
-  actions:
-    - data:
-        message: Pas de réponse d'EcoJoko !
-      action: notify.notify
-    - action: homeassistant.reload_config_entry
-      metadata: {}
-      data: {}
-      target:
-        device_id: 4b74478c94d963f91d4fb4c038530cf7
-  mode: single
-- id: "1725956270150"
-  alias: Alerte Refoss
-  description: ""
-  triggers:
-    - entity_id:
-        - sensor.em06_b1_power
-      for:
-        hours: 0
-        minutes: 15
-        seconds: 0
-      trigger: state
-  conditions: []
-  actions:
-    - data:
-        message: Pas de réponse de Refoss !
-      action: notify.notify
-    - action: homeassistant.reload_config_entry
-      metadata: {}
-      data: {}
-      target:
-        device_id:
-          - 551a4cec52ce5ec5f96436a57efb7e39
-          - 70241aa2125233db1ee21cb73c58a47a
-  mode: single
-- id: "1726580260450"
-  alias: Alerte Disjoncteur 3
-  description: ""
-  trigger:
-    - platform: state
-      entity_id:
-        - sensor.disjoncteur_3_tension_2
-      for:
-        hours: 0
-        minutes: 30
-        seconds: 0
-  condition: []
-  action:
-    - data:
-        message: Pas de réponse de Tuya Local sur Disjoncteur 3
-      action: notify.notify
-    - delay:
-        hours: 0
-        minutes: 5
-        seconds: 0
-        milliseconds: 0
-  mode: single
-- id: "1726580281298"
-  alias: Alerte Disjoncteur 4
-  description: ""
-  trigger:
-    - platform: state
-      entity_id:
-        - sensor.disjoncteur_4_tension_2
-      for:
-        hours: 0
-        minutes: 30
-        seconds: 0
-  condition: []
-  action:
-    - data:
-        message: Pas de réponse de Tuya Local sur Disjoncteur 4
-      action: notify.notify
-    - delay:
-        hours: 0
-        minutes: 5
-        seconds: 0
-        milliseconds: 0
-  mode: single
-- id: "1726580346858"
-  alias: Alerte Tuya Cloud
-  description: ""
-  triggers:
-    - entity_id:
-        - sensor.disjoncteur_cumulus_tension
-      for:
-        hours: 0
-        minutes: 30
-        seconds: 0
-      trigger: state
-  conditions: []
-  actions:
-    - data:
-        message: Pas de réponse de Tuya Cloud !
-      action: notify.notify
-    - action: notify.persistent_notification
-      data:
-        message: Pas de réponse de Tuya Cloud !
-    - action: homeassistant.reload_config_entry
-      target:
-        label_id: tuya_cloud
-      data: {}
-  mode: single
-- id: "1726659595098"
-  alias: "Alerte fonctionnement Frigo "
-  description: ""
-  trigger:
-    - platform: state
-      entity_id:
-        - input_boolean.frigo
-      for:
-        hours: 1
-        minutes: 0
-        seconds: 0
-  condition: []
-  action:
-    - data:
-        message: Pas de démarrage du Frigo pendant 30 min !
-      action: notify.notify
-    - delay:
-        hours: 0
-        minutes: 5
-        seconds: 0
-        milliseconds: 0
-  mode: single
-- id: "1726759242515"
-  alias: Solcast update
-  description: ""
-  trigger:
-    - platform: template
-      value_template:
-        "{% set nr = as_datetime(state_attr('sun.sun','next_rising'))
-        | as_local %} {% set ns = as_datetime(state_attr('sun.sun','next_setting'))
-        | as_local %} {% set api_request_limit = 10 %} {% if nr > ns %}\n  {% set nr
-        = nr - timedelta(hours = 24) %} \n{% endif %} {% set hours_difference = (ns
-        - nr) %} {% set interval_hours = hours_difference / api_request_limit %} {%
-        set ns = namespace(match = false) %} {% for i in range(api_request_limit) %}\n
-        \ {% set start_time = nr + (i * interval_hours) %}\n  {% if ((start_time - timedelta(seconds=30))
-        <= now()) and (now() <= (start_time + timedelta(seconds=30))) %}\n    {% set
-        ns.match = true %}\n  {% endif %}\n{% endfor %} {{ ns.match }}"
-  condition:
-    - condition: sun
-      before: sunset
-      after: sunrise
-  action:
-    - delay:
-        seconds: "{{ range(30, 360)|random|int }}"
-    - data: {}
-      action: solcast_solar.update_forecasts
-  mode: single
-- id: "1727031043968"
-  alias: Début Lumières RDC
-  description: ""
-  triggers:
-    - entity_id:
-        - sensor.em06_c2_power
-      above: 0
-      trigger: numeric_state
-  conditions:
-    - condition: state
-      entity_id: input_boolean.lumieres_rdc
-      state: "off"
-  actions:
-    - metadata: {}
-      data: {}
-      action: input_boolean.turn_on
-      target:
-        entity_id: input_boolean.lumieres_rdc
-  mode: single
-- id: "1727031116637"
-  alias: Début Lumières Étage
-  description: ""
-  triggers:
-    - entity_id:
-        - sensor.bidirectional_energy_meter_power_b
-      above: 0
-      trigger: numeric_state
-  conditions:
-    - condition: state
-      entity_id: input_boolean.lumieres_etage
-      state: "off"
-  actions:
-    - metadata: {}
-      data: {}
-      action: input_boolean.turn_on
-      target:
-        entity_id: input_boolean.lumieres_etage
-  mode: single
-- id: "1727031227421"
-  alias: Début Prises Etage
-  description: ""
-  triggers:
-    - entity_id:
-        - sensor.bidirectional_energy_meter_power_a
-      above: 0
-      trigger: numeric_state
-  conditions:
-    - condition: state
-      entity_id: input_boolean.prises_etage
-      state: "off"
-  actions:
-    - metadata: {}
-      data: {}
-      action: input_boolean.turn_on
-      target:
-        entity_id: input_boolean.prises_etage
-  mode: single
-- id: "1727040109754"
-  alias: Fin Lumières Etage
-  description: ""
-  trigger:
-    - platform: numeric_state
-      entity_id:
-        - sensor.bidirectional_energy_meter_power_b
-      below: 1
-  condition: []
-  action:
-    - action: input_boolean.turn_off
-      target:
-        entity_id:
-          - input_boolean.lumieres_etage
-      data: {}
-  mode: single
-- id: "1727040145674"
-  alias: Fin Lumières RDC
-  description: ""
-  trigger:
-    - platform: numeric_state
-      entity_id:
-        - sensor.em06_c2_power
-      below: 1
-  condition: []
-  action:
-    - action: input_boolean.turn_off
-      target:
-        entity_id:
-          - input_boolean.lumieres_rdc
-      data: {}
-  mode: single
-- id: "1727040181229"
-  alias: Fin Prises Etage
-  description: ""
-  triggers:
-    - entity_id:
-        - sensor.bidirectional_energy_meter_power_a
-      below: 1
-      trigger: numeric_state
-      for:
-        hours: 0
-        minutes: 1
-        seconds: 0
-  conditions:
-    - condition: state
-      entity_id: input_boolean.prises_etage
-      state: "on"
-  actions:
-    - action: input_boolean.turn_off
-      target:
-        entity_id:
-          - input_boolean.prises_etage
-      data: {}
-  mode: single
-- id: "1727100872708"
-  alias: Passage HC
-  description: ""
-  trigger:
-    - platform: time
-      at: "21:08:00"
-  action:
-    - data:
-        option: HC
-      action: select.select_option
-      target:
-        entity_id:
-          - select.energie_consommee_h
-          - select.energie_consommee_j
-          - select.energie_consommee_s
-          - select.energie_consommee_m
-          - select.energie_consommee_a
-    - action: input_boolean.turn_on
-      target:
-        entity_id: input_boolean.hp_hc
-      data: {}
-  initial_state: true
-- id: "1727101009222"
-  alias: Passage HP
-  description: ""
-  trigger:
-    - platform: time
-      at: 05:08:00
-  condition: []
-  action:
-    - data:
-        option: HP
-      action: select.select_option
-      target:
-        entity_id:
-          - select.energie_consommee_h
-          - select.energie_consommee_j
-          - select.energie_consommee_s
-          - select.energie_consommee_m
-          - select.energie_consommee_a
-    - action: input_boolean.turn_off
-      target:
-        entity_id: input_boolean.hp_hc
-      data: {}
-  mode: single
-  initial_state: true
-- id: "1727103070490"
-  alias: Energie - Notification
-  description: ""
-  triggers:
-    - at: 00:01:00
-      trigger: time
-  actions:
-    - data_template:
-        title:
-          'Données Energie du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y",
-          True) }}
-
-          '
-        message:
-          'HC : {{ states(''input_number.taux_hc_j_1'') | round(1) }} %. Conso
-          : {{states(''input_number.energie_j_1'') | round(2) }} kWh / {{states(''input_number.cout_energie_j_1'')
-          | round(2)  }}€ Surplus : {{ (states(''input_number.surplus_production_j_1'')
-          | float(0)) | round(2) }} kWh pour  {{ (states(''input_number.prix_vente_edf_oa'')
-          | float(0) * states(''input_number.surplus_production_j_1'') | float(0)) |
-          round(2) }} € Solaire : {{ states(''input_number.taux_solar_j_1'') | round(1)
-          }} %. Prod : {{ (states(''input_number.solar_production_j_1'') | float) |
-          round(2) }} kWh / {{states(''input_number.solar_previsions_j_1'') | round(1)
-          }} kWh.  Demain : {{states(''sensor.solcast_pv_forecast_previsions_pour_aujourd_hui'')
-          | round(1)}} kWh / max  {{states(''sensor.solcast_pv_forecast_previsions_du_pic_aujourd_hui'')
-          | round(0)}} W à {{ as_timestamp(states(''sensor.solcast_pv_forecast_heure_du_pic_aujourd_hui''))
-          | timestamp_custom("%Hh%M", True) }}. Météo : {{states(''sensor.talence_daily_original_condition'')}}
-
-          '
-      action: notify.mobile_app_iphone_de_mat_old
-    - data_template:
-        title:
-          'Données Energie du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y",
-          True) }}
-
-          '
-        message:
-          "Taux HC du jour : {{ states('input_number.taux_hc_j_1') | round(1)
-          }} %.\n\nConsommation de la journée : {{states('input_number.energie_j_1')
-          | round(2) }} kWh / {{states('input_number.cout_energie_j_1') | round(2)  }}€
-          \n\nSurplus : {{ (states('input_number.surplus_production_j_1') | float(0))
-          | round(2) }} kWh pour  {{ (states('input_number.prix_vente_edf_oa') | float(0)
-          * states('input_number.surplus_production_j_1') | float(0)) | round(2) }}
-          €\n"
-      action: notify.persistent_notification
-  mode: single
-- id: "1727255726386"
-  alias: Energie - Calcul
-  description: ""
-  triggers:
-    - at: "23:59:50"
-      trigger: time
-  conditions: []
-  actions:
-    - data_template:
-        entity_id: input_number.energie_j_1
-        value:
-          "{{(states('sensor.energie_consommee_j_hc')| float + states('sensor.energie_consommee_j_hp')|
-          float) | float | round(2)}}"
-      action: input_number.set_value
-    - data_template:
-        entity_id: input_number.cout_energie_j_1
-        value:
-          "{{(float(states('sensor.energie_consommee_j_hc'))*float(states('input_number.prix_hc_kwh'))+float(states('sensor.energie_consommee_j_hp'))*float(states('input_number.prix_hp_kwh')))
-          | round(2)}}"
-      action: input_number.set_value
-    - data_template:
-        entity_id: input_number.taux_hc_j_1
-        value: "{{ states('sensor.taux_hc_jour') | float | round(1)}}"
-      action: input_number.set_value
-    - data_template:
-        entity_id: input_number.solar_previsions_j_1
-        value:
-          "{{ states('sensor.solcast_pv_forecast_previsions_pour_aujourd_hui')
-          | float | round(2)}}"
-      action: input_number.set_value
-    - data_template:
-        entity_id: input_number.solar_production_j_1
-        value: "{{ states('sensor.energie_solar_j') | float(0) | round(2)}}"
-      action: input_number.set_value
-    - data_template:
-        entity_id: input_number.taux_solar_j_1
-        value: "{{ states('sensor.taux_solar_jour') | float | round(1)}}"
-      action: input_number.set_value
-    - data_template:
-        entity_id: input_number.surplus_production_j_1
-        value: "{{ states('sensor.surplus_production_compteur') | float | round(2)}}"
-      action: input_number.set_value
-  mode: single
-- id: "1727278237568"
-  alias: Energie - Calcul (h)
-  description: ""
-  trigger:
-    - platform: time_pattern
-      hours: "*"
-      minutes: "59"
-      seconds: "55"
-  condition: []
-  action:
-    - data_template:
-        entity_id: input_number.solar_previsions_h_1
-        value:
-          "{{ states('sensor.solcast_pv_forecast_previsions_heure_actuel') |
-          float | round(0)}}"
-      action: input_number.set_value
-    - data_template:
-        entity_id: input_number.solar_production_h_1
-        value: "{{ states('sensor.energie_solar_h') | float | round(0)}}"
-      action: input_number.set_value
-    - data_template:
-        entity_id: input_number.taux_solar_h_1
-        value: "{{ states('sensor.taux_solar_heure') | float | round(1)}}"
-      action: input_number.set_value
-  mode: single
-- id: "1727279595948"
-  alias: Energie - Notification (h)
-  description: ""
-  triggers:
-    - hours: "*"
-      minutes: "1"
-      trigger: time_pattern
-  conditions:
-    - condition: numeric_state
-      entity_id: input_number.solar_previsions_h_1
-      above: 1
-  actions:
-    - data_template:
-        title:
-          'Données solaire du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y
-          %Hh", True) }}
-
-          '
-        message:
-          "\nTaux de prévision solaire : {{ states('input_number.taux_solar_h_1')
-          | float(0) | round(1) }} %. \n\nLa production solaire de l'heure écoulée est
-          de {{ (states('input_number.solar_production_h_1') | float(0)) | round(0)
-          }} Wh sur {{states('input_number.solar_previsions_h_1') | float(0) |\nround(0)
-          }} Wh prévus. \nDans l'heure, il est prévu : {{states('sensor.solcast_pv_forecast_previsions_heure_actuel')
-          | float(0) | round(0)}} Wh. \nMétéo en cours : {{ states('weather.forecast_maison')
-          | string() }} / {{ state_attr('weather.forecast_maison','cloud_coverage')
-          | float(0) | round(0) }}% nuageux\n"
-      action: notify.persistent_notification
-      enabled: true
-  mode: single
-- id: "1727467947113"
-  alias: Reset Compteurs
-  description: ""
-  trigger:
-    - platform: time
-      at: 00:00:00
-  condition: []
-  action:
-    - action: utility_meter.reset
-      metadata: {}
-      data: {}
-      target:
-        entity_id:
-          - select.energie_consommee_a
-          - select.energie_consommee_m
-          - select.energie_consommee_s
-  mode: single
-- id: "1727558860632"
-  alias: Reload integration on startup
-  description: ""
-  triggers:
-    - event: start
-      trigger: homeassistant
-  actions:
-    - action: homeassistant.reload_config_entry
-      metadata: {}
-      data: {}
-      target:
-        device_id: 9b77fab7a9aa7b4577e7cfe2d53e7375
-        entity_id: binary_sensor.backups_stale
-  mode: single
-- id: "1727734195815"
-  alias: Cycle ECS
-  description: ""
-  triggers: []
-  conditions: []
-  actions:
-    - action: input_number.increment
-      data: {}
-      target:
-        entity_id: input_number.cycles_ecs
-    - data_template:
-        title:
-          "Cycle ECS n°{{states('input_number.cycles_ecs') | round (0)}} du {{
-          as_timestamp(now()) | timestamp_custom(\"%d.%m.%y\", True) }} \n"
-        message:
-          "{%- set time =\n    ((state_attr('automation.fin_ecs','last_triggered'))
-          -\n    (state_attr('automation.debut_ecs','last_triggered'))).seconds -15*60\n
-          \   -%} {%- set minutes = ((time % 3600) / 60) | round | int -%} {%- set\n
-          \   hours = ((time % 86400) / 3600) | int -%}\n{%- set energy =\n    ((states('input_number.fin_ecs'))
-          | float(0) -\n    (states('input_number.debut_ecs')) | float(0) ) | float(0)
-          | round(2) -%}\n{%- set cout =\n    ((((states('input_number.prix_hc_kwh'))
-          | float(0))) * (energy)) | round(2) -%}\n{%- set puissance =\n    ((energy*1000)/(time)*3600)
-          | round(0) -%}\nDurée du cycle : {{ ' {:02}h{:02}m'.format(hours,minutes)}}\nEnergie
-          du cycle : {{energy}} kWh pour {{cout}} €\nPuissance moyenne : {{puissance}}
-          W\n"
-      action: notify.persistent_notification
-    - action: input_number.set_value
-      metadata: {}
-      data:
-        value:
-          "{{(((state_attr('automation.fin_ecs','last_triggered')) - ((state_attr('automation.debut_ecs','last_triggered'))).seconds)/
-          60 | int(0)) | round(0) - 15 }}"
-      target:
-        entity_id: input_number.duree_cycle_ecs
-  mode: single
-- id: "1727786542143"
-  alias: Cycle Frigo
-  description: ""
-  triggers: []
-  conditions: []
-  actions:
-    - action: input_number.increment
-      data: {}
-      target:
-        entity_id:
-          - input_number.cycles_frigo
-    - data_template:
-        title:
-          "Cycle Frigo n°{{states('input_number.cycles_frigo') | round (0)}} du
-          {{ as_timestamp(now()) | timestamp_custom(\"%d.%m.%y\", True) }} \n"
-        message:
-          "{%- set time =\n    ((state_attr('automation.fin_frigo','last_triggered'))
-          -\n    (state_attr('automation.debut_frigo','last_triggered'))).seconds-%}\n{%-
-          set delai =\n((state_attr('automation.debut_frigo','last_triggered'))-(as_datetime(state_attr('input_datetime.dernier_cycle_frigo','timestamp')))).seconds-%}\n{%-
-          set energy =\n    ((states('input_number.fin_frigo')) | float(0) -\n    (states('input_number.debut_frigo'))
-          | float(0) ) | float(0) -%}\n{%- set heure = (as_timestamp(now()) | timestamp_custom(\"%H\",
-          True)) |\n\nint -%}{%- if (heure>=21 or heure<5) -%} \n  {%- set cout = (((states('input_number.prix_hc'))
-          | float(0)))  -%}\n{%- else-%}\n  {%- set cout = (((states('input_number.prix_hp'))
-          | float(0)))  -%}\n{%- endif -%} {%- set puissance =\n    ((energy)/(time)*3600)
-          | round(2) -%}\n\n\nDurée du cycle : {{ time | int(0) | timestamp_custom('%Mm%Ss',
-          false)}} depuis {{ delai | int(0) | timestamp_custom('%Mm%Ss', false)}}\nEnergie
-          du cycle : {{energy | round(2)}} Wh\nPuissance moyenne : {{puissance | round(0)}}
-          W\n"
-      action: notify.persistent_notification
-      enabled: false
-    - action: input_number.set_value
-      metadata: {}
-      data:
-        value:
-          "{{(((state_attr('automation.fin_frigo','last_triggered')) - (state_attr('automation.debut_frigo','last_triggered'))).seconds
-          | int(0)) | round(0) }}"
-      target:
-        entity_id: input_number.duree_cycle_frigo
-  mode: single
-- id: "1727901329718"
-  alias: Alerte Tahoma
-  description: ""
-  triggers:
-    - entity_id:
-        - switch.lumiere_salon
-      for:
-        hours: 0
-        minutes: 5
-        seconds: 0
-      trigger: state
-      to: unavailable
-  conditions: []
-  actions:
-    - data:
-        message: Pas de réponse de Tahoma !
-      action: notify.notify
-    - action: homeassistant.reload_config_entry
-      metadata: {}
-      data: {}
-      target:
-        entity_id: switch.lumiere_salon
-    - delay:
-        hours: 0
-        minutes: 5
-        seconds: 0
-        milliseconds: 0
-  mode: single
-- id: "1727989585410"
-  alias: Alerte SwitchBot
-  description: ""
-  triggers:
-    - trigger: state
-      entity_id:
-        - sensor.switchbot_cloud
-      to: unavailable
-      for:
-        hours: 0
-        minutes: 5
-        seconds: 0
-    - entity_id:
-        - sensor.switchbot_cloud
-      for:
-        hours: 1
-        minutes: 0
-        seconds: 0
-      trigger: state
-  conditions: []
-  actions:
-    - data:
-        message:
-          Pas de réponse de SwitchBot ! {{trigger.from_state.attributes.friendly_name
-          }}
-      action: notify.notify
-    - action: notify.persistent_notification
-      data:
-        message:
-          Pas de réponse de SwitchBot ! {{trigger.from_state.attributes.friendly_name
-          }}
-    - action: homeassistant.reload_config_entry
-      data:
-        entry_id: 01J8DKMC9KWGY1GD1EFXCC2QG2
-  mode: single
-- id: "1727989940257"
-  alias: Bilan Solaire
-  description: ""
-  triggers:
-    - trigger: sun
-      event: sunset
-      offset: 00:15:00
-  actions:
-    - data_template:
-        title:
-          'Données Solaire du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y",
-          True) }}
-
-          '
-        message:
-          "\nTaux de prévision solaire : {{ states('sensor.taux_solar_jour')
-          | float | round(1)}} %. \n\nProduction solaire : {{ (states('sensor.energie_solar_j')
-          | float) | float | round(2)}} kWh / {{ states('sensor.solcast_pv_forecast_previsions_pour_aujourd_hui')
-          | float | round(2)}} kWh prévus.\nAutoconsommation : {{ (((states('sensor.energie_solar_j')
-          | float(0)- states('sensor.surplus_production_compteur') | float(0) ) / (states('sensor.energie_solar_j')
-          | float(0)+0.0001) ) * 100) | round(0)}} %.\nSurplus solaire : {{ (states('sensor.surplus_production_compteur')
-          | float(0))| round(2)}} kWh / {{ (states('sensor.surplus_production_compteur')
-          | float(0) * states('input_number.prix_vente_edf_oa') | float(0)) | round(2)}}
-          €. \nChauffe-eau : {{ (states('sensor.cumulus_kwh')| float(0) - states('input_number.energie_cumulus_jour')
-          | float(0))| round(2)}} kWh.\n\nDemain, il est prévu : {{states('sensor.solcast_pv_forecast_previsions_pour_demain')
-          | round(1)}} kWh / max  {{states('sensor.solcast_pv_forecast_previsions_du_pic_pour_demain')
-          | round(0)}} W à {{ as_timestamp(states('sensor.solcast_pv_forecast_heure_du_pic_demain'))
-          | timestamp_custom(\"%Hh%M\", True) }}.\n"
-      action: notify.persistent_notification
-      enabled: true
-    - data_template:
-        title:
-          'Données Solaire du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y",
-          True) }}
-
-          '
-        message:
-          'Solaire : {{ states(''sensor.taux_solar_jour'') | round(1) }} %. Prod
-          : {{ (states(''sensor.energie_solar_j'') | float) | round(2) }} kWh / {{states(''sensor.solcast_pv_forecast_previsions_pour_aujourd_hui'')
-          | round(1) }} kWh.  Autoconsommation : {{ (((states(''sensor.energie_solar_j'')
-          | float(0)- states(''sensor.surplus_production_compteur'') | float(0) ) /
-          (states(''sensor.energie_solar_j'') | float(0)+0.0001)) * 100) | round(0)}}
-          %. Surplus solaire : {{ (states(''sensor.surplus_production_compteur'') |
-          float(0))| round(2)}} kWh / {{ (states(''sensor.surplus_production_compteur'')
-          | float(0) * states(''input_number.prix_vente_edf_oa'') | float(0)) | round(2)}}
-          €. Chauffe-eau : {{ (states(''sensor.cumulus_kwh'')| float(0) - states(''input_number.energie_cumulus_jour'')
-          | float(0))| round(2)}} kWh.
-
-
-          Demain : {{states(''sensor.solcast_pv_forecast_previsions_pour_demain'') |
-          round(1)}} kWh / max  {{states(''sensor.solcast_pv_forecast_previsions_du_pic_pour_demain'')
-          | round(0)}} W à {{ as_timestamp(states(''sensor.solcast_pv_forecast_heure_du_pic_demain''))
-          | timestamp_custom("%Hh%M", True) }}.
-
-          '
-      action: notify.mobile_app_iphone_de_mat_old
-      enabled: true
-- id: "1728387375442"
-  alias: Alerte Garage absence
-  description: ""
-  triggers:
-    - trigger: state
-      entity_id:
-        - cover.porte_garage
-      to: opening
-  conditions:
-    - condition: and
-      conditions:
-        - condition: device
-          device_id: 3dcd1c27afacd49396637a7af7ecdb8b
-          domain: device_tracker
-          entity_id: 035446e48a32a16bfa670cdac3cb3dcc
-          type: is_not_home
-        - condition: not
-          conditions:
-            - condition: state
-              entity_id: device_tracker.nmap_tracker_72_41_95_68_25_16
-              state: home
-  actions:
-    - action: notify.notify
-      data:
-        message: Alerte ouverture garage !
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      entity_id: '{{ trigger.entity_id }}'
+  - delay:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
+  - if:
+    - condition: template
+      value_template: '{{is_state(trigger.entity_id,''unknown'') or is_state(trigger.entity_id,''unavailable'')}}'
+    then:
     - action: notify.persistent_notification
       metadata: {}
       data:
-        message: Alerte ouverture garage !
-  mode: single
-- id: "1728655435449"
-  alias: Alerte Météo
-  description: ""
-  triggers:
-    - entity_id:
-        - weather.talence
-      for:
-        hours: 0
-        minutes: 5
-        seconds: 0
-      trigger: state
-      to: unavailable
-  conditions: []
-  actions:
-    - action: notify.persistent_notification
-      data:
-        message: Pas de réponse de Météo
-    - action: homeassistant.reload_config_entry
-      metadata: {}
-      data: {}
-      target:
-        entity_id: weather.talence
-    - delay:
-        hours: 0
-        minutes: 5
-        seconds: 0
-        milliseconds: 0
-  mode: single
-- id: "1730232489877"
-  alias: Mise à jour token Estar
-  description: ""
-  triggers:
-    - trigger: time_pattern
-      minutes: "5"
-  conditions: []
-  actions:
-    - action: input_text.set_value
-      metadata: {}
-      data:
-        value: estar_token={{state_attr('sensor.estar_token','token')}}
-      target:
-        entity_id: input_text.estar_token_input
-  mode: single
-- id: "1730501750728"
-  alias: WLED Conso
-  description: ""
-  triggers:
-    - trigger: time_pattern
-      minutes: /1
-  conditions: []
-  actions:
-    - choose:
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.em06_b1_power
-              below: 100
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod100
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.em06_b1_power
-              below: 200
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod200
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.em06_b1_power
-              below: 300
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod300
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.em06_b1_power
-              below: 400
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod400
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.em06_b1_power
-              below: 500
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod500
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.em06_b1_power
-              below: 750
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod750
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.em06_b1_power
-              below: 1000
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod1000
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.em06_b1_power
-              below: 1500
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod1500
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.em06_b1_power
-              below: 2000
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod2000
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.em06_b1_power
-              below: 2500
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod2500
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.em06_b1_power
-              below: 3000
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod3000
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.em06_b1_power
-              above: 3000
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: ProdMax
-    - delay:
-        hours: 0
-        minutes: 1
-        seconds: 0
-        milliseconds: 0
-  mode: single
-- id: "1730799442676"
-  alias: Alerte TP-Link
-  description: ""
-  triggers:
-    - trigger: state
-      entity_id:
-        - sensor.tp_link_router_cpu_used
-      for:
-        hours: 0
-        minutes: 4
-        seconds: 0
-    - trigger: state
-      entity_id:
-        - sensor.tp_link_router_cpu_used
-      to: unavailable
-      for:
-        hours: 0
-        minutes: 1
-        seconds: 0
-    - trigger: state
-      entity_id:
-        - sensor.tp_link_router_cpu_used
-      to: unknown
-      for:
-        hours: 0
-        minutes: 1
-        seconds: 0
-  conditions: []
-  actions:
-    - repeat:
-        sequence:
-          - action: homeassistant.reload_config_entry
-            metadata: {}
-            data: {}
-            target:
-              device_id: 9b77fab7a9aa7b4577e7cfe2d53e7375
-          - delay:
-              hours: 0
-              minutes: 1
-              seconds: 0
-              milliseconds: 0
-        while:
-          - condition: template
-            value_template:
-              "{{ (is_state('sensor.tp_link_router_cpu_used', 'unavailable')
-              or is_state('sensor.tp_link_router_cpu_used', 'unknown')) or repeat.index
-              < 10 }}"
-    - if:
-        - condition: or
-          conditions:
-            - condition: state
-              entity_id: sensor.tp_link_router_cpu_used
-              state: unavailable
-            - condition: state
-              entity_id: sensor.tp_link_router_cpu_used
-              state: unavailable
-      then:
-        - action: notify.persistent_notification
-          metadata: {}
-          data:
-            message: "Pas de réponse de TP Link ! "
-  mode: single
-- id: "1730807917596"
-  alias: WLED Prod
-  description: ""
-  triggers:
-    - minutes: "*"
-      trigger: time_pattern
-  conditions:
-    - condition: state
-      entity_id: input_boolean.automatisation
-      state: "on"
-    - condition: numeric_state
-      entity_id: sensor.production_solaire
-      above: 0
-  actions:
-    - choose:
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.production_solaire
-              below: 1
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod0
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.production_solaire
-              below: 100
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod100
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.production_solaire
-              below: 200
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod200
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.production_solaire
-              below: 300
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod300
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.production_solaire
-              below: 400
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod400
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.production_solaire
-              below: 500
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod500
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.production_solaire
-              below: 750
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod750
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.production_solaire
-              below: 1000
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod1000
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.production_solaire
-              below: 1500
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod1500
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.production_solaire
-              below: 2000
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod2000
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.production_solaire
-              below: 2500
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod2500
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.production_solaire
-              below: 3000
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Prod3000
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.production_solaire
-              above: 3000
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: ProdMax
-      default:
-        - action: select.select_option
-          metadata: {}
-          data:
-            option: Vide Prod
-          target:
-            entity_id: select.wled1_prereglage
-  mode: single
-- id: "1730807984000"
-  alias: WLED Surplus
-  description: ""
-  triggers:
-    - trigger: time_pattern
-      minutes: "*"
-  conditions:
-    - condition: state
-      entity_id: input_boolean.automatisation
-      state: "on"
-    - condition: numeric_state
-      entity_id: sensor.production_solaire
-      above: 0
-  actions:
-    - choose:
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.surplus_production
-              below: 1
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Surplus0
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.surplus_production
-              below: 100
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Surplus100
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.surplus_production
-              below: 200
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Surplus200
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.surplus_production
-              below: 300
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Surplus300
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.surplus_production
-              below: 400
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Surplus400
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.surplus_production
-              below: 500
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Surplus500
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.surplus_production
-              below: 750
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Surplus750
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.surplus_production
-              below: 1000
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Surplus1000
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.surplus_production
-              below: 1500
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Surplus1500
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.surplus_production
-              below: 2000
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Surplus2000
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.surplus_production
-              below: 2500
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Surplus2500
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.surplus_production
-              below: 3000
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: Surplus3000
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.surplus_production
-              above: 3000
-          sequence:
-            - action: select.select_option
-              target:
-                entity_id: select.wled1_prereglage
-              data:
-                option: SurplusMax
-      default:
-        - action: select.select_option
-          metadata: {}
-          data:
-            option: Vide Surplus
-          target:
-            entity_id: select.wled1_prereglage
-  mode: single
-- id: "1730987726595"
-  alias: Alerte Rain Sensor
-  description: ""
-  triggers:
-    - entity_id:
-        - sensor.rain_sensor_linkquality
-      for:
-        hours: 0
-        minutes: 30
-        seconds: 0
-      trigger: state
-    - entity_id:
-        - sensor.prise_zigbee_1_linkquality
-      for:
-        hours: 0
-        minutes: 30
-        seconds: 0
-      trigger: state
-  conditions: []
-  actions:
-    - data:
-        message:
-          Pas de réponse de {{ trigger.to_state.name | replace(' Linkquality','')
-          }} !
-      action: notify.persistent_notification
+        title: Tuya Local
+        message: 'Pas de réponse de {{ trigger.to_state.name.split('' '')[0] }} {{
+          trigger.to_state.name.split('' '')[1] }} : {{states(trigger.entity_id)}}'
     - action: notify.mobile_app_iphone_de_mat_old
       metadata: {}
       data:
-        message:
-          Pas de réponse de {{ trigger.to_state.name | replace(' Linkquality','')
-          }} !
-    - delay:
-        hours: 0
-        minutes: 5
-        seconds: 0
-        milliseconds: 0
+        title: Tuya Local
+        message: 'Pas de réponse de {{ trigger.to_state.name.split('' '')[0] }} {{
+          trigger.to_state.name.split('' '')[1] }} : {{states(trigger.entity_id)}}'
   mode: single
-- id: "1730993292082"
-  alias: Alerte Backup
-  description: ""
+- id: '1725956019083'
+  alias: Alerte EcoJoko
+  description: ''
   triggers:
-    - trigger: state
-      entity_id:
-        - binary_sensor.backups_stale
-      for:
-        hours: 0
-        minutes: 1
-        seconds: 0
-      to: "on"
+  - entity_id:
+    - sensor.ecojoko
+    for:
+      hours: 0
+      minutes: 15
+      seconds: 0
+    trigger: state
+    to: unavailable
+  - entity_id:
+    - sensor.ecojoko
+    for:
+      hours: 0
+      minutes: 15
+      seconds: 0
+    trigger: state
+    to: unknown
   conditions: []
   actions:
-    - action: homeassistant.reload_config_entry
-      metadata: {}
-      data: {}
-      target:
-        device_id:
-          - 2d47492dd060ebca9ceae763f61252e4
+  - data:
+      message: Pas de réponse d'EcoJoko !
+    action: notify.notify
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id: 4b74478c94d963f91d4fb4c038530cf7
+  mode: single
+- id: '1725956270150'
+  alias: Alerte Refoss
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.em06_b1_power
+    for:
+      hours: 0
+      minutes: 15
+      seconds: 0
+    trigger: state
+  conditions: []
+  actions:
+  - data:
+      message: Pas de réponse de Refoss !
+    action: notify.notify
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id:
+      - 551a4cec52ce5ec5f96436a57efb7e39
+      - 70241aa2125233db1ee21cb73c58a47a
+  mode: single
+- id: '1726580260450'
+  alias: Alerte Disjoncteur 3
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.disjoncteur_3_tension_2
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+  condition: []
+  action:
+  - data:
+      message: Pas de réponse de Tuya Local sur Disjoncteur 3
+    action: notify.notify
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1726580281298'
+  alias: Alerte Disjoncteur 4
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.disjoncteur_4_tension_2
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+  condition: []
+  action:
+  - data:
+      message: Pas de réponse de Tuya Local sur Disjoncteur 4
+    action: notify.notify
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1726580346858'
+  alias: Alerte Tuya Cloud
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.disjoncteur_cumulus_tension
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+    trigger: state
+  conditions: []
+  actions:
+  - data:
+      message: Pas de réponse de Tuya Cloud !
+    action: notify.notify
+  - action: notify.persistent_notification
+    data:
+      message: Pas de réponse de Tuya Cloud !
+  - action: homeassistant.reload_config_entry
+    target:
+      label_id: tuya_cloud
+    data: {}
+  mode: single
+- id: '1726659595098'
+  alias: 'Alerte fonctionnement Frigo '
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - input_boolean.frigo
+    for:
+      hours: 1
+      minutes: 0
+      seconds: 0
+  condition: []
+  action:
+  - data:
+      message: Pas de démarrage du Frigo pendant 30 min !
+    action: notify.notify
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1726759242515'
+  alias: Solcast update
+  description: ''
+  trigger:
+  - platform: template
+    value_template: "{% set nr = as_datetime(state_attr('sun.sun','next_rising'))
+      | as_local %} {% set ns = as_datetime(state_attr('sun.sun','next_setting'))
+      | as_local %} {% set api_request_limit = 10 %} {% if nr > ns %}\n  {% set nr
+      = nr - timedelta(hours = 24) %} \n{% endif %} {% set hours_difference = (ns
+      - nr) %} {% set interval_hours = hours_difference / api_request_limit %} {%
+      set ns = namespace(match = false) %} {% for i in range(api_request_limit) %}\n
+      \ {% set start_time = nr + (i * interval_hours) %}\n  {% if ((start_time - timedelta(seconds=30))
+      <= now()) and (now() <= (start_time + timedelta(seconds=30))) %}\n    {% set
+      ns.match = true %}\n  {% endif %}\n{% endfor %} {{ ns.match }}"
+  condition:
+  - condition: sun
+    before: sunset
+    after: sunrise
+  action:
+  - delay:
+      seconds: '{{ range(30, 360)|random|int }}'
+  - data: {}
+    action: solcast_solar.update_forecasts
+  mode: single
+- id: '1727031043968'
+  alias: Début Lumières RDC
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.em06_c2_power
+    above: 0
+    trigger: numeric_state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.lumieres_rdc
+    state: 'off'
+  actions:
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.lumieres_rdc
+  mode: single
+- id: '1727031116637'
+  alias: Début Lumières Étage
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.bidirectional_energy_meter_power_b
+    above: 0
+    trigger: numeric_state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.lumieres_etage
+    state: 'off'
+  actions:
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.lumieres_etage
+  mode: single
+- id: '1727031227421'
+  alias: Début Prises Etage
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.bidirectional_energy_meter_power_a
+    above: 0
+    trigger: numeric_state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.prises_etage
+    state: 'off'
+  actions:
+  - metadata: {}
+    data: {}
+    action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.prises_etage
+  mode: single
+- id: '1727040109754'
+  alias: Fin Lumières Etage
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.bidirectional_energy_meter_power_b
+    below: 1
+  condition: []
+  action:
+  - action: input_boolean.turn_off
+    target:
+      entity_id:
+      - input_boolean.lumieres_etage
+    data: {}
+  mode: single
+- id: '1727040145674'
+  alias: Fin Lumières RDC
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.em06_c2_power
+    below: 1
+  condition: []
+  action:
+  - action: input_boolean.turn_off
+    target:
+      entity_id:
+      - input_boolean.lumieres_rdc
+    data: {}
+  mode: single
+- id: '1727040181229'
+  alias: Fin Prises Etage
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.bidirectional_energy_meter_power_a
+    below: 1
+    trigger: numeric_state
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  conditions:
+  - condition: state
+    entity_id: input_boolean.prises_etage
+    state: 'on'
+  actions:
+  - action: input_boolean.turn_off
+    target:
+      entity_id:
+      - input_boolean.prises_etage
+    data: {}
+  mode: single
+- id: '1727100872708'
+  alias: Passage HC
+  description: ''
+  trigger:
+  - platform: time
+    at: '21:08:00'
+  action:
+  - data:
+      option: HC
+    action: select.select_option
+    target:
+      entity_id:
+      - select.energie_consommee_h
+      - select.energie_consommee_j
+      - select.energie_consommee_s
+      - select.energie_consommee_m
+      - select.energie_consommee_a
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.hp_hc
+    data: {}
+  initial_state: true
+- id: '1727101009222'
+  alias: Passage HP
+  description: ''
+  trigger:
+  - platform: time
+    at: 05:08:00
+  condition: []
+  action:
+  - data:
+      option: HP
+    action: select.select_option
+    target:
+      entity_id:
+      - select.energie_consommee_h
+      - select.energie_consommee_j
+      - select.energie_consommee_s
+      - select.energie_consommee_m
+      - select.energie_consommee_a
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.hp_hc
+    data: {}
+  mode: single
+  initial_state: true
+- id: '1727103070490'
+  alias: Energie - Notification
+  description: ''
+  triggers:
+  - at: 00:01:00
+    trigger: time
+  actions:
+  - data_template:
+      title: 'Données Energie du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y",
+        True) }}
+
+        '
+      message: 'HC : {{ states(''input_number.taux_hc_j_1'') | round(1) }} %. Conso
+        : {{states(''input_number.energie_j_1'') | round(2) }} kWh / {{states(''input_number.cout_energie_j_1'')
+        | round(2)  }}€ Surplus : {{ (states(''input_number.surplus_production_j_1'')
+        | float(0)) | round(2) }} kWh pour  {{ (states(''input_number.prix_vente_edf_oa'')
+        | float(0) * states(''input_number.surplus_production_j_1'') | float(0)) |
+        round(2) }} € Solaire : {{ states(''input_number.taux_solar_j_1'') | round(1)
+        }} %. Prod : {{ (states(''input_number.solar_production_j_1'') | float) |
+        round(2) }} kWh / {{states(''input_number.solar_previsions_j_1'') | round(1)
+        }} kWh.  Demain : {{states(''sensor.solcast_pv_forecast_previsions_pour_aujourd_hui'')
+        | round(1)}} kWh / max  {{states(''sensor.solcast_pv_forecast_previsions_du_pic_aujourd_hui'')
+        | round(0)}} W à {{ as_timestamp(states(''sensor.solcast_pv_forecast_heure_du_pic_aujourd_hui''))
+        | timestamp_custom("%Hh%M", True) }}. Météo : {{states(''sensor.talence_daily_original_condition'')}}
+
+        '
+    action: notify.mobile_app_iphone_de_mat_old
+  - data_template:
+      title: 'Données Energie du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y",
+        True) }}
+
+        '
+      message: "Taux HC du jour : {{ states('input_number.taux_hc_j_1') | round(1)
+        }} %.\n\nConsommation de la journée : {{states('input_number.energie_j_1')
+        | round(2) }} kWh / {{states('input_number.cout_energie_j_1') | round(2)  }}€
+        \n\nSurplus : {{ (states('input_number.surplus_production_j_1') | float(0))
+        | round(2) }} kWh pour  {{ (states('input_number.prix_vente_edf_oa') | float(0)
+        * states('input_number.surplus_production_j_1') | float(0)) | round(2) }}
+        €\n"
+    action: notify.persistent_notification
+  mode: single
+- id: '1727255726386'
+  alias: Energie - Calcul
+  description: ''
+  triggers:
+  - at: '23:59:50'
+    trigger: time
+  conditions: []
+  actions:
+  - data_template:
+      entity_id: input_number.energie_j_1
+      value: '{{(states(''sensor.energie_consommee_j_hc'')| float + states(''sensor.energie_consommee_j_hp'')|
+        float) | float | round(2)}}'
+    action: input_number.set_value
+  - data_template:
+      entity_id: input_number.cout_energie_j_1
+      value: '{{(float(states(''sensor.energie_consommee_j_hc''))*float(states(''input_number.prix_hc_kwh''))+float(states(''sensor.energie_consommee_j_hp''))*float(states(''input_number.prix_hp_kwh'')))
+        | round(2)}}'
+    action: input_number.set_value
+  - data_template:
+      entity_id: input_number.taux_hc_j_1
+      value: '{{ states(''sensor.taux_hc_jour'') | float | round(1)}}'
+    action: input_number.set_value
+  - data_template:
+      entity_id: input_number.solar_previsions_j_1
+      value: '{{ states(''sensor.solcast_pv_forecast_previsions_pour_aujourd_hui'')
+        | float | round(2)}}'
+    action: input_number.set_value
+  - data_template:
+      entity_id: input_number.solar_production_j_1
+      value: '{{ states(''sensor.energie_solar_j'') | float(0) | round(2)}}'
+    action: input_number.set_value
+  - data_template:
+      entity_id: input_number.taux_solar_j_1
+      value: '{{ states(''sensor.taux_solar_jour'') | float | round(1)}}'
+    action: input_number.set_value
+  - data_template:
+      entity_id: input_number.surplus_production_j_1
+      value: '{{ states(''sensor.surplus_production_compteur'') | float | round(2)}}'
+    action: input_number.set_value
+  mode: single
+- id: '1727278237568'
+  alias: Energie - Calcul (h)
+  description: ''
+  trigger:
+  - platform: time_pattern
+    hours: '*'
+    minutes: '59'
+    seconds: '55'
+  condition: []
+  action:
+  - data_template:
+      entity_id: input_number.solar_previsions_h_1
+      value: '{{ states(''sensor.solcast_pv_forecast_previsions_heure_actuel'') |
+        float | round(0)}}'
+    action: input_number.set_value
+  - data_template:
+      entity_id: input_number.solar_production_h_1
+      value: '{{ states(''sensor.energie_solar_h'') | float | round(0)}}'
+    action: input_number.set_value
+  - data_template:
+      entity_id: input_number.taux_solar_h_1
+      value: '{{ states(''sensor.taux_solar_heure'') | float | round(1)}}'
+    action: input_number.set_value
+  mode: single
+- id: '1727279595948'
+  alias: Energie - Notification (h)
+  description: ''
+  triggers:
+  - hours: '*'
+    minutes: '1'
+    trigger: time_pattern
+  conditions:
+  - condition: numeric_state
+    entity_id: input_number.solar_previsions_h_1
+    above: 1
+  actions:
+  - data_template:
+      title: 'Données solaire du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y
+        %Hh", True) }}
+
+        '
+      message: "\nTaux de prévision solaire : {{ states('input_number.taux_solar_h_1')
+        | float(0) | round(1) }} %. \n\nLa production solaire de l'heure écoulée est
+        de {{ (states('input_number.solar_production_h_1') | float(0)) | round(0)
+        }} Wh sur {{states('input_number.solar_previsions_h_1') | float(0) |\nround(0)
+        }} Wh prévus. \nDans l'heure, il est prévu : {{states('sensor.solcast_pv_forecast_previsions_heure_actuel')
+        | float(0) | round(0)}} Wh. \nMétéo en cours : {{ states('weather.forecast_maison')
+        | string() }} / {{ state_attr('weather.forecast_maison','cloud_coverage')
+        | float(0) | round(0) }}% nuageux\n"
+    action: notify.persistent_notification
+    enabled: true
+  mode: single
+- id: '1727467947113'
+  alias: Reset Compteurs
+  description: ''
+  trigger:
+  - platform: time
+    at: 00:00:00
+  condition: []
+  action:
+  - action: utility_meter.reset
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - select.energie_consommee_a
+      - select.energie_consommee_m
+      - select.energie_consommee_s
+  mode: single
+- id: '1727558860632'
+  alias: Reload integration on startup
+  description: ''
+  triggers:
+  - event: start
+    trigger: homeassistant
+  actions:
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id: 9b77fab7a9aa7b4577e7cfe2d53e7375
+      entity_id: binary_sensor.backups_stale
+  mode: single
+- id: '1727734195815'
+  alias: Cycle ECS
+  description: ''
+  triggers: []
+  conditions: []
+  actions:
+  - action: input_number.increment
+    data: {}
+    target:
+      entity_id: input_number.cycles_ecs
+  - data_template:
+      title: "Cycle ECS n°{{states('input_number.cycles_ecs') | round (0)}} du {{
+        as_timestamp(now()) | timestamp_custom(\"%d.%m.%y\", True) }} \n"
+      message: "{%- set time =\n    ((state_attr('automation.fin_ecs','last_triggered'))
+        -\n    (state_attr('automation.debut_ecs','last_triggered'))).seconds -15*60\n
+        \   -%} {%- set minutes = ((time % 3600) / 60) | round | int -%} {%- set\n
+        \   hours = ((time % 86400) / 3600) | int -%}\n{%- set energy =\n    ((states('input_number.fin_ecs'))
+        | float(0) -\n    (states('input_number.debut_ecs')) | float(0) ) | float(0)
+        | round(2) -%}\n{%- set cout =\n    ((((states('input_number.prix_hc_kwh'))
+        | float(0))) * (energy)) | round(2) -%}\n{%- set puissance =\n    ((energy*1000)/(time)*3600)
+        | round(0) -%}\nDurée du cycle : {{ ' {:02}h{:02}m'.format(hours,minutes)}}\nEnergie
+        du cycle : {{energy}} kWh pour {{cout}} €\nPuissance moyenne : {{puissance}}
+        W\n"
+    action: notify.persistent_notification
+  - action: input_number.set_value
+    metadata: {}
+    data:
+      value: '{{(((state_attr(''automation.fin_ecs'',''last_triggered'')) - ((state_attr(''automation.debut_ecs'',''last_triggered''))).seconds)/
+        60 | int(0)) | round(0) - 15 }}'
+    target:
+      entity_id: input_number.duree_cycle_ecs
+  mode: single
+- id: '1727786542143'
+  alias: Cycle Frigo
+  description: ''
+  triggers: []
+  conditions: []
+  actions:
+  - action: input_number.increment
+    data: {}
+    target:
+      entity_id:
+      - input_number.cycles_frigo
+  - data_template:
+      title: "Cycle Frigo n°{{states('input_number.cycles_frigo') | round (0)}} du
+        {{ as_timestamp(now()) | timestamp_custom(\"%d.%m.%y\", True) }} \n"
+      message: "{%- set time =\n    ((state_attr('automation.fin_frigo','last_triggered'))
+        -\n    (state_attr('automation.debut_frigo','last_triggered'))).seconds-%}\n{%-
+        set delai =\n((state_attr('automation.debut_frigo','last_triggered'))-(as_datetime(state_attr('input_datetime.dernier_cycle_frigo','timestamp')))).seconds-%}\n{%-
+        set energy =\n    ((states('input_number.fin_frigo')) | float(0) -\n    (states('input_number.debut_frigo'))
+        | float(0) ) | float(0) -%}\n{%- set heure = (as_timestamp(now()) | timestamp_custom(\"%H\",
+        True)) |\n\nint -%}{%- if (heure>=21 or heure<5) -%} \n  {%- set cout = (((states('input_number.prix_hc'))
+        | float(0)))  -%}\n{%- else-%}\n  {%- set cout = (((states('input_number.prix_hp'))
+        | float(0)))  -%}\n{%- endif -%} {%- set puissance =\n    ((energy)/(time)*3600)
+        | round(2) -%}\n\n\nDurée du cycle : {{ time | int(0) | timestamp_custom('%Mm%Ss',
+        false)}} depuis {{ delai | int(0) | timestamp_custom('%Mm%Ss', false)}}\nEnergie
+        du cycle : {{energy | round(2)}} Wh\nPuissance moyenne : {{puissance | round(0)}}
+        W\n"
+    action: notify.persistent_notification
+    enabled: false
+  - action: input_number.set_value
+    metadata: {}
+    data:
+      value: '{{(((state_attr(''automation.fin_frigo'',''last_triggered'')) - (state_attr(''automation.debut_frigo'',''last_triggered''))).seconds
+        | int(0)) | round(0) }}'
+    target:
+      entity_id: input_number.duree_cycle_frigo
+  mode: single
+- id: '1727901329718'
+  alias: Alerte Tahoma
+  description: ''
+  triggers:
+  - entity_id:
+    - switch.lumiere_salon
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: state
+    to: unavailable
+  conditions: []
+  actions:
+  - data:
+      message: Pas de réponse de Tahoma !
+    action: notify.notify
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.lumiere_salon
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1727989585410'
+  alias: Alerte SwitchBot
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.switchbot_cloud
+    to: unavailable
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  - entity_id:
+    - sensor.switchbot_cloud
+    for:
+      hours: 1
+      minutes: 0
+      seconds: 0
+    trigger: state
+  conditions: []
+  actions:
+  - data:
+      message: Pas de réponse de SwitchBot ! {{trigger.from_state.attributes.friendly_name
+        }}
+    action: notify.notify
+  - action: notify.persistent_notification
+    data:
+      message: Pas de réponse de SwitchBot ! {{trigger.from_state.attributes.friendly_name
+        }}
+  - action: homeassistant.reload_config_entry
+    data:
+      entry_id: 01J8DKMC9KWGY1GD1EFXCC2QG2
+  mode: single
+- id: '1727989940257'
+  alias: Bilan Solaire
+  description: ''
+  triggers:
+  - trigger: sun
+    event: sunset
+    offset: 00:15:00
+  actions:
+  - data_template:
+      title: 'Données Solaire du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y",
+        True) }}
+
+        '
+      message: "\nTaux de prévision solaire : {{ states('sensor.taux_solar_jour')
+        | float | round(1)}} %. \n\nProduction solaire : {{ (states('sensor.energie_solar_j')
+        | float) | float | round(2)}} kWh / {{ states('sensor.solcast_pv_forecast_previsions_pour_aujourd_hui')
+        | float | round(2)}} kWh prévus.\nAutoconsommation : {{ (((states('sensor.energie_solar_j')
+        | float(0)- states('sensor.surplus_production_compteur') | float(0) ) / (states('sensor.energie_solar_j')
+        | float(0)+0.0001) ) * 100) | round(0)}} %.\nSurplus solaire : {{ (states('sensor.surplus_production_compteur')
+        | float(0))| round(2)}} kWh / {{ (states('sensor.surplus_production_compteur')
+        | float(0) * states('input_number.prix_vente_edf_oa') | float(0)) | round(2)}}
+        €. \nChauffe-eau : {{ (states('sensor.cumulus_kwh')| float(0) - states('input_number.energie_cumulus_jour')
+        | float(0))| round(2)}} kWh.\n\nDemain, il est prévu : {{states('sensor.solcast_pv_forecast_previsions_pour_demain')
+        | round(1)}} kWh / max  {{states('sensor.solcast_pv_forecast_previsions_du_pic_pour_demain')
+        | round(0)}} W à {{ as_timestamp(states('sensor.solcast_pv_forecast_heure_du_pic_demain'))
+        | timestamp_custom(\"%Hh%M\", True) }}.\n"
+    action: notify.persistent_notification
+    enabled: true
+  - data_template:
+      title: 'Données Solaire du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y",
+        True) }}
+
+        '
+      message: 'Solaire : {{ states(''sensor.taux_solar_jour'') | round(1) }} %. Prod
+        : {{ (states(''sensor.energie_solar_j'') | float) | round(2) }} kWh / {{states(''sensor.solcast_pv_forecast_previsions_pour_aujourd_hui'')
+        | round(1) }} kWh.  Autoconsommation : {{ (((states(''sensor.energie_solar_j'')
+        | float(0)- states(''sensor.surplus_production_compteur'') | float(0) ) /
+        (states(''sensor.energie_solar_j'') | float(0)+0.0001)) * 100) | round(0)}}
+        %. Surplus solaire : {{ (states(''sensor.surplus_production_compteur'') |
+        float(0))| round(2)}} kWh / {{ (states(''sensor.surplus_production_compteur'')
+        | float(0) * states(''input_number.prix_vente_edf_oa'') | float(0)) | round(2)}}
+        €. Chauffe-eau : {{ (states(''sensor.cumulus_kwh'')| float(0) - states(''input_number.energie_cumulus_jour'')
+        | float(0))| round(2)}} kWh.
+
+
+        Demain : {{states(''sensor.solcast_pv_forecast_previsions_pour_demain'') |
+        round(1)}} kWh / max  {{states(''sensor.solcast_pv_forecast_previsions_du_pic_pour_demain'')
+        | round(0)}} W à {{ as_timestamp(states(''sensor.solcast_pv_forecast_heure_du_pic_demain''))
+        | timestamp_custom("%Hh%M", True) }}.
+
+        '
+    action: notify.mobile_app_iphone_de_mat_old
+    enabled: true
+- id: '1728387375442'
+  alias: Alerte Garage absence
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - cover.porte_garage
+    to: opening
+  conditions:
+  - condition: and
+    conditions:
+    - condition: device
+      device_id: 3dcd1c27afacd49396637a7af7ecdb8b
+      domain: device_tracker
+      entity_id: 035446e48a32a16bfa670cdac3cb3dcc
+      type: is_not_home
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: device_tracker.nmap_tracker_72_41_95_68_25_16
+        state: home
+  actions:
+  - action: notify.notify
+    data:
+      message: Alerte ouverture garage !
+  - action: notify.persistent_notification
+    metadata: {}
+    data:
+      message: Alerte ouverture garage !
+  mode: single
+- id: '1728655435449'
+  alias: Alerte Météo
+  description: ''
+  triggers:
+  - entity_id:
+    - weather.talence
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: state
+    to: unavailable
+  conditions: []
+  actions:
+  - action: notify.persistent_notification
+    data:
+      message: Pas de réponse de Météo
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      entity_id: weather.talence
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1730232489877'
+  alias: Mise à jour token Estar
+  description: ''
+  triggers:
+  - trigger: time_pattern
+    minutes: '5'
+  conditions: []
+  actions:
+  - action: input_text.set_value
+    metadata: {}
+    data:
+      value: estar_token={{state_attr('sensor.estar_token','token')}}
+    target:
+      entity_id: input_text.estar_token_input
+  mode: single
+- id: '1730501750728'
+  alias: WLED Conso
+  description: ''
+  triggers:
+  - trigger: time_pattern
+    minutes: /1
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 100
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod100
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 200
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod200
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 300
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod300
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 400
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod400
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 500
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod500
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 750
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod750
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 1000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod1000
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 1500
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod1500
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 2000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod2000
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 2500
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod2500
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        below: 3000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod3000
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.em06_b1_power
+        above: 3000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: ProdMax
+  - delay:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1730799442676'
+  alias: Alerte TP-Link
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.tp_link_router_cpu_used
+    for:
+      hours: 0
+      minutes: 4
+      seconds: 0
+  - trigger: state
+    entity_id:
+    - sensor.tp_link_router_cpu_used
+    to: unavailable
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  - trigger: state
+    entity_id:
+    - sensor.tp_link_router_cpu_used
+    to: unknown
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  conditions: []
+  actions:
+  - repeat:
+      sequence:
+      - action: homeassistant.reload_config_entry
+        metadata: {}
+        data: {}
+        target:
+          device_id: 9b77fab7a9aa7b4577e7cfe2d53e7375
+      - delay:
+          hours: 0
+          minutes: 1
+          seconds: 0
+          milliseconds: 0
+      while:
+      - condition: template
+        value_template: '{{ (is_state(''sensor.tp_link_router_cpu_used'', ''unavailable'')
+          or is_state(''sensor.tp_link_router_cpu_used'', ''unknown'')) or repeat.index
+          < 10 }}'
+  - if:
+    - condition: or
+      conditions:
+      - condition: state
+        entity_id: sensor.tp_link_router_cpu_used
+        state: unavailable
+      - condition: state
+        entity_id: sensor.tp_link_router_cpu_used
+        state: unavailable
+    then:
     - action: notify.persistent_notification
       metadata: {}
       data:
-        message: Problème de backup Google Drive
-    - delay:
-        hours: 0
-        minutes: 5
-        seconds: 0
-        milliseconds: 0
+        message: 'Pas de réponse de TP Link ! '
   mode: single
-- id: "1731062182492"
-  alias: Alerte Token Estar
-  description: ""
+- id: '1730807917596'
+  alias: WLED Prod
+  description: ''
   triggers:
-    - trigger: state
-      entity_id:
-        - sensor.estar_url
-      to: token verify error.
-  conditions: []
+  - minutes: '*'
+    trigger: time_pattern
+  conditions:
+  - condition: state
+    entity_id: input_boolean.automatisation
+    state: 'on'
+  - condition: numeric_state
+    entity_id: sensor.production_solaire
+    above: 0
   actions:
-    - delay:
-        hours: 0
-        minutes: 0
-        seconds: 5
-        milliseconds: 0
-    - action: rest.reload
-      metadata: {}
-      data: {}
-    - delay:
-        hours: 0
-        minutes: 0
-        seconds: 5
-        milliseconds: 0
-    - action: input_text.set_value
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 1
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod0
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 100
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod100
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 200
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod200
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 300
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod300
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 400
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod400
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 500
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod500
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 750
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod750
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 1000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod1000
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 1500
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod1500
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 2000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod2000
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 2500
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod2500
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        below: 3000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Prod3000
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.production_solaire
+        above: 3000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: ProdMax
+    default:
+    - action: select.select_option
       metadata: {}
       data:
-        value: estar_token={{state_attr('sensor.estar_token','token')}}
+        option: Vide Prod
       target:
-        entity_id: input_text.estar_token_input
-    - if:
-        - condition: state
-          entity_id: sensor.estar_url
-          state: success
-      then: []
-      else:
-        - action: notify.persistent_notification
-          metadata: {}
-          data:
-            message: MAJ Token Estar NOK
+        entity_id: select.wled1_prereglage
   mode: single
-- id: "1731431944063"
-  alias: Clim Léo
-  description: ""
+- id: '1730807984000'
+  alias: WLED Surplus
+  description: ''
   triggers:
-    - trigger: numeric_state
-      entity_id:
-        - sensor.chambre_leo_temperature
-      below: input_number.consigne_chauffage_chambres
-    - trigger: numeric_state
-      entity_id:
-        - sensor.meter_plus_16c6
-      below: input_number.consigne_chauffage_chambres
-    - trigger: state
-      entity_id:
-        - climate.clim_leo
-      from: "off"
-      to: heat
-    - trigger: state
-      entity_id:
-        - schedule.calendrier_chauffage_chambres
-      from: "off"
-      to: "on"
+  - trigger: time_pattern
+    minutes: '*'
   conditions:
-    - condition: and
+  - condition: state
+    entity_id: input_boolean.automatisation
+    state: 'on'
+  - condition: numeric_state
+    entity_id: sensor.production_solaire
+    above: 0
+  actions:
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 1
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus0
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 100
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus100
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 200
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus200
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 300
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus300
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 400
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus400
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 500
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus500
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 750
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus750
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 1000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus1000
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 1500
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus1500
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 2000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus2000
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 2500
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus2500
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        below: 3000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: Surplus3000
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.surplus_production
+        above: 3000
+      sequence:
+      - action: select.select_option
+        target:
+          entity_id: select.wled1_prereglage
+        data:
+          option: SurplusMax
+    default:
+    - action: select.select_option
+      metadata: {}
+      data:
+        option: Vide Surplus
+      target:
+        entity_id: select.wled1_prereglage
+  mode: single
+- id: '1730987726595'
+  alias: Alerte Rain Sensor
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.rain_sensor_linkquality
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+    trigger: state
+  - entity_id:
+    - sensor.prise_zigbee_1_linkquality
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+    trigger: state
+  conditions: []
+  actions:
+  - data:
+      message: Pas de réponse de {{ trigger.to_state.name | replace(' Linkquality','')
+        }} !
+    action: notify.persistent_notification
+  - action: notify.mobile_app_iphone_de_mat_old
+    metadata: {}
+    data:
+      message: Pas de réponse de {{ trigger.to_state.name | replace(' Linkquality','')
+        }} !
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1730993292082'
+  alias: Alerte Backup
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.backups_stale
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+    to: 'on'
+  conditions: []
+  actions:
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id:
+      - 2d47492dd060ebca9ceae763f61252e4
+  - action: notify.persistent_notification
+    metadata: {}
+    data:
+      message: Problème de backup Google Drive
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  mode: single
+- id: '1731062182492'
+  alias: Alerte Token Estar
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.estar_url
+    to: token verify error.
+  conditions: []
+  actions:
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - action: rest.reload
+    metadata: {}
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - action: input_text.set_value
+    metadata: {}
+    data:
+      value: estar_token={{state_attr('sensor.estar_token','token')}}
+    target:
+      entity_id: input_text.estar_token_input
+  - if:
+    - condition: state
+      entity_id: sensor.estar_url
+      state: success
+    then: []
+    else:
+    - action: notify.persistent_notification
+      metadata: {}
+      data:
+        message: MAJ Token Estar NOK
+  mode: single
+- id: '1731431944063'
+  alias: Clim Léo
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.chambre_leo_temperature
+    below: input_number.consigne_chauffage_chambres
+  - trigger: numeric_state
+    entity_id:
+    - sensor.meter_plus_16c6
+    below: input_number.consigne_chauffage_chambres
+  - trigger: state
+    entity_id:
+    - climate.clim_leo
+    from: 'off'
+    to: heat
+  - trigger: state
+    entity_id:
+    - schedule.calendrier_chauffage_chambres
+    from: 'off'
+    to: 'on'
+  conditions:
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: input_boolean.automatisation
+      state: 'on'
+    - condition: state
+      entity_id: input_boolean.mode_chauffage
+      state: 'on'
+    - condition: or
       conditions:
-        - condition: state
-          entity_id: input_boolean.automatisation
-          state: "on"
-        - condition: state
-          entity_id: input_boolean.mode_chauffage
-          state: "on"
+      - condition: and
+        conditions:
         - condition: or
           conditions:
-            - condition: and
-              conditions:
-                - condition: or
-                  conditions:
-                    - condition: numeric_state
-                      entity_id: sensor.chambre_leo_temperature
-                      below: input_number.seuil_temperature_chambres
-                    - condition: numeric_state
-                      entity_id: sensor.meter_plus_16c6
-                      below: input_number.seuil_temperature_chambres
-                - condition: state
-                  entity_id: schedule.calendrier_chauffage_chambres
-                  state: "on"
-            - condition: state
-              entity_id: climate.clim_leo
-              state: heat
-  actions:
-    - if:
+          - condition: numeric_state
+            entity_id: sensor.chambre_leo_temperature
+            below: input_number.seuil_temperature_chambres
+          - condition: numeric_state
+            entity_id: sensor.meter_plus_16c6
+            below: input_number.seuil_temperature_chambres
         - condition: state
-          entity_id: switch.disjoncteur_3_none
-          state: "off"
-      then:
-        - action: switch.turn_on
+          entity_id: schedule.calendrier_chauffage_chambres
+          state: 'on'
+      - condition: state
+        entity_id: climate.clim_leo
+        state: heat
+  actions:
+  - if:
+    - condition: state
+      entity_id: switch.disjoncteur_3_none
+      state: 'off'
+    then:
+    - action: switch.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id:
+        - switch.disjoncteur_3_none
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 10
+        milliseconds: 0
+  - if:
+    - condition: or
+      conditions:
+      - condition: state
+        entity_id: climate.clim_leo
+        state: unavailable
+      - condition: state
+        entity_id: climate.clim_leo
+        state: unknown
+    then:
+    - repeat:
+        until:
+        - condition: template
+          value_template: '{{ (is_state(''climate.clim_leo'', ''off'') or is_state(''climate.clim_leo'',
+            ''heat'')) and repeat.index < 10 }}'
+        sequence:
+        - action: homeassistant.reload_config_entry
           metadata: {}
           data: {}
           target:
-            entity_id:
-              - switch.disjoncteur_3_none
+            label_id: clim
         - delay:
             hours: 0
             minutes: 0
-            seconds: 10
+            seconds: 5
             milliseconds: 0
-    - if:
-        - condition: or
-          conditions:
-            - condition: state
-              entity_id: climate.clim_leo
-              state: unavailable
-            - condition: state
-              entity_id: climate.clim_leo
-              state: unknown
-      then:
-        - repeat:
-            until:
-              - condition: template
-                value_template:
-                  "{{ (is_state('climate.clim_leo', 'off') or is_state('climate.clim_leo',
-                  'heat')) and repeat.index < 10 }}"
-            sequence:
-              - action: homeassistant.reload_config_entry
-                metadata: {}
-                data: {}
-                target:
-                  label_id: clim
-              - delay:
-                  hours: 0
-                  minutes: 0
-                  seconds: 5
-                  milliseconds: 0
-    - action: climate.set_temperature
-      metadata: {}
-      data:
-        hvac_mode: heat
-        temperature: "{{ states('input_number.seuil_temperature_chambres') }}"
-      target:
-        entity_id: climate.clim_leo
-    - type: turn_on
-      device_id: d2910ca682aff1ab63ccc59776862bbf
-      entity_id: ee3bb881fc9b96ab2c667277bcfff60b
-      domain: switch
+  - action: climate.set_temperature
+    metadata: {}
+    data:
+      hvac_mode: heat
+      temperature: '{{ states(''input_number.seuil_temperature_chambres'') }}'
+    target:
+      entity_id: climate.clim_leo
+  - type: turn_on
+    device_id: d2910ca682aff1ab63ccc59776862bbf
+    entity_id: ee3bb881fc9b96ab2c667277bcfff60b
+    domain: switch
+  - device_id: d2910ca682aff1ab63ccc59776862bbf
+    domain: climate
+    entity_id: f134f6c77732ee45a8c2eb02f1419140
+    type: set_preset_mode
+    preset_mode: sleep
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
+  - action: notify.mobile_app_iphone_de_mat_old
+    metadata: {}
+    data:
+      message: 'Activation de la climatisation de leo : température de {{states(''sensor.chambre_leo_temperature'')}}º
+        (par {{ trigger.to_state.name }}).'
+  - wait_template: '{{ is_state(''climate.clim_leo'', ''off'') or is_state(''schedule.calendrier_chauffage_chambres'',
+      ''off'') or states(''sensor.chambre_leo_temperature'')>states(''input_number.seuil_temperature_chambres'')
+      or states(''sensor.meter_plus_16c6'')>states(''input_number.seuil_temperature_chambres'')  }}'
+    continue_on_timeout: true
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - wait_template: '{{ is_state(''climate.clim_leo'', ''off'') or is_state(''schedule.calendrier_chauffage_chambres'',
+      ''off'') or states(''sensor.chambre_leo_temperature'')>states(''input_number.seuil_temperature_chambres'')
+      or states(''sensor.meter_plus_16c6'')>states(''input_number.seuil_temperature_chambres'')  }}'
+    continue_on_timeout: true
+  - if:
+    - condition: template
+      value_template: '{{trigger.to_state.entity_id == ''climate.clim_leo''}}'
+    then:
+    - wait_template: '{{ is_state(''climate.clim_leo'', ''off'')  }}'
+      continue_on_timeout: true
     - device_id: d2910ca682aff1ab63ccc59776862bbf
       domain: climate
       entity_id: f134f6c77732ee45a8c2eb02f1419140
-      type: set_preset_mode
-      preset_mode: sleep
-    - delay:
-        hours: 0
-        minutes: 0
-        seconds: 1
-        milliseconds: 0
-    - action: notify.mobile_app_iphone_de_mat_old
-      metadata: {}
-      data:
-        message:
-          "Activation de la climatisation de leo : température de {{states('sensor.chambre_leo_temperature')}}º
-          (par {{ trigger.to_state.name }})."
-    - wait_template:
-        "{{ is_state('climate.clim_leo', 'off') or is_state('schedule.calendrier_chauffage_chambres',
-        'off') or states('sensor.chambre_leo_temperature')>states('input_number.seuil_temperature_chambres')
-        or states('sensor.meter_plus_16c6')>states('input_number.seuil_temperature_chambres')  }}"
-      continue_on_timeout: true
-    - delay:
-        hours: 0
-        minutes: 0
-        seconds: 5
-        milliseconds: 0
-    - wait_template:
-        "{{ is_state('climate.clim_leo', 'off') or is_state('schedule.calendrier_chauffage_chambres',
-        'off') or states('sensor.chambre_leo_temperature')>states('input_number.seuil_temperature_chambres')
-        or states('sensor.meter_plus_16c6')>states('input_number.seuil_temperature_chambres')  }}"
-      continue_on_timeout: true
-    - if:
-        - condition: template
-          value_template: "{{trigger.to_state.entity_id == 'climate.clim_leo'}}"
-      then:
-        - wait_template: "{{ is_state('climate.clim_leo', 'off')  }}"
-          continue_on_timeout: true
-        - device_id: d2910ca682aff1ab63ccc59776862bbf
-          domain: climate
-          entity_id: f134f6c77732ee45a8c2eb02f1419140
-          type: set_hvac_mode
-          hvac_mode: "off"
-      else:
-        - device_id: d2910ca682aff1ab63ccc59776862bbf
-          domain: climate
-          entity_id: f134f6c77732ee45a8c2eb02f1419140
-          type: set_hvac_mode
-          hvac_mode: "off"
-    - action: notify.mobile_app_iphone_de_mat_old
-      metadata: {}
-      data:
-        message:
-          "Fin Clim Léo ({{ (((now() | as_timestamp)- (state_attr('automation.activation_clim_leo','last_triggered')
-          | as_timestamp))/ 60 )| int(0)  }} min). Température : {{states('sensor.chambre_leo_temperature')}}º
-          (par {{ trigger.to_state.name }})."
+      type: set_hvac_mode
+      hvac_mode: 'off'
+    else:
+    - device_id: d2910ca682aff1ab63ccc59776862bbf
+      domain: climate
+      entity_id: f134f6c77732ee45a8c2eb02f1419140
+      type: set_hvac_mode
+      hvac_mode: 'off'
+  - action: notify.mobile_app_iphone_de_mat_old
+    metadata: {}
+    data:
+      message: 'Fin Clim Léo ({{ (((now() | as_timestamp)- (state_attr(''automation.activation_clim_leo'',''last_triggered'')
+        | as_timestamp))/ 60 )| int(0)  }} min). Température : {{states(''sensor.chambre_leo_temperature'')}}º
+        (par {{ trigger.to_state.name }}).'
   mode: single
-- id: "1731443950550"
-  alias: "Activation routeur solaire "
-  description: ""
+- id: '1731443950550'
+  alias: 'Activation routeur solaire '
+  description: ''
   triggers:
-    - trigger: numeric_state
-      entity_id:
-        - sensor.em06_02_a1_power
-      for:
-        hours: 0
-        minutes: 2
-        seconds: 0
-      above: 0
+  - trigger: numeric_state
+    entity_id:
+    - sensor.em06_02_a1_power
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
+    above: 0
   conditions:
-    - condition: and
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: input_boolean.automatisation
+      state: 'on'
+    - condition: or
       conditions:
-        - condition: state
-          entity_id: switch.wifi_smart_meter_switch_3_switch
-          state: "off"
-        - condition: state
-          entity_id: input_boolean.automatisation
-          state: "on"
+      - condition: state
+        entity_id: switch.wifi_smart_meter_switch_3_switch
+        state: 'off'
+      - condition: state
+        entity_id: switch.cumulus
+        state: 'off'
   actions:
-    - if:
-        - condition: state
-          entity_id: switch.cumulus
-          state: "off"
-      then:
-        - action: switch.turn_on
-          metadata: {}
-          data: {}
-          target:
-            entity_id: switch.cumulus
-        - delay:
-            hours: 0
-            minutes: 0
-            seconds: 2
-            milliseconds: 0
+  - if:
+    - condition: state
+      entity_id: switch.cumulus
+      state: 'off'
+    then:
+    - action: switch.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.cumulus
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 2
+        milliseconds: 0
+  - if:
+    - condition: state
+      entity_id: switch.disjoncteur_5_local_none
+      state: 'off'
+    then:
     - action: switch.turn_on
       metadata: {}
       data: {}
       target:
         entity_id: switch.wifi_smart_meter_switch_3_switch
-    - data_template:
-        entity_id: input_number.energie_cumulus_jour
-        value: "{{ states('sensor.cumulus_kwh') | float }}"
-      action: input_number.set_value
-    - action: notify.mobile_app_iphone_de_mat_old
-      metadata: {}
-      data:
-        message: Activation du routeur solaire
-  mode: single
-- id: "1731444544142"
-  alias: Désactivation Routeur Solaire
-  description: ""
-  triggers:
-    - trigger: time
-      at: "23:30:00"
-  conditions:
-    - condition: and
-      conditions:
-        - condition: state
-          entity_id: input_boolean.automatisation
-          state: "on"
-        - condition: state
-          entity_id: switch.wifi_smart_meter_switch_3_switch
-          state: "on"
-  actions:
-    - action: switch.turn_off
-      metadata: {}
-      data: {}
-  mode: single
-- id: "1731688869372"
-  alias: Fin chauffage ECS
-  description: ""
-  triggers:
-    - trigger: state
-      entity_id:
-        - input_boolean.ecs
-      to: "off"
-      for:
+    - delay:
         hours: 0
         minutes: 0
-        seconds: 0
-    - trigger: numeric_state
-      entity_id:
-        - switch.cumulus
-      for:
-        hours: 0
-        minutes: 1
-        seconds: 0
-      below: 5
-  conditions:
-    - condition: or
-      conditions:
-        - condition: numeric_state
-          entity_id: sensor.surplus_production
-          above: 100
-        - condition: numeric_state
-          entity_id: sensor.sonde_temperature_owon_temperature
-          above: 50
-  actions:
-    - action: input_boolean.turn_off
-      metadata: {}
-      data: {}
-      target:
-        entity_id: input_boolean.ecs_chaud
-    - action: notify.mobile_app_iphone_de_mat_old
-      metadata: {}
-      data:
-        message:
-          "Le ballon d'eau chaude est chaud ({{ (float(states('sensor.cumulus_kwh'))-float(states('input_number.energie_cumulus_jour')))
-          | round(2) }} kwh - {{states('sensor.sonde_temperature_owon_temperature')}}
-          °c)! \n{% if int(states('sensor.surplus_production')) > 0%} Surplus disponible
-          : {{int(states('sensor.surplus_production'))}}W.{% endif %} "
+        seconds: 2
+        milliseconds: 0
+  - data_template:
+      entity_id: input_number.energie_cumulus_jour
+      value: '{{ states(''sensor.cumulus_kwh'') | float }}'
+    action: input_number.set_value
+  - action: notify.mobile_app_iphone_de_mat_old
+    metadata: {}
+    data:
+      message: Activation du routeur solaire
   mode: single
-- id: "1731688965959"
-  alias: Reset ECS Chaud
-  description: ""
+- id: '1731444544142'
+  alias: Désactivation Routeur Solaire
+  description: ''
   triggers:
-    - trigger: numeric_state
-      entity_id:
-        - sensor.sonde_temperature_owon_temperature
-      below: 30
+  - trigger: time
+    at: '20:30:00'
+  conditions:
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: input_boolean.automatisation
+      state: 'on'
+    - condition: state
+      entity_id: switch.wifi_smart_meter_switch_3_switch
+      state: 'on'
+  actions:
+  - action: switch.turn_off
+    metadata: {}
+    data: {}
+    target:
+      device_id: e3bace5581ce424b7b2da2b64b47dec0
+  mode: single
+- id: '1731688869372'
+  alias: Fin chauffage ECS
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.ecs
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+  - trigger: numeric_state
+    entity_id:
+    - switch.cumulus
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+    below: 5
+  conditions:
+  - condition: or
+    conditions:
+    - condition: numeric_state
+      entity_id: sensor.surplus_production
+      above: 100
+    - condition: numeric_state
+      entity_id: sensor.sonde_temperature_owon_temperature
+      above: 50
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.ecs_chaud
+  - action: notify.mobile_app_iphone_de_mat_old
+    metadata: {}
+    data:
+      message: "Le ballon d'eau chaude est chaud ({{ (float(states('sensor.cumulus_kwh'))-float(states('input_number.energie_cumulus_jour')))
+        | round(2) }} kwh - {{states('sensor.sonde_temperature_owon_temperature')}}
+        °c)! \n{% if int(states('sensor.surplus_production')) > 0%} Surplus disponible
+        : {{int(states('sensor.surplus_production'))}}W.{% endif %} "
+  mode: single
+- id: '1731688965959'
+  alias: Reset ECS Chaud
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.sonde_temperature_owon_temperature
+    below: 30
   conditions: []
   actions:
-    - action: input_boolean.turn_on
+  - action: input_boolean.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.ecs_chaud
+  mode: single
+- id: '1731783993703'
+  alias: Clim Lisa
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.chambre_lisa_temperature
+    below: input_number.consigne_chauffage_chambres
+  - trigger: numeric_state
+    entity_id:
+    - sensor.meter_plus_938f
+    below: input_number.consigne_chauffage_chambres
+  - trigger: state
+    entity_id:
+    - climate.clim_lisa
+    from: 'off'
+    to: heat
+  - trigger: state
+    entity_id:
+    - schedule.calendrier_chauffage_chambres
+    from: 'off'
+    to: 'on'
+  conditions:
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: input_boolean.automatisation
+      state: 'on'
+    - condition: state
+      entity_id: input_boolean.mode_chauffage
+      state: 'on'
+    - condition: or
+      conditions:
+      - condition: and
+        conditions:
+        - condition: or
+          conditions:
+          - condition: numeric_state
+            entity_id: sensor.chambre_lisa_temperature
+            below: input_number.seuil_temperature_chambres
+          - condition: numeric_state
+            entity_id: sensor.meter_plus_938f
+            below: input_number.seuil_temperature_chambres
+        - condition: state
+          entity_id: schedule.calendrier_chauffage_chambres
+          state: 'on'
+      - condition: state
+        entity_id: climate.clim_lisa
+        state: heat
+  actions:
+  - if:
+    - condition: state
+      entity_id: switch.disjoncteur_3_none
+      state: 'off'
+    then:
+    - action: switch.turn_on
       metadata: {}
       data: {}
       target:
-        entity_id: input_boolean.ecs_chaud
-  mode: single
-- id: "1731783993703"
-  alias: Clim Lisa
-  description: ""
-  triggers:
-    - trigger: numeric_state
-      entity_id:
-        - sensor.chambre_lisa_temperature
-      below: input_number.consigne_chauffage_chambres
-    - trigger: numeric_state
-      entity_id:
-        - sensor.meter_plus_938f
-      below: input_number.consigne_chauffage_chambres
-    - trigger: state
-      entity_id:
-        - climate.clim_lisa
-      from: "off"
-      to: heat
-    - trigger: state
-      entity_id:
-        - schedule.calendrier_chauffage_chambres
-      from: "off"
-      to: "on"
-  conditions:
-    - condition: and
+        entity_id:
+        - switch.disjoncteur_3_none
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 10
+        milliseconds: 0
+  - if:
+    - condition: or
       conditions:
-        - condition: state
-          entity_id: input_boolean.automatisation
-          state: "on"
-        - condition: state
-          entity_id: input_boolean.mode_chauffage
-          state: "on"
-        - condition: or
-          conditions:
-            - condition: and
-              conditions:
-                - condition: or
-                  conditions:
-                    - condition: numeric_state
-                      entity_id: sensor.chambre_lisa_temperature
-                      below: input_number.seuil_temperature_chambres
-                    - condition: numeric_state
-                      entity_id: sensor.meter_plus_938f
-                      below: input_number.seuil_temperature_chambres
-                - condition: state
-                  entity_id: schedule.calendrier_chauffage_chambres
-                  state: "on"
-            - condition: state
-              entity_id: climate.clim_lisa
-              state: heat
-  actions:
-    - if:
-        - condition: state
-          entity_id: switch.disjoncteur_3_none
-          state: "off"
-      then:
-        - action: switch.turn_on
+      - condition: state
+        entity_id: climate.clim_lisa
+        state: unavailable
+      - condition: state
+        entity_id: climate.clim_lisa
+        state: unknown
+    then:
+    - repeat:
+        until:
+        - condition: template
+          value_template: '{{ (is_state(''climate.clim_lisa'', ''off'') or is_state(''climate.clim_lisa'',
+            ''heat'')) and repeat.index < 10 }}'
+        sequence:
+        - action: homeassistant.reload_config_entry
           metadata: {}
           data: {}
           target:
-            entity_id:
-              - switch.disjoncteur_3_none
+            label_id: clim
         - delay:
             hours: 0
             minutes: 0
-            seconds: 10
+            seconds: 5
             milliseconds: 0
-    - if:
-        - condition: or
-          conditions:
-            - condition: state
-              entity_id: climate.clim_lisa
-              state: unavailable
-            - condition: state
-              entity_id: climate.clim_lisa
-              state: unknown
-      then:
-        - repeat:
-            until:
-              - condition: template
-                value_template:
-                  "{{ (is_state('climate.clim_lisa', 'off') or is_state('climate.clim_lisa',
-                  'heat')) and repeat.index < 10 }}"
-            sequence:
-              - action: homeassistant.reload_config_entry
-                metadata: {}
-                data: {}
-                target:
-                  label_id: clim
-              - delay:
-                  hours: 0
-                  minutes: 0
-                  seconds: 5
-                  milliseconds: 0
-    - action: climate.set_temperature
-      metadata: {}
-      data:
-        hvac_mode: heat
-        temperature: "{{ states('input_number.seuil_temperature_chambres') }}"
-      target:
-        entity_id: climate.clim_lisa
-    - type: turn_on
-      device_id: ca5a1d4d5c652e5a540deaaae09f9405
-      entity_id: d97a95ca27a4528361dd32707c0973b9
-      domain: switch
+  - action: climate.set_temperature
+    metadata: {}
+    data:
+      hvac_mode: heat
+      temperature: '{{ states(''input_number.seuil_temperature_chambres'') }}'
+    target:
+      entity_id: climate.clim_lisa
+  - type: turn_on
+    device_id: ca5a1d4d5c652e5a540deaaae09f9405
+    entity_id: d97a95ca27a4528361dd32707c0973b9
+    domain: switch
+  - device_id: ca5a1d4d5c652e5a540deaaae09f9405
+    domain: climate
+    entity_id: 75d43c2f5470d1d38b1db785215bfc05
+    type: set_preset_mode
+    preset_mode: sleep
+  - action: notify.mobile_app_iphone_de_mat_old
+    metadata: {}
+    data:
+      message: 'Activation de la climatisation de Lisa : température de {{states(''sensor.chambre_lisa_temperature'')}}º
+        (par {{ trigger.to_state.name }}).'
+  - wait_template: '{{ is_state(''climate.clim_lisa'', ''off'') or is_state(''schedule.calendrier_chauffage_chambres'',
+      ''off'') or states(''sensor.chambre_lisa_temperature'')>states(''input_number.seuil_temperature_chambres'')
+      or states(''sensor.meter_plus_938f'')>states(''input_number.seuil_temperature_chambres'')  }}'
+    continue_on_timeout: true
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - wait_template: '{{ is_state(''climate.clim_lisa'', ''off'') or is_state(''schedule.calendrier_chauffage_chambres'',
+      ''off'') or states(''sensor.chambre_lisa_temperature'')>states(''input_number.seuil_temperature_chambres'')
+      or states(''sensor.meter_plus_938f'')>states(''input_number.seuil_temperature_chambres'')  }}'
+    continue_on_timeout: true
+  - if:
+    - condition: template
+      value_template: '{{ trigger.to_state.entity_id == ''climate.clim_lisa''}}'
+    then:
+    - wait_template: '{{ is_state(''climate.clim_lisa'', ''off'')  }}'
+      continue_on_timeout: true
     - device_id: ca5a1d4d5c652e5a540deaaae09f9405
       domain: climate
       entity_id: 75d43c2f5470d1d38b1db785215bfc05
-      type: set_preset_mode
-      preset_mode: sleep
-    - action: notify.mobile_app_iphone_de_mat_old
+      type: set_hvac_mode
+      hvac_mode: 'off'
+    else:
+    - device_id: ca5a1d4d5c652e5a540deaaae09f9405
+      domain: climate
+      entity_id: 75d43c2f5470d1d38b1db785215bfc05
+      type: set_hvac_mode
+      hvac_mode: 'off'
+  - action: notify.mobile_app_iphone_de_mat_old
+    metadata: {}
+    data:
+      message: 'Fin Clim Lisa ({{ (((now() | as_timestamp)- (state_attr(''automation.clim'',''last_triggered'')
+        | as_timestamp))/ 60 )| int(0)  }} min). Température : {{states(''sensor.chambre_lisa_temperature'')}}º
+        (par {{ trigger.to_state.name }}).'
+  mode: single
+- id: '1731784603523'
+  alias: Clim Entrée
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.entree_temperature
+    below: input_number.consigne_chauffage_entree
+  - trigger: numeric_state
+    entity_id:
+    - sensor.meter_plus_6b44
+    below: input_number.consigne_chauffage_entree
+  - trigger: state
+    entity_id:
+    - climate.clim_entree
+    from: 'off'
+    to: heat
+    enabled: true
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 1
+  - trigger: state
+    entity_id:
+    - schedule.calendrier_chauffage_entree
+    from: 'off'
+    to: 'on'
+  conditions:
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: input_boolean.automatisation
+      state: 'on'
+    - condition: state
+      entity_id: input_boolean.mode_chauffage
+      state: 'on'
+    - condition: or
+      conditions:
+      - condition: and
+        conditions:
+        - condition: or
+          conditions:
+          - condition: numeric_state
+            entity_id: sensor.entree_temperature
+            below: input_number.seuil_temperature_entree
+          - condition: numeric_state
+            entity_id: sensor.meter_plus_6b44
+            below: input_number.seuil_temperature_entree
+        - condition: state
+          entity_id: schedule.calendrier_chauffage_entree
+          state: 'on'
+      - condition: state
+        entity_id: climate.clim_entree
+        state: heat
+  actions:
+  - if:
+    - condition: state
+      entity_id: switch.disjoncteur_3_none
+      state: 'off'
+    then:
+    - action: switch.turn_on
       metadata: {}
-      data:
-        message:
-          "Activation de la climatisation de Lisa : température de {{states('sensor.chambre_lisa_temperature')}}º
-          (par {{ trigger.to_state.name }})."
-    - wait_template:
-        "{{ is_state('climate.clim_lisa', 'off') or is_state('schedule.calendrier_chauffage_chambres',
-        'off') or states('sensor.chambre_lisa_temperature')>states('input_number.seuil_temperature_chambres')
-        or states('sensor.meter_plus_938f')>states('input_number.seuil_temperature_chambres')  }}"
-      continue_on_timeout: true
+      data: {}
+      target:
+        entity_id:
+        - switch.disjoncteur_3_none
     - delay:
         hours: 0
         minutes: 0
-        seconds: 5
+        seconds: 10
         milliseconds: 0
-    - wait_template:
-        "{{ is_state('climate.clim_lisa', 'off') or is_state('schedule.calendrier_chauffage_chambres',
-        'off') or states('sensor.chambre_lisa_temperature')>states('input_number.seuil_temperature_chambres')
-        or states('sensor.meter_plus_938f')>states('input_number.seuil_temperature_chambres')  }}"
-      continue_on_timeout: true
-    - if:
-        - condition: template
-          value_template: "{{ trigger.to_state.entity_id == 'climate.clim_lisa'}}"
-      then:
-        - wait_template: "{{ is_state('climate.clim_lisa', 'off')  }}"
-          continue_on_timeout: true
-        - device_id: ca5a1d4d5c652e5a540deaaae09f9405
-          domain: climate
-          entity_id: 75d43c2f5470d1d38b1db785215bfc05
-          type: set_hvac_mode
-          hvac_mode: "off"
-      else:
-        - device_id: ca5a1d4d5c652e5a540deaaae09f9405
-          domain: climate
-          entity_id: 75d43c2f5470d1d38b1db785215bfc05
-          type: set_hvac_mode
-          hvac_mode: "off"
-    - action: notify.mobile_app_iphone_de_mat_old
-      metadata: {}
-      data:
-        message:
-          "Fin Clim Lisa ({{ (((now() | as_timestamp)- (state_attr('automation.clim','last_triggered')
-          | as_timestamp))/ 60 )| int(0)  }} min). Température : {{states('sensor.chambre_lisa_temperature')}}º
-          (par {{ trigger.to_state.name }})."
-  mode: single
-- id: "1731784603523"
-  alias: Clim Entrée
-  description: ""
-  triggers:
-    - trigger: numeric_state
-      entity_id:
-        - sensor.entree_temperature
-      below: input_number.consigne_chauffage_entree
-    - trigger: numeric_state
-      entity_id:
-        - sensor.meter_plus_6b44
-      below: input_number.consigne_chauffage_entree
-    - trigger: state
-      entity_id:
-        - climate.clim_entree
-      from: "off"
-      to: heat
-      enabled: true
-      for:
-        hours: 0
-        minutes: 0
-        seconds: 1
-    - trigger: state
-      entity_id:
-        - schedule.calendrier_chauffage_entree
-      from: "off"
-      to: "on"
-  conditions:
-    - condition: and
+  - if:
+    - condition: or
       conditions:
-        - condition: state
-          entity_id: input_boolean.automatisation
-          state: "on"
-        - condition: state
-          entity_id: input_boolean.mode_chauffage
-          state: "on"
-        - condition: or
-          conditions:
-            - condition: and
-              conditions:
-                - condition: or
-                  conditions:
-                    - condition: numeric_state
-                      entity_id: sensor.entree_temperature
-                      below: input_number.seuil_temperature_entree
-                    - condition: numeric_state
-                      entity_id: sensor.meter_plus_6b44
-                      below: input_number.seuil_temperature_entree
-                - condition: state
-                  entity_id: schedule.calendrier_chauffage_entree
-                  state: "on"
-            - condition: state
-              entity_id: climate.clim_entree
-              state: heat
-  actions:
-    - if:
-        - condition: state
-          entity_id: switch.disjoncteur_3_none
-          state: "off"
-      then:
-        - action: switch.turn_on
+      - condition: state
+        entity_id: climate.clim_entree
+        state: unavailable
+      - condition: state
+        entity_id: climate.clim_entree
+        state: unknown
+    then:
+    - repeat:
+        until:
+        - condition: template
+          value_template: '{{ (is_state(''climate.clim_entree'', ''off'') or is_state(''climate.clim_entree'',
+            ''heat'')) and repeat.index < 10 }}'
+        sequence:
+        - action: homeassistant.reload_config_entry
           metadata: {}
           data: {}
           target:
-            entity_id:
-              - switch.disjoncteur_3_none
+            label_id: clim
         - delay:
             hours: 0
             minutes: 0
-            seconds: 10
+            seconds: 5
             milliseconds: 0
-    - if:
-        - condition: or
-          conditions:
-            - condition: state
-              entity_id: climate.clim_entree
-              state: unavailable
-            - condition: state
-              entity_id: climate.clim_entree
-              state: unknown
-      then:
-        - repeat:
-            until:
-              - condition: template
-                value_template:
-                  "{{ (is_state('climate.clim_entree', 'off') or is_state('climate.clim_entree',
-                  'heat')) and repeat.index < 10 }}"
-            sequence:
-              - action: homeassistant.reload_config_entry
-                metadata: {}
-                data: {}
-                target:
-                  label_id: clim
-              - delay:
-                  hours: 0
-                  minutes: 0
-                  seconds: 5
-                  milliseconds: 0
-    - action: climate.set_temperature
-      metadata: {}
-      data:
-        hvac_mode: heat
-        temperature: "{{ states('input_number.seuil_temperature_entree') }}"
-      target:
-        entity_id: climate.clim_entree
-    - device_id: 280904bd43829cf2b64d322cd3b67cd1
-      domain: climate
-      entity_id: c8d050f513f09480235a70a8a490c65b
-      type: set_preset_mode
-      preset_mode: boost
-    - delay:
-        hours: 0
-        minutes: 0
-        seconds: 1
-        milliseconds: 0
-    - action: notify.mobile_app_iphone_de_mat_old
-      metadata: {}
-      data:
-        message:
-          "Activation de la climatisation Entrée : température de {{states('sensor.entree_temperature')}}º
-          (par {{ trigger.to_state.name }})."
-    - wait_template:
-        " {{ is_state('climate.clim_entree', 'off') or\n  is_state('schedule.calendrier_chauffage_entree',
-        'off') or\n  states('sensor.entree_temperature')>states('input_number.seuil_temperature_entree')\n
-        \ or\n  states('sensor.meter_plus_6b44')>states('input_number.seuil_temperature_entree')
-        \n  }}"
-      continue_on_timeout: true
-    - delay:
-        hours: 0
-        minutes: 0
-        seconds: 5
-        milliseconds: 0
-    - wait_template:
-        " {{ is_state('climate.clim_entree', 'off') or\n  is_state('schedule.calendrier_chauffage_entree',
-        'off') or\n  states('sensor.entree_temperature')>states('input_number.seuil_temperature_entree')\n
-        \ or\n  states('sensor.meter_plus_6b44')>states('input_number.seuil_temperature_entree')
-        \n  }}"
-      continue_on_timeout: true
-    - device_id: 280904bd43829cf2b64d322cd3b67cd1
-      domain: climate
-      entity_id: c8d050f513f09480235a70a8a490c65b
-      type: set_hvac_mode
-      hvac_mode: "off"
-    - action: notify.mobile_app_iphone_de_mat_old
-      metadata: {}
-      data:
-        message:
-          "Fin Clim Entrée ({{ (((now() | as_timestamp)- (state_attr('automation.clim_2','last_triggered')
-          | as_timestamp))/ 60 )| int(0)  }} min. Température : {{states('sensor.entree_temperature')}}º
-          (par {{ trigger.to_state.name }})."
+  - action: climate.set_temperature
+    metadata: {}
+    data:
+      hvac_mode: heat
+      temperature: '{{ states(''input_number.seuil_temperature_entree'') }}'
+    target:
+      entity_id: climate.clim_entree
+  - device_id: 280904bd43829cf2b64d322cd3b67cd1
+    domain: climate
+    entity_id: c8d050f513f09480235a70a8a490c65b
+    type: set_preset_mode
+    preset_mode: boost
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
+  - action: notify.mobile_app_iphone_de_mat_old
+    metadata: {}
+    data:
+      message: 'Activation de la climatisation Entrée : température de {{states(''sensor.entree_temperature'')}}º
+        (par {{ trigger.to_state.name }}).'
+  - wait_template: " {{ is_state('climate.clim_entree', 'off') or\n  is_state('schedule.calendrier_chauffage_entree',
+      'off') or\n  states('sensor.entree_temperature')>states('input_number.seuil_temperature_entree')\n
+      \ or\n  states('sensor.meter_plus_6b44')>states('input_number.seuil_temperature_entree')
+      \n  }}"
+    continue_on_timeout: true
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - wait_template: " {{ is_state('climate.clim_entree', 'off') or\n  is_state('schedule.calendrier_chauffage_entree',
+      'off') or\n  states('sensor.entree_temperature')>states('input_number.seuil_temperature_entree')\n
+      \ or\n  states('sensor.meter_plus_6b44')>states('input_number.seuil_temperature_entree')
+      \n  }}"
+    continue_on_timeout: true
+  - device_id: 280904bd43829cf2b64d322cd3b67cd1
+    domain: climate
+    entity_id: c8d050f513f09480235a70a8a490c65b
+    type: set_hvac_mode
+    hvac_mode: 'off'
+  - action: notify.mobile_app_iphone_de_mat_old
+    metadata: {}
+    data:
+      message: 'Fin Clim Entrée ({{ (((now() | as_timestamp)- (state_attr(''automation.clim_2'',''last_triggered'')
+        | as_timestamp))/ 60 )| int(0)  }} min. Température : {{states(''sensor.entree_temperature'')}}º
+        (par {{ trigger.to_state.name }}).'
   mode: single
-- id: "1731792319655"
+- id: '1731792319655'
   alias: Relance REST
-  description: ""
+  description: ''
   triggers:
-    - trigger: state
-      entity_id:
-        - sensor.estar_centrale
-      to: unavailable
-      for:
-        hours: 0
-        minutes: 0
-        seconds: 30
+  - trigger: state
+    entity_id:
+    - sensor.estar_centrale
+    to: unavailable
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+  - trigger: state
+    entity_id:
+    - sensor.estar_centrale
+    to: unavailable
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
   conditions: []
   actions:
-    - action: rest.reload
+  - action: rest.reload
+    metadata: {}
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - if:
+    - condition: or
+      conditions:
+      - condition: state
+        entity_id: sensor.estar_centrale
+        state: unavailable
+      - condition: state
+        entity_id: sensor.estar_centrale
+        state: unknown
+    then:
+    - action: notify.persistent_notification
       metadata: {}
-      data: {}
-    - delay:
-        hours: 0
-        minutes: 0
-        seconds: 5
-        milliseconds: 0
-    - if:
-        - condition: or
-          conditions:
-            - condition: state
-              entity_id: sensor.estar_centrale
-              state: unavailable
-            - condition: state
-              entity_id: sensor.estar_centrale
-              state: unknown
-      then:
-        - action: notify.persistent_notification
-          metadata: {}
-          data:
-            message: Erreur de REST - Estar Centrale
+      data:
+        message: Erreur de REST - Estar Centrale
   mode: single
-- id: "1731835608679"
+- id: '1731835608679'
   alias: WLED
-  description: ""
+  description: ''
   triggers:
-    - minutes: "*"
-      trigger: time_pattern
+  - minutes: '*'
+    trigger: time_pattern
   conditions:
+  - condition: state
+    entity_id: input_boolean.automatisation
+    state: 'on'
+  - condition: numeric_state
+    entity_id: sensor.production_solaire
+    above: 0
+  - condition: state
+    entity_id: light.wled1_principal
+    state: 'on'
+  actions:
+  - parallel:
+    - choose:
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.production_solaire
+          below: 1
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Prod0
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.production_solaire
+          below: 100
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Prod100
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.production_solaire
+          below: 200
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Prod200
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.production_solaire
+          below: 300
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Prod300
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.production_solaire
+          below: 400
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Prod400
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.production_solaire
+          below: 500
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Prod500
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.production_solaire
+          below: 750
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Prod750
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.production_solaire
+          below: 1000
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Prod1000
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.production_solaire
+          below: 1500
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Prod1500
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.production_solaire
+          below: 2000
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Prod2000
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.production_solaire
+          below: 2500
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Prod2500
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.production_solaire
+          below: 3000
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Prod3000
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.production_solaire
+          above: 3000
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: ProdMax
+      default:
+      - action: select.select_option
+        metadata: {}
+        data:
+          option: Vide Prod
+        target:
+          entity_id: select.wled1_prereglage
+    - choose:
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.surplus_production
+          below: 1
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Surplus0
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.surplus_production
+          below: 100
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Surplus100
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.surplus_production
+          below: 200
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Surplus200
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.surplus_production
+          below: 300
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Surplus300
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.surplus_production
+          below: 400
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Surplus400
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.surplus_production
+          below: 500
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Surplus500
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.surplus_production
+          below: 750
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Surplus750
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.surplus_production
+          below: 1000
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Surplus1000
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.surplus_production
+          below: 1500
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Surplus1500
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.surplus_production
+          below: 2000
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Surplus2000
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.surplus_production
+          below: 2500
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Surplus2500
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.surplus_production
+          below: 3000
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: Surplus3000
+      - conditions:
+        - condition: numeric_state
+          entity_id: sensor.surplus_production
+          above: 3000
+        sequence:
+        - action: select.select_option
+          target:
+            entity_id: select.wled1_prereglage
+          data:
+            option: SurplusMax
+      default:
+      - action: select.select_option
+        metadata: {}
+        data:
+          option: Vide Surplus
+        target:
+          entity_id: select.wled1_prereglage
+  mode: single
+- id: '1731947570505'
+  alias: Activation Clim Salon
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - schedule.calendrier_chauffage_salon
+    from: 'off'
+    to: 'on'
+  conditions:
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: input_boolean.mode_chauffage
+      state: 'on'
     - condition: state
       entity_id: input_boolean.automatisation
-      state: "on"
-    - condition: numeric_state
-      entity_id: sensor.production_solaire
-      above: 0
+      state: 'on'
+    - condition: state
+      entity_id: switch.disjoncteur_4_none
+      state: 'off'
   actions:
-    - parallel:
-        - choose:
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.production_solaire
-                  below: 1
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Prod0
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.production_solaire
-                  below: 100
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Prod100
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.production_solaire
-                  below: 200
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Prod200
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.production_solaire
-                  below: 300
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Prod300
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.production_solaire
-                  below: 400
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Prod400
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.production_solaire
-                  below: 500
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Prod500
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.production_solaire
-                  below: 750
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Prod750
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.production_solaire
-                  below: 1000
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Prod1000
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.production_solaire
-                  below: 1500
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Prod1500
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.production_solaire
-                  below: 2000
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Prod2000
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.production_solaire
-                  below: 2500
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Prod2500
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.production_solaire
-                  below: 3000
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Prod3000
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.production_solaire
-                  above: 3000
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: ProdMax
-          default:
-            - action: select.select_option
-              metadata: {}
-              data:
-                option: Vide Prod
-              target:
-                entity_id: select.wled1_prereglage
-        - choose:
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.surplus_production
-                  below: 1
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Surplus0
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.surplus_production
-                  below: 100
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Surplus100
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.surplus_production
-                  below: 200
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Surplus200
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.surplus_production
-                  below: 300
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Surplus300
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.surplus_production
-                  below: 400
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Surplus400
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.surplus_production
-                  below: 500
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Surplus500
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.surplus_production
-                  below: 750
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Surplus750
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.surplus_production
-                  below: 1000
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Surplus1000
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.surplus_production
-                  below: 1500
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Surplus1500
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.surplus_production
-                  below: 2000
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Surplus2000
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.surplus_production
-                  below: 2500
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Surplus2500
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.surplus_production
-                  below: 3000
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: Surplus3000
-            - conditions:
-                - condition: numeric_state
-                  entity_id: sensor.surplus_production
-                  above: 3000
-              sequence:
-                - action: select.select_option
-                  target:
-                    entity_id: select.wled1_prereglage
-                  data:
-                    option: SurplusMax
-          default:
-            - action: select.select_option
-              metadata: {}
-              data:
-                option: Vide Surplus
-              target:
-                entity_id: select.wled1_prereglage
+  - action: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.disjoncteur_4_none
+  - action: notify.mobile_app_iphone_de_mat_old
+    metadata: {}
+    data:
+      message: Activation de la Clim Salon
   mode: single
-- id: "1731947570505"
-  alias: Activation Clim Salon
-  description: ""
-  triggers:
-    - trigger: state
-      entity_id:
-        - schedule.calendrier_chauffage_salon
-      from: "off"
-      to: "on"
-  conditions:
-    - condition: and
-      conditions:
-        - condition: state
-          entity_id: input_boolean.mode_chauffage
-          state: "on"
-        - condition: state
-          entity_id: input_boolean.automatisation
-          state: "on"
-        - condition: state
-          entity_id: switch.disjoncteur_4_none
-          state: "off"
-  actions:
-    - action: switch.turn_on
-      metadata: {}
-      data: {}
-      target:
-        entity_id: switch.disjoncteur_4_none
-    - action: notify.mobile_app_iphone_de_mat_old
-      metadata: {}
-      data:
-        message: Activation de la Clim Salon
-  mode: single
-- id: "1731947660404"
+- id: '1731947660404'
   alias: Désactivation Clim Salon
-  description: ""
+  description: ''
   triggers:
-    - trigger: state
-      entity_id:
-        - schedule.calendrier_chauffage_salon
-      from: "on"
-      to: "off"
+  - trigger: state
+    entity_id:
+    - schedule.calendrier_chauffage_salon
+    from: 'on'
+    to: 'off'
   conditions:
-    - condition: and
-      conditions:
-        - condition: state
-          entity_id: input_boolean.automatisation
-          state: "on"
-        - condition: state
-          entity_id: input_boolean.mode_chauffage
-          state: "on"
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: input_boolean.automatisation
+      state: 'on'
+    - condition: state
+      entity_id: input_boolean.mode_chauffage
+      state: 'on'
+    - condition: state
+      entity_id: switch.disjoncteur_4_none
+      state: 'on'
   actions:
-    - if:
-        - condition: numeric_state
-          entity_id: sensor.disjoncteur_4_puissance_2
-          above: 20
-      then:
-        - action: notify.mobile_app_iphone_de_mat_old
-          metadata: {}
-          data:
-            message: "Désactivation impossible de Clim Salon : en cours d'utilisation"
-        - wait_template:
-            "{{(states('sensor.disjoncteur_4_puissance_2') | int ) < 20
-            }}"
-          continue_on_timeout: true
-        - delay:
-            hours: 0
-            minutes: 5
-            seconds: 0
-            milliseconds: 0
-        - wait_template:
-            "{{(states('sensor.disjoncteur_4_puissance_2') | int ) < 20
-            }}"
-          continue_on_timeout: true
-    - action: switch.turn_off
-      metadata: {}
-      data: {}
-      target:
-        entity_id: switch.disjoncteur_4_none
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.disjoncteur_4_puissance_2
+      above: 20
+    then:
     - action: notify.mobile_app_iphone_de_mat_old
       metadata: {}
       data:
-        message: Désactivation de Clim Salon
-  mode: single
-- id: "1731969239350"
-  alias: Gestion radiateur
-  description: ""
-  triggers:
-    - trigger: state
-      entity_id:
-        - sensor.em06_02_b1_power
-  conditions: []
-  actions:
-    - if:
-        - condition: numeric_state
-          entity_id: sensor.em06_02_b1_power
-          above: 100
-      then:
-        - action: input_number.set_value
-          metadata: {}
-          data_template:
-            value:
-              "{{ max(min(int((int(states('sensor.em06_02_b1_power')) - 50) / int(states('input_number.puissance_radiateur'))
-              *100),100),0) }}"
-          target:
-            entity_id: input_number.pwm_historique
-        - action: fan.set_percentage
-          metadata: {}
-          data_template:
-            percentage: "{{ states('input_number.pwm_historique') }}"
-          target:
-            entity_id: fan.esp32_pwm
-          enabled: true
-        - action: input_number.set_value
-          metadata: {}
-          data_template:
-            value:
-              "{{ int(int(states('input_number.pwm_historique')) * int(states('input_number.puissance_radiateur'))
-              / 100) }}"
-          target:
-            entity_id: input_number.puissance_radiateur_consommee
-          enabled: true
-      else:
-        - action: fan.turn_off
-          metadata: {}
-          data: {}
-        - action: input_number.set_value
-          metadata: {}
-          data:
-            value: 0
-          target:
-            entity_id: input_number.pwm_historique
-        - action: input_number.set_value
-          metadata: {}
-          data:
-            value: 0
-          target:
-            entity_id: input_number.puissance_radiateur_consommee
-          enabled: true
-  mode: single
-- id: "1731971598661"
-  alias: Alerte Radiateur
-  description: ""
-  triggers:
-    - trigger: state
-      entity_id:
-        - sensor.em06_02_b1_power
-      for:
+        message: 'Désactivation impossible de Clim Salon : en cours d''utilisation'
+    - wait_template: '{{(states(''sensor.disjoncteur_4_puissance_2'') | int ) < 20
+        }}'
+      continue_on_timeout: true
+    - delay:
         hours: 0
-        minutes: 1
+        minutes: 5
         seconds: 0
+        milliseconds: 0
+    - wait_template: '{{(states(''sensor.disjoncteur_4_puissance_2'') | int ) < 20
+        }}'
+      continue_on_timeout: true
+  - action: switch.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.disjoncteur_4_none
+  - action: notify.mobile_app_iphone_de_mat_old
+    metadata: {}
+    data:
+      message: Désactivation de Clim Salon
+  mode: single
+- id: '1731969239350'
+  alias: Gestion radiateur
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.em06_02_b1_power
   conditions: []
   actions:
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.em06_02_b1_power
+      above: 100
+    then:
+    - action: input_number.set_value
+      metadata: {}
+      data_template:
+        value: '{{ max(min(int((int(states(''sensor.em06_02_b1_power'')) - 50) / int(states(''input_number.puissance_radiateur''))
+          *100),100),0) }}'
+      target:
+        entity_id: input_number.pwm_historique
+    - action: fan.set_percentage
+      metadata: {}
+      data_template:
+        percentage: '{{ states(''input_number.pwm_historique'') }}'
+      target:
+        entity_id: fan.esp32_pwm
+      enabled: true
+    - action: input_number.set_value
+      metadata: {}
+      data_template:
+        value: '{{ int(int(states(''input_number.pwm_historique'')) * int(states(''input_number.puissance_radiateur''))
+          / 100) }}'
+      target:
+        entity_id: input_number.puissance_radiateur_consommee
+      enabled: true
+    else:
     - action: fan.turn_off
       metadata: {}
       data: {}
+    - action: input_number.set_value
+      metadata: {}
+      data:
+        value: 0
       target:
-        entity_id: fan.esp32_pwm
+        entity_id: input_number.pwm_historique
+    - action: input_number.set_value
+      metadata: {}
+      data:
+        value: 0
+      target:
+        entity_id: input_number.puissance_radiateur_consommee
+      enabled: true
   mode: single
-- id: "1732141344710"
-  alias: Télécommande Zigbee
-  description: ""
+- id: '1731971598661'
+  alias: Alerte Radiateur
+  description: ''
   triggers:
-    - trigger: state
-      entity_id:
-        - sensor.telecommande_zigbee_action
-      from:
+  - trigger: state
+    entity_id:
+    - sensor.em06_02_b1_power
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
   conditions: []
   actions:
-    - action: switch.turn_on
-      metadata: {}
-      data: {}
-      target:
+  - action: fan.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: fan.esp32_pwm
+  mode: single
+- id: '1732141344710'
+  alias: Télécommande Zigbee
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.telecommande_zigbee_action
+    from:
+  conditions: []
+  actions:
+  - action: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.disjoncteur_3_none
+  - choose:
+    - conditions: []
+      sequence: []
+  mode: single
+- id: '1732521992660'
+  alias: Activation Prises connectées
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - schedule.calendrier_chauffage_salon
+    from: 'off'
+    to: 'on'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.automatisation
+    state: 'on'
+  actions:
+  - parallel:
+    - if:
+      - condition: state
         entity_id: switch.disjoncteur_3_none
-    - choose:
-        - conditions: []
-          sequence: []
+        state: 'off'
+      then:
+      - action: switch.turn_on
+        metadata: {}
+        data: {}
+        target:
+          device_id:
+          - 2e6fb60152117ae32ea29b2814d6e54b
+    - if:
+      - condition: state
+        entity_id: switch.disjoncteur_4_none
+        state: 'off'
+      then:
+      - action: switch.turn_on
+        metadata: {}
+        data: {}
+        target:
+          device_id:
+          - 95cac785555a1625a4b133475bc2c04b
+    - if:
+      - condition: state
+        entity_id: switch.prise_tv_local
+        state: 'off'
+      then:
+      - action: switch.turn_on
+        metadata: {}
+        data: {}
+        target:
+          device_id:
+          - ccfd320c2ae171b9cbca0e8d97e04e9d
+    - if:
+      - condition: state
+        entity_id: switch.prise_lave_linge_local
+        state: 'off'
+      then:
+      - action: switch.turn_on
+        metadata: {}
+        data: {}
+        target:
+          device_id:
+          - f6b1ca126ebf449238fb940da0aa0c2f
+    - if:
+      - condition: state
+        entity_id: switch.prise_lave_vaisselle_local
+        state: 'off'
+      then:
+      - action: switch.turn_on
+        metadata: {}
+        data: {}
+        target:
+          device_id:
+          - d4d1a674deef9c59116468790efc2b84
+  mode: single
+- id: '1732522539929'
+  alias: Désactivation Prises connectées
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - schedule.calendrier_chauffage_salon
+    from: 'on'
+    to: 'off'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.automatisation
+    state: 'on'
+  actions:
+  - parallel:
+    - if:
+      - condition: state
+        entity_id: switch.disjoncteur_3_none
+        state: 'on'
+      - condition: numeric_state
+        entity_id: sensor.disjoncteur_3_puissance_2
+        below: 50
+      then:
+      - action: switch.turn_off
+        metadata: {}
+        data: {}
+        target:
+          device_id:
+          - 2e6fb60152117ae32ea29b2814d6e54b
+    - if:
+      - condition: state
+        entity_id: switch.disjoncteur_4_none
+        state: 'on'
+      - condition: numeric_state
+        entity_id: sensor.disjoncteur_4_puissance_2
+        below: 50
+      then:
+      - action: switch.turn_off
+        metadata: {}
+        data: {}
+        target:
+          device_id:
+          - 95cac785555a1625a4b133475bc2c04b
+    - if:
+      - condition: state
+        entity_id: switch.prise_tv_local
+        state: 'on'
+      - condition: numeric_state
+        entity_id: sensor.prise_tv_puissance
+        below: 20
+      then:
+      - action: switch.turn_off
+        metadata: {}
+        data: {}
+        target:
+          device_id:
+          - ccfd320c2ae171b9cbca0e8d97e04e9d
+    - if:
+      - condition: state
+        entity_id: switch.prise_lave_linge_local
+        state: 'on'
+      - condition: numeric_state
+        entity_id: sensor.prise_lave_linge_local_puissance
+        below: 5
+      then:
+      - action: switch.turn_off
+        metadata: {}
+        data: {}
+        target:
+          device_id:
+          - f6b1ca126ebf449238fb940da0aa0c2f
+    - if:
+      - condition: state
+        entity_id: switch.prise_lave_vaisselle_local
+        state: 'on'
+      - condition: numeric_state
+        entity_id: sensor.prise_lave_vaiselle_local_puissance
+        below: 5
+      then:
+      - action: switch.turn_off
+        metadata: {}
+        data: {}
+        target:
+          device_id:
+          - d4d1a674deef9c59116468790efc2b84
   mode: single
