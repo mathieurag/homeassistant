@@ -6,7 +6,7 @@ frontend:
   themes: !include_dir_merge_named themes
   extra_module_url:
     - /local/card-mod.js
-    
+
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
@@ -74,6 +74,7 @@ logger:
     homeassistant.components.automation.wled_prod: error
     homeassistant.components.automation.wled*: error
     homeassistant.components.gree.coordinator: fatal
+    homeassistant.components.automation.gestion_radiateur: error
 
 shell_command:
   batch_py: python3 /config/python_scripts/script.py

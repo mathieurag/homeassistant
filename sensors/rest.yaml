@@ -25,7 +25,7 @@ rest:
     password: !secret password_estar
     scan_interval: 60
     method: POST
-    payload: '{"body":{"id":6886470},"WAITING_PROMISE":true}'
+    payload: !secret payload_estar2
     resource: "https://monitor.estarpower.com/platform/api/gateway/pvm/station_select_device_of_tree"
     headers:
       Content-Type: application/json;charset=UTF-8
@@ -170,7 +170,7 @@ rest:
 
   - scan_interval: 60
     method: POST
-    payload: '{"body":{"sid":6886470},"WAITING_PROMISE":true}'
+    payload: !secret payload_estar3
     resource: "https://monitor.estarpower.com/platform/api/gateway/pvm-data/data_count_station_real_data"
     headers:
       Host: monitor.estarpower.com

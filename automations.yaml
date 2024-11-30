@@ -183,7 +183,7 @@
     trigger: numeric_state
     for:
       hours: 0
-      minutes: 15
+      minutes: 1
       seconds: 0
   - entity_id:
     - sensor.cumulus_2
@@ -191,15 +191,12 @@
     trigger: numeric_state
     for:
       hours: 0
-      minutes: 15
+      minutes: 1
       seconds: 0
   conditions:
   - condition: state
     entity_id: input_boolean.ecs
     state: 'on'
-  - condition: template
-    value_template: '{{ now() - state_attr(''automation.debut_ecs'', ''last_triggered'')
-      > timedelta(minutes=20) }}'
   actions:
   - metadata: {}
     data: {}
@@ -212,13 +209,6 @@
       value: '{{ states(''sensor.cumulus_kwh'') | float(0) }}'
     target:
       entity_id: input_number.fin_ecs
-  - action: automation.trigger
-    metadata: {}
-    data:
-      skip_condition: true
-    target:
-      entity_id: automation.cycle_ecs
-    enabled: true
   mode: single
 - id: '1719951775105'
   alias: Début Frigo
@@ -368,7 +358,8 @@
       - sensor.conso_mini
       - sensor.consommation_non_suivie_kwh
       - sensor.consommation_non_suivie_2
-      domains: climate
+      - sensor.cumulus_3
+      domains: climate automation
       entity_globs:
       - switch.clim_*_xfan
       - switch.clim_*_quiet
@@ -388,6 +379,10 @@
       - sensor.*_temps_daller_retour_m*
       - sensor.energie_solar*
       - sensor.conso_mini*
+      - sensor.*linkquality
+      - sensor.shelly*apparent_power
+      - sensor.energie_radiateur*
+      - sensor.home_assistant*
     action: recorder.purge_entities
   mode: single
 - id: '1724796582689'
@@ -1451,38 +1446,6 @@
       device_id: 9b77fab7a9aa7b4577e7cfe2d53e7375
       entity_id: binary_sensor.backups_stale
   mode: single
-- id: '1727734195815'
-  alias: Cycle ECS
-  description: ''
-  triggers: []
-  conditions: []
-  actions:
-  - action: input_number.increment
-    data: {}
-    target:
-      entity_id: input_number.cycles_ecs
-  - data_template:
-      title: "Cycle ECS n°{{states('input_number.cycles_ecs') | round (0)}} du {{
-        as_timestamp(now()) | timestamp_custom(\"%d.%m.%y\", True) }} \n"
-      message: "{%- set time =\n    ((state_attr('automation.fin_ecs','last_triggered'))
-        -\n    (state_attr('automation.debut_ecs','last_triggered'))).seconds -15*60\n
-        \   -%} {%- set minutes = ((time % 3600) / 60) | round | int -%} {%- set\n
-        \   hours = ((time % 86400) / 3600) | int -%}\n{%- set energy =\n    ((states('input_number.fin_ecs'))
-        | float(0) -\n    (states('input_number.debut_ecs')) | float(0) ) | float(0)
-        | round(2) -%}\n{%- set cout =\n    ((((states('input_number.prix_hc_kwh'))
-        | float(0))) * (energy)) | round(2) -%}\n{%- set puissance =\n    ((energy*1000)/(time)*3600)
-        | round(0) -%}\nDurée du cycle : {{ ' {:02}h{:02}m'.format(hours,minutes)}}\nEnergie
-        du cycle : {{energy}} kWh pour {{cout}} €\nPuissance moyenne : {{puissance}}
-        W\n"
-    action: notify.persistent_notification
-  - action: input_number.set_value
-    metadata: {}
-    data:
-      value: '{{(((state_attr(''automation.fin_ecs'',''last_triggered'')) - ((state_attr(''automation.debut_ecs'',''last_triggered''))).seconds)/
-        60 | int(0)) | round(0) - 15 }}'
-    target:
-      entity_id: input_number.duree_cycle_ecs
-  mode: single
 - id: '1727786542143'
   alias: Cycle Frigo
   description: ''
@@ -2281,6 +2244,10 @@
     entity_id:
     - sensor.estar_url
     to: token verify error.
+  - trigger: state
+    entity_id:
+    - sensor.estar_centrale
+    to: unavailable
   conditions: []
   actions:
   - delay:
@@ -2429,8 +2396,8 @@
   - action: notify.mobile_app_iphone_de_mat_old
     metadata: {}
     data:
-      message: 'Activation de la climatisation de leo : température de {{states(''sensor.chambre_leo_temperature'')}}º
-        (par {{ trigger.to_state.name }}).'
+      message: 'Activation de la climatisation de leo : température de {{(min(float(states(''sensor.meter_plus_16c6'')),float(states(''sensor.chambre_leo_temperature''))))|string
+        }}º (par {{ trigger.to_state.name }}).'
   - wait_template: '{{ is_state(''climate.clim_leo'', ''off'') or is_state(''schedule.calendrier_chauffage_chambres'',
       ''off'') or states(''sensor.chambre_leo_temperature'')>states(''input_number.seuil_temperature_chambres'')
       or states(''sensor.meter_plus_16c6'')>states(''input_number.seuil_temperature_chambres'')  }}'
@@ -2456,6 +2423,8 @@
       type: set_hvac_mode
       hvac_mode: 'off'
     else:
+    - wait_template: '{{ is_state(''climate.clim_leo'', ''heat'')  }}'
+      continue_on_timeout: true
     - device_id: d2910ca682aff1ab63ccc59776862bbf
       domain: climate
       entity_id: f134f6c77732ee45a8c2eb02f1419140
@@ -2465,8 +2434,8 @@
     metadata: {}
     data:
       message: 'Fin Clim Léo ({{ (((now() | as_timestamp)- (state_attr(''automation.activation_clim_leo'',''last_triggered'')
-        | as_timestamp))/ 60 )| int(0)  }} min). Température : {{states(''sensor.chambre_leo_temperature'')}}º
-        (par {{ trigger.to_state.name }}).'
+        | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_16c6'')),float(states(''sensor.chambre_leo_temperature''))))|string
+        }}º (par {{ trigger.to_state.name }}).'
   mode: single
 - id: '1731443950550'
   alias: 'Activation routeur solaire '
@@ -2726,8 +2695,8 @@
   - action: notify.mobile_app_iphone_de_mat_old
     metadata: {}
     data:
-      message: 'Activation de la climatisation de Lisa : température de {{states(''sensor.chambre_lisa_temperature'')}}º
-        (par {{ trigger.to_state.name }}).'
+      message: 'Activation de la climatisation de Lisa : température de {{(min(float(states(''sensor.meter_plus_938f'')),float(states(''sensor.chambre_lisa_temperature''))))|string
+        }}º (par {{ trigger.to_state.name }}).'
   - wait_template: '{{ is_state(''climate.clim_lisa'', ''off'') or is_state(''schedule.calendrier_chauffage_chambres'',
       ''off'') or states(''sensor.chambre_lisa_temperature'')>states(''input_number.seuil_temperature_chambres'')
       or states(''sensor.meter_plus_938f'')>states(''input_number.seuil_temperature_chambres'')  }}'
@@ -2753,6 +2722,8 @@
       type: set_hvac_mode
       hvac_mode: 'off'
     else:
+    - wait_template: '{{ is_state(''climate.clim_lisa'', ''heat'')  }}'
+      continue_on_timeout: true
     - device_id: ca5a1d4d5c652e5a540deaaae09f9405
       domain: climate
       entity_id: 75d43c2f5470d1d38b1db785215bfc05
@@ -2762,8 +2733,8 @@
     metadata: {}
     data:
       message: 'Fin Clim Lisa ({{ (((now() | as_timestamp)- (state_attr(''automation.clim'',''last_triggered'')
-        | as_timestamp))/ 60 )| int(0)  }} min). Température : {{states(''sensor.chambre_lisa_temperature'')}}º
-        (par {{ trigger.to_state.name }}).'
+        | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_938f'')),float(states(''sensor.chambre_lisa_temperature''))))|string
+        }}º (par {{ trigger.to_state.name }}).'
   mode: single
 - id: '1731784603523'
   alias: Clim Entrée
@@ -2862,30 +2833,36 @@
             minutes: 0
             seconds: 5
             milliseconds: 0
-  - action: climate.set_temperature
-    metadata: {}
-    data:
-      hvac_mode: heat
-      temperature: '{{ states(''input_number.seuil_temperature_entree'') }}'
-    target:
+  - if:
+    - condition: state
       entity_id: climate.clim_entree
-  - device_id: 280904bd43829cf2b64d322cd3b67cd1
-    domain: climate
-    entity_id: c8d050f513f09480235a70a8a490c65b
-    type: set_preset_mode
-    preset_mode: boost
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 1
-      milliseconds: 0
+      state: heat
+    then: []
+    else:
+    - action: climate.set_temperature
+      metadata: {}
+      data:
+        hvac_mode: heat
+        temperature: '{{ states(''input_number.seuil_temperature_entree'') }}'
+      target:
+        entity_id: climate.clim_entree
+    - device_id: 280904bd43829cf2b64d322cd3b67cd1
+      domain: climate
+      entity_id: c8d050f513f09480235a70a8a490c65b
+      type: set_preset_mode
+      preset_mode: boost
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 1
+        milliseconds: 0
   - action: notify.mobile_app_iphone_de_mat_old
     metadata: {}
     data:
-      message: 'Activation de la climatisation Entrée : température de {{states(''sensor.entree_temperature'')}}º
+      message: 'Activation de la climatisation Entrée : température de {{(min(float(states(''sensor.meter_plus_6b44'')),float(states(''sensor.entree_temperature''))))|string}}º
         (par {{ trigger.to_state.name }}).'
-  - wait_template: " {{ is_state('climate.clim_entree', 'off') or\n  is_state('schedule.calendrier_chauffage_entree',
-      'off') or\n  states('sensor.entree_temperature')>states('input_number.seuil_temperature_entree')\n
+  - wait_template: " {{ is_state('climate.clim_entree', 'off') or\n  (is_state('schedule.calendrier_chauffage_entree',
+      'off') and trigger.to_state.name != 'Clim Entrée') or\n  states('sensor.entree_temperature')>states('input_number.seuil_temperature_entree')\n
       \ or\n  states('sensor.meter_plus_6b44')>states('input_number.seuil_temperature_entree')
       \n  }}"
     continue_on_timeout: true
@@ -2894,21 +2871,27 @@
       minutes: 0
       seconds: 5
       milliseconds: 0
-  - wait_template: " {{ is_state('climate.clim_entree', 'off') or\n  is_state('schedule.calendrier_chauffage_entree',
-      'off') or\n  states('sensor.entree_temperature')>states('input_number.seuil_temperature_entree')\n
+  - wait_template: " {{ is_state('climate.clim_entree', 'off') or\n  (is_state('schedule.calendrier_chauffage_entree',
+      'off') and trigger.to_state.name != 'Clim Entrée') or\n  states('sensor.entree_temperature')>states('input_number.seuil_temperature_entree')\n
       \ or\n  states('sensor.meter_plus_6b44')>states('input_number.seuil_temperature_entree')
       \n  }}"
     continue_on_timeout: true
-  - device_id: 280904bd43829cf2b64d322cd3b67cd1
-    domain: climate
-    entity_id: c8d050f513f09480235a70a8a490c65b
-    type: set_hvac_mode
-    hvac_mode: 'off'
+  - if:
+    - condition: state
+      entity_id: climate.clim_entree
+      state: 'off'
+    then: []
+    else:
+    - device_id: 280904bd43829cf2b64d322cd3b67cd1
+      domain: climate
+      entity_id: c8d050f513f09480235a70a8a490c65b
+      type: set_hvac_mode
+      hvac_mode: 'off'
   - action: notify.mobile_app_iphone_de_mat_old
     metadata: {}
     data:
       message: 'Fin Clim Entrée ({{ (((now() | as_timestamp)- (state_attr(''automation.clim_2'',''last_triggered'')
-        | as_timestamp))/ 60 )| int(0)  }} min. Température : {{states(''sensor.entree_temperature'')}}º
+        | as_timestamp))/ 60 )| int(0)  }} min. Température : {{(max(float(states(''sensor.meter_plus_6b44'')),float(states(''sensor.entree_temperature''))))|string}}º
         (par {{ trigger.to_state.name }}).'
   mode: single
 - id: '1731792319655'
@@ -3339,55 +3322,68 @@
   alias: Gestion radiateur
   description: ''
   triggers:
-  - trigger: state
-    entity_id:
-    - sensor.em06_02_b1_power
+  - trigger: homeassistant
+    event: start
   conditions: []
   actions:
-  - if:
-    - condition: numeric_state
-      entity_id: sensor.em06_02_b1_power
-      above: 100
-    then:
-    - action: input_number.set_value
-      metadata: {}
-      data_template:
-        value: '{{ max(min(int((int(states(''sensor.em06_02_b1_power'')) - 50) / int(states(''input_number.puissance_radiateur''))
-          *100),100),0) }}'
-      target:
-        entity_id: input_number.pwm_historique
-    - action: fan.set_percentage
-      metadata: {}
-      data_template:
-        percentage: '{{ states(''input_number.pwm_historique'') }}'
-      target:
-        entity_id: fan.esp32_pwm
-      enabled: true
-    - action: input_number.set_value
-      metadata: {}
-      data_template:
-        value: '{{ int(int(states(''input_number.pwm_historique'')) * int(states(''input_number.puissance_radiateur''))
-          / 100) }}'
-      target:
-        entity_id: input_number.puissance_radiateur_consommee
-      enabled: true
-    else:
-    - action: fan.turn_off
-      metadata: {}
-      data: {}
-    - action: input_number.set_value
-      metadata: {}
-      data:
-        value: 0
-      target:
-        entity_id: input_number.pwm_historique
-    - action: input_number.set_value
-      metadata: {}
-      data:
-        value: 0
-      target:
-        entity_id: input_number.puissance_radiateur_consommee
-      enabled: true
+  - repeat:
+      sequence:
+      - if:
+        - condition: numeric_state
+          entity_id: sensor.surplus_production
+          above: 100
+        then:
+        - action: input_number.set_value
+          metadata: {}
+          data_template:
+            value: '{{ max(min(int((int(states(''sensor.surplus_production'')) - 50)
+              /    int(states(''input_number.puissance_radiateur'')) *100),100),0)
+              }}'
+          target:
+            entity_id: input_number.pwm_historique
+        - action: fan.set_percentage
+          metadata: {}
+          data_template:
+            percentage: '{{ states(''input_number.pwm_historique'') }}'
+          target:
+            entity_id: fan.esp32_pwm
+          enabled: true
+        - action: input_number.set_value
+          metadata: {}
+          data_template:
+            value: '{{ int(int(states(''input_number.pwm_historique'')) * int(states(''input_number.puissance_radiateur''))
+              / 100) }}'
+          target:
+            entity_id: input_number.puissance_radiateur_consommee
+          enabled: true
+        else:
+        - action: fan.turn_off
+          metadata: {}
+          data: {}
+          target:
+            entity_id: fan.esp32_pwm
+        - action: input_number.set_value
+          metadata: {}
+          data:
+            value: 0
+          target:
+            entity_id: input_number.pwm_historique
+        - action: input_number.set_value
+          metadata: {}
+          data:
+            value: 0
+          enabled: true
+          target:
+            entity_id: input_number.puissance_radiateur_consommee
+      - delay:
+          hours: 0
+          minutes: 5
+          seconds: 0
+          milliseconds: 0
+      while:
+      - condition: state
+        entity_id: input_boolean.automatisation
+        state: 'on'
   mode: single
 - id: '1731971598661'
   alias: Alerte Radiateur
@@ -3407,25 +3403,6 @@
     data: {}
     target:
       entity_id: fan.esp32_pwm
-  mode: single
-- id: '1732141344710'
-  alias: Télécommande Zigbee
-  description: ''
-  triggers:
-  - trigger: state
-    entity_id:
-    - sensor.telecommande_zigbee_action
-    from:
-  conditions: []
-  actions:
-  - action: switch.turn_on
-    metadata: {}
-    data: {}
-    target:
-      entity_id: switch.disjoncteur_3_none
-  - choose:
-    - conditions: []
-      sequence: []
   mode: single
 - id: '1732521992660'
   alias: Activation Prises connectées
@@ -3527,6 +3504,7 @@
         target:
           device_id:
           - 2e6fb60152117ae32ea29b2814d6e54b
+      enabled: false
     - if:
       - condition: state
         entity_id: switch.disjoncteur_4_none
@@ -3584,3 +3562,50 @@
           device_id:
           - d4d1a674deef9c59116468790efc2b84
   mode: single
+- id: '1732524915144'
+  alias: Tuya Zigbee 4 button remote
+  description: ''
+  use_blueprint:
+    path: Soulfly999/Tuya_TS0044_1_remote.yaml
+    input:
+      switch: sensor.telecommande_zigbee_action
+      button_1_hold:
+      - type: toggle
+        device_id: 2e6fb60152117ae32ea29b2814d6e54b
+        entity_id: 3c829a1b3bf8daa103734b4919d21c4a
+        domain: switch
+      button_2_short_press:
+      - action: climate.toggle
+        metadata: {}
+        data: {}
+        target:
+          device_id: d2910ca682aff1ab63ccc59776862bbf
+      button_2_hold:
+      - type: toggle
+        device_id: 2e6fb60152117ae32ea29b2814d6e54b
+        entity_id: 3c829a1b3bf8daa103734b4919d21c4a
+        domain: switch
+      button_1_short_press:
+      - action: climate.toggle
+        metadata: {}
+        data: {}
+        target:
+          device_id: ca5a1d4d5c652e5a540deaaae09f9405
+      button_3_double_press: []
+      button_4_hold:
+      - type: toggle
+        device_id: 95cac785555a1625a4b133475bc2c04b
+        entity_id: 14ca4b5b3f71761abd8c5ea4e738f8da
+        domain: switch
+      button_3_hold:
+      - type: toggle
+        device_id: 2e6fb60152117ae32ea29b2814d6e54b
+        entity_id: 3c829a1b3bf8daa103734b4919d21c4a
+        domain: switch
+      button_1_double_press: []
+      button_3_short_press:
+      - action: climate.toggle
+        metadata: {}
+        data: {}
+        target:
+          device_id: 280904bd43829cf2b64d322cd3b67cd1

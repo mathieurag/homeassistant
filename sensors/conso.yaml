@@ -19,14 +19,14 @@ template:
         device_class: power # Exemples de valeurs possibles
         state_class: measurement
         unit_of_measurement: "W"
-        state: "{{ (states('sensor.double_clamp_meter_power_b') | float(0) - states('sensor.prise_lave_linge_local_puissance') | float(0)) | round(1) }}"
+        state: "{% if (states('sensor.double_clamp_meter_power_b') | float(0) - states('sensor.prise_lave_linge_local_puissance') | float(0)) <= 0 -%} 10 {%- else -%}  {{ (states('sensor.double_clamp_meter_power_b') | float(0) - states('sensor.prise_lave_linge_local_puissance') | float(0)) | round(1) }} {%- endif %}"
 
       - name: "mesureur_n1_puissance_a"
         unique_id: "mesureur_n1_puissance_a"
         device_class: power # Exemples de valeurs possibles
         state_class: measurement
         unit_of_measurement: "W"
-        state: "{{ (states('sensor.double_clamp_meter_power_a')) | round(1) }}"
+        state: "{{ (states('sensor.double_clamp_meter_power_a')) | float(0) | round(1) }}"
 
       - name: "Puissance socle"
         unique_id: "puissance_socle"
