@@ -1,0 +1,19 @@
+{
+  "entity": {
+    "sensor": {
+      "counter-meter": {
+        "default": "mdi:counter"
+      },
+      "time-meter": {
+        "default": "mdi:timer-outline"
+      },
+      "source-meter": {
+        "default": "mdi:gauge"
+      }
+    }
+  },
+  "services": {
+    "reset": "mdi:restore",
+    "calibrate": "mdi:scale-unbalanced"
+  }
+}

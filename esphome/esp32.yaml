@@ -1,0 +1,84 @@
+esphome:
+  name: esp32
+  friendly_name: ESP32-1
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: !secret wifi_ssid_fallback
+    password: !secret wifi_password_fallback
+
+captive_portal:
+
+sensor:
+  - platform: adc
+    pin: GPIO32
+    name: "Test Tension ESP32"
+    update_interval: 60s
+
+  - platform: adc
+    pin: GPIO33
+    name: "Test Tension ESP32 33"
+    update_interval: 60s
+    
+  - platform: adc
+    pin: GPIO34
+    name: "Test Tension ESP32 34"
+    update_interval: 60s
+    
+  - platform: adc
+    pin: GPIO35
+    name: "Test Tension ESP32 35"
+    update_interval: 60s
+
+  - platform: adc
+    pin: GPIO36
+    name: "Test Tension ESP32 36"
+    update_interval: 60s
+
+  - platform: adc
+    pin: GPIO37
+    name: "Test Tension ESP32 37"
+    update_interval: 60s
+    
+output:
+  - platform: ledc
+    pin: GPIO19
+    frequency: 1 Hz
+    id: pwm
+
+fan:
+  - platform: speed
+    output: pwm
+    name: "PWM"
+    restore_mode: ALWAYS_OFF
+    on_turn_on:
+    - logger.log: "PWM activé"
+    on_turn_off:
+    - logger.log: "PWM désactivé"
+    on_speed_set:
+    - logger.log:
+        format: "PWM speed was changed to %d %"
+        args: [ x ]
+
+    

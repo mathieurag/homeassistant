@@ -347,19 +347,19 @@
       - sensor.prises_rdc
       - sensor.prises_rdc_2
       - sensor.em06_01_b1
-      - sensor.awtrix_2e487c_uptime
-      - sensor.8_8_8_8_temps_daller_retour_maximum
-      - sensor.google_com_temps_daller_retour_maximum
-      - sensor.176_129_131_234_temps_daller_retour_maximum
-      - sensor.awtrix_2e487c_wifi_strength
       - sensor.taux_solar_heure
-      - sensor.awtrix_2e487c_free_ram
       - sensor.taux_solar_jour
       - sensor.conso_mini
       - sensor.consommation_non_suivie_kwh
       - sensor.consommation_non_suivie_2
       - sensor.cumulus_3
-      domains: climate automation
+      - sensor.salon_jour
+      - switch.router_data_fetching
+      - button.reboot
+      domains:
+      - climate
+      - automation
+      - device_tracker
       entity_globs:
       - switch.clim_*_xfan
       - switch.clim_*_quiet
@@ -383,6 +383,12 @@
       - sensor.shelly*apparent_power
       - sensor.energie_radiateur*
       - sensor.home_assistant*
+      - sensor.awtrix*
+      - sensor.tp_link_router_*
+      - sensor.*rssi*
+      - sensor.*retour_maximum
+      - switch.*wifi*
+      - sensor.estar*
     action: recorder.purge_entities
   mode: single
 - id: '1724796582689'
@@ -1842,14 +1848,14 @@
           device_id: 9b77fab7a9aa7b4577e7cfe2d53e7375
       - delay:
           hours: 0
-          minutes: 1
+          minutes: 5
           seconds: 0
           milliseconds: 0
       while:
       - condition: template
         value_template: '{{ (is_state(''sensor.tp_link_router_cpu_used'', ''unavailable'')
           or is_state(''sensor.tp_link_router_cpu_used'', ''unknown'')) or repeat.index
-          < 10 }}'
+          < 6 }}'
   - if:
     - condition: or
       conditions:
@@ -1858,7 +1864,7 @@
         state: unavailable
       - condition: state
         entity_id: sensor.tp_link_router_cpu_used
-        state: unavailable
+        state: unknown
     then:
     - action: notify.persistent_notification
       metadata: {}
@@ -2252,13 +2258,6 @@
       hours: 0
       minutes: 0
       seconds: 30
-  - trigger: state
-    entity_id:
-    - sensor.estar_centrale
-    for:
-      hours: 0
-      minutes: 5
-      seconds: 0
   conditions: []
   actions:
   - action: rest.reload
@@ -3632,18 +3631,16 @@
     action: mqtt.publish
   mode: queued
   max: 999
-- id: '1733175186561'
-  alias: Mqtt
+- id: '1733216800606'
+  alias: Désactivation Daikin Madoka
   description: ''
   triggers:
-  - trigger: mqtt
-    topic: shellyproem50-08f9e0e69644/status/em1:0
+  - trigger: homeassistant
+    event: shutdown
   conditions: []
   actions:
-  - action: input_number.set_value
+  - action: homeassistant.disable_config_entry
     metadata: {}
-    data_template:
-      '[object Object]':
-    target:
-      entity_id: input_number.shelly_mqtt_power
+    data:
+      config_entry_id: 01JE4R5GQFZ79A965KDNARF0TG
   mode: single

@@ -6,12 +6,19 @@
 !.gitignore
 !*.md
 !sensors
+!sensors/**
 !python_scripts
-!custom_components
+!python_scripts/**
 !blueprints
+!blueprints/**
+!esphome
+!esphome/**
+!custom_components
+!custom_components/**
 !www
 !lovelace*
 !zigbee2mqtt
+!zigbee2mqtt/**
 
 # Ignore folders.
 .storage
