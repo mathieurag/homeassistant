@@ -17,8 +17,6 @@
 !custom_components/**
 !www
 !lovelace*
-!zigbee2mqtt
-!zigbee2mqtt/**
 
 # Ignore folders.
 .storage
