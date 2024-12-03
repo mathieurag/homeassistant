@@ -2248,20 +2248,26 @@
     entity_id:
     - sensor.estar_centrale
     to: unavailable
-  conditions: []
-  actions:
-  - delay:
+    for:
       hours: 0
       minutes: 0
-      seconds: 5
-      milliseconds: 0
+      seconds: 30
+  - trigger: state
+    entity_id:
+    - sensor.estar_centrale
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  conditions: []
+  actions:
   - action: rest.reload
     metadata: {}
     data: {}
   - delay:
       hours: 0
       minutes: 0
-      seconds: 5
+      seconds: 10
       milliseconds: 0
   - action: input_text.set_value
     metadata: {}
@@ -2302,6 +2308,8 @@
     - schedule.calendrier_chauffage_chambres
     from: 'off'
     to: 'on'
+  - trigger: homeassistant
+    event: start
   conditions:
   - condition: and
     conditions:
@@ -2372,27 +2380,33 @@
             minutes: 0
             seconds: 5
             milliseconds: 0
-  - action: climate.set_temperature
-    metadata: {}
-    data:
-      hvac_mode: heat
-      temperature: '{{ states(''input_number.seuil_temperature_chambres'') }}'
-    target:
+  - if:
+    - condition: state
       entity_id: climate.clim_leo
-  - type: turn_on
-    device_id: d2910ca682aff1ab63ccc59776862bbf
-    entity_id: ee3bb881fc9b96ab2c667277bcfff60b
-    domain: switch
-  - device_id: d2910ca682aff1ab63ccc59776862bbf
-    domain: climate
-    entity_id: f134f6c77732ee45a8c2eb02f1419140
-    type: set_preset_mode
-    preset_mode: sleep
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 1
-      milliseconds: 0
+      state: heat
+    then: []
+    else:
+    - action: climate.set_temperature
+      metadata: {}
+      data:
+        hvac_mode: heat
+        temperature: '{{ states(''input_number.seuil_temperature_chambres'') }}'
+      target:
+        entity_id: climate.clim_leo
+    - device_id: d2910ca682aff1ab63ccc59776862bbf
+      domain: climate
+      entity_id: f134f6c77732ee45a8c2eb02f1419140
+      type: set_preset_mode
+      preset_mode: sleep
+    - type: turn_on
+      device_id: d2910ca682aff1ab63ccc59776862bbf
+      entity_id: ee3bb881fc9b96ab2c667277bcfff60b
+      domain: switch
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 1
+        milliseconds: 0
   - action: notify.mobile_app_iphone_de_mat_old
     metadata: {}
     data:
@@ -2417,14 +2431,25 @@
     then:
     - wait_template: '{{ is_state(''climate.clim_leo'', ''off'')  }}'
       continue_on_timeout: true
-    - device_id: d2910ca682aff1ab63ccc59776862bbf
-      domain: climate
-      entity_id: f134f6c77732ee45a8c2eb02f1419140
-      type: set_hvac_mode
-      hvac_mode: 'off'
     else:
     - wait_template: '{{ is_state(''climate.clim_leo'', ''heat'')  }}'
       continue_on_timeout: true
+    - repeat:
+        until:
+        - condition: template
+          value_template: '{{ (is_state(''climate.clim_leo'', ''off'') or is_state(''climate.clim_leo'',
+            ''heat'')) and repeat.index < 10 }}'
+        sequence:
+        - action: homeassistant.reload_config_entry
+          metadata: {}
+          data: {}
+          target:
+            label_id: clim
+        - delay:
+            hours: 0
+            minutes: 0
+            seconds: 3
+            milliseconds: 0
     - device_id: d2910ca682aff1ab63ccc59776862bbf
       domain: climate
       entity_id: f134f6c77732ee45a8c2eb02f1419140
@@ -2893,51 +2918,6 @@
       message: 'Fin Clim Entrée ({{ (((now() | as_timestamp)- (state_attr(''automation.clim_2'',''last_triggered'')
         | as_timestamp))/ 60 )| int(0)  }} min. Température : {{(max(float(states(''sensor.meter_plus_6b44'')),float(states(''sensor.entree_temperature''))))|string}}º
         (par {{ trigger.to_state.name }}).'
-  mode: single
-- id: '1731792319655'
-  alias: Relance REST
-  description: ''
-  triggers:
-  - trigger: state
-    entity_id:
-    - sensor.estar_centrale
-    to: unavailable
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 0
-  - trigger: state
-    entity_id:
-    - sensor.estar_centrale
-    to: unavailable
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 30
-  conditions: []
-  actions:
-  - action: rest.reload
-    metadata: {}
-    data: {}
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 5
-      milliseconds: 0
-  - if:
-    - condition: or
-      conditions:
-      - condition: state
-        entity_id: sensor.estar_centrale
-        state: unavailable
-      - condition: state
-        entity_id: sensor.estar_centrale
-        state: unknown
-    then:
-    - action: notify.persistent_notification
-      metadata: {}
-      data:
-        message: Erreur de REST - Estar Centrale
   mode: single
 - id: '1731835608679'
   alias: WLED
@@ -3609,3 +3589,61 @@
         data: {}
         target:
           device_id: 280904bd43829cf2b64d322cd3b67cd1
+- id: shellies_announce_gen2
+  alias: Shellies Announce Gen2
+  triggers:
+  - platform: homeassistant
+    event: start
+  variables:
+    get_config_payload: '{{ {''id'': 1, ''src'': ''shellies_discovery'', ''method'':
+      ''Shelly.GetConfig''} | to_json }}'
+    get_components_payload: '{{ {''id'': 1, ''src'': ''shellies_discovery'', ''method'':''Shelly.GetComponents'',
+      ''params'': {''include'': [''config'']}} | to_json }}'
+    device_ids:
+    - shellyplus2pm-485519a1ff8c
+    - custom-prefix/shelly-kitchen
+  actions:
+  - repeat:
+      for_each: '{{ device_ids }}'
+      sequence:
+      - action: mqtt.publish
+        data:
+          topic: '{{ repeat.item }}/rpc'
+          payload: '{{ get_config_payload }}'
+      - service: mqtt.publish
+        data:
+          topic: '{{ repeat.item }}/rpc'
+          payload: '{{ get_components_payload }}'
+- id: shellies_discovery_gen2
+  alias: Shellies Discovery Gen2
+  triggers:
+  - topic: shellies_discovery/rpc
+    trigger: mqtt
+  actions:
+  - action: python_script.shellies_discovery_gen2
+    data:
+      id: '{{ trigger.payload_json.src }}'
+      device_config: '{{ trigger.payload_json.result }}'
+  - condition: template
+    value_template: '{{ ''mqtt'' in trigger.payload_json.result }}'
+  - data:
+      topic: '{{ trigger.payload_json.result.mqtt.topic_prefix }}/command'
+      payload: status_update
+    action: mqtt.publish
+  mode: queued
+  max: 999
+- id: '1733175186561'
+  alias: Mqtt
+  description: ''
+  triggers:
+  - trigger: mqtt
+    topic: shellyproem50-08f9e0e69644/status/em1:0
+  conditions: []
+  actions:
+  - action: input_number.set_value
+    metadata: {}
+    data_template:
+      '[object Object]':
+    target:
+      entity_id: input_number.shelly_mqtt_power
+  mode: single

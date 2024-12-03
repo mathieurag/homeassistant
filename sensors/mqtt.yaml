@@ -1,0 +1,30 @@
+mqtt:
+  - sensor:
+      - name: "Shelly Pro Em Power 0 (Mqtt)"
+        state_topic: "shellyproem50-08f9e0e69644/status/em1:0"
+        value_template: "{{ value_json.act_power }}"
+        unit_of_measurement: "W"
+        json_attributes_topic: "shellyproem50-08f9e0e69644/status/em1:0"
+        json_attributes_template: "{{ value_json | tojson }}"
+
+      - name: "Shelly Pro Em Power 1 (Mqtt)"
+        state_topic: "shellyproem50-08f9e0e69644/status/em1:1"
+        value_template: "{{ value_json.act_power }}"
+        unit_of_measurement: "W"
+        json_attributes_topic: "shellyproem50-08f9e0e69644/status/em1:1"
+        json_attributes_template: "{{ value_json | tojson }}"
+
+  - switch:
+      - name: "Shelly Pro Em Switch (Mqtt)"
+        unique_id: shelly_pro_em_switch
+        state_topic: "shellyproem50-08f9e0e69644/status/switch:0/output"
+        command_topic: "shellyproem50-08f9e0e69644/status/switch:0/set"
+        availability:
+          - topic: "shellyproem50-08f9e0e69644/online"
+        payload_on: "true"
+        payload_off: "false"
+        state_on: "true"
+        state_off: "false"
+        optimistic: false
+        qos: 0
+        retain: true
