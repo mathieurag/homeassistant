@@ -17,6 +17,7 @@
 !custom_components/**
 !www
 !lovelace*
+*/zigbee2mqtt/state.json
 
 # Ignore folders.
 .storage
