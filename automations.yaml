@@ -1302,14 +1302,18 @@
         '
       message: 'HC : {{ states(''input_number.taux_hc_j_1'') | round(1) }} %. Conso
         : {{states(''input_number.energie_j_1'') | round(2) }} kWh / {{states(''input_number.cout_energie_j_1'')
-        | round(2)  }}€ Surplus : {{ (states(''input_number.surplus_production_j_1'')
-        | float(0)) | round(2) }} kWh pour  {{ (states(''input_number.prix_vente_edf_oa'')
-        | float(0) * states(''input_number.surplus_production_j_1'') | float(0)) |
-        round(2) }} € Solaire : {{ states(''input_number.taux_solar_j_1'') | round(1)
-        }} %. Prod : {{ (states(''input_number.solar_production_j_1'') | float) |
-        round(2) }} kWh / {{states(''input_number.solar_previsions_j_1'') | round(1)
-        }} kWh.  Demain : {{states(''sensor.solcast_pv_forecast_previsions_pour_aujourd_hui'')
-        | round(1)}} kWh / max  {{states(''sensor.solcast_pv_forecast_previsions_du_pic_aujourd_hui'')
+        | round(2)  }}€
+
+        ECS : {{ (states(''sensor.cumulus_kwh'')| float(0) - states(''input_number.energie_cumulus_jour'')
+        | float(0))| round(2)}} kWh / Surplus : {{ (states(''input_number.surplus_production_j_1'')
+        | float(0)) | round(2) }} kWh
+
+        Prod : {{ (states(''input_number.solar_production_j_1'') | float) | round(2)
+        }} kWh / {{states(''input_number.solar_previsions_j_1'') | round(1) }} kWh
+        ({{ states(''input_number.taux_solar_j_1'') | round(1) }} %)
+
+        Demain : {{states(''sensor.solcast_pv_forecast_previsions_pour_aujourd_hui'')
+        | round(1)}} kWh / max {{states(''sensor.solcast_pv_forecast_previsions_du_pic_aujourd_hui'')
         | round(0)}} W à {{ as_timestamp(states(''sensor.solcast_pv_forecast_heure_du_pic_aujourd_hui''))
         | timestamp_custom("%Hh%M", True) }}. Météo : {{states(''sensor.talence_daily_original_condition'')}}
 
@@ -1445,12 +1449,26 @@
   - event: start
     trigger: homeassistant
   actions:
+  - delay:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
+  - action: shell_command.startup
+    data: {}
+    response_variable: count
+  - action: rest.reload
+    data: {}
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      device_id: 2d47492dd060ebca9ceae763f61252e4
   - action: homeassistant.reload_config_entry
     metadata: {}
     data: {}
     target:
       device_id: 9b77fab7a9aa7b4577e7cfe2d53e7375
-      entity_id: binary_sensor.backups_stale
   mode: single
 - id: '1727786542143'
   alias: Cycle Frigo
@@ -1614,17 +1632,17 @@
   - condition: and
     conditions:
     - condition: device
-      device_id: 3dcd1c27afacd49396637a7af7ecdb8b
+      device_id: 5e00dad4fa92ccb0ace23dd35c6d3bba
       domain: device_tracker
-      entity_id: 035446e48a32a16bfa670cdac3cb3dcc
+      entity_id: f7be33cbc21d1f5c745c51c814070bc8
       type: is_not_home
     - condition: not
       conditions:
       - condition: state
-        entity_id: device_tracker.nmap_tracker_72_41_95_68_25_16
+        entity_id: device_tracker.iphone_marine
         state: home
   actions:
-  - action: notify.notify
+  - action: notify.mobile_app_iphone_de_mat_old
     data:
       message: Alerte ouverture garage !
   - action: notify.persistent_notification
@@ -1846,7 +1864,11 @@
         data: {}
         target:
           device_id: 9b77fab7a9aa7b4577e7cfe2d53e7375
-      - delay:
+      - wait_for_trigger:
+        - trigger: template
+          value_template: '{{ float(states(''sensor.tp_link_router_cpu_used''),0)
+            > 0 }}'
+        timeout:
           hours: 0
           minutes: 5
           seconds: 0
@@ -1854,7 +1876,7 @@
       while:
       - condition: template
         value_template: '{{ (is_state(''sensor.tp_link_router_cpu_used'', ''unavailable'')
-          or is_state(''sensor.tp_link_router_cpu_used'', ''unknown'')) or repeat.index
+          or is_state(''sensor.tp_link_router_cpu_used'', ''unknown'')) and repeat.index
           < 6 }}'
   - if:
     - condition: or
@@ -2257,7 +2279,7 @@
     for:
       hours: 0
       minutes: 0
-      seconds: 30
+      seconds: 5
   conditions: []
   actions:
   - action: rest.reload
@@ -2289,26 +2311,35 @@
   alias: Clim Léo
   description: ''
   triggers:
+  - trigger: homeassistant
+    event: start
+    id: Home Assistant Start
   - trigger: numeric_state
     entity_id:
     - sensor.chambre_leo_temperature
     below: input_number.consigne_chauffage_chambres
+    id: Cloud Temperature
   - trigger: numeric_state
     entity_id:
     - sensor.meter_plus_16c6
     below: input_number.consigne_chauffage_chambres
+    id: Bluetooth Temperature
   - trigger: state
     entity_id:
     - climate.clim_leo
     from: 'off'
     to: heat
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 1
+    id: Allumage Clim
   - trigger: state
     entity_id:
     - schedule.calendrier_chauffage_chambres
     from: 'off'
     to: 'on'
-  - trigger: homeassistant
-    event: start
+    id: Planning
   conditions:
   - condition: and
     conditions:
@@ -2377,12 +2408,20 @@
         - delay:
             hours: 0
             minutes: 0
-            seconds: 5
+            seconds: 2
             milliseconds: 0
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 2
+        milliseconds: 0
   - if:
     - condition: state
       entity_id: climate.clim_leo
       state: heat
+    - condition: trigger
+      id:
+      - Home Assistant Start
     then: []
     else:
     - action: climate.set_temperature
@@ -2401,65 +2440,228 @@
       device_id: d2910ca682aff1ab63ccc59776862bbf
       entity_id: ee3bb881fc9b96ab2c667277bcfff60b
       domain: switch
-    - delay:
-        hours: 0
-        minutes: 0
-        seconds: 1
-        milliseconds: 0
+    - wait_template: '{{ is_state(''climate.clim_leo'', ''heat'')}}'
+      continue_on_timeout: true
   - action: notify.mobile_app_iphone_de_mat_old
     metadata: {}
     data:
-      message: 'Activation de la climatisation de leo : température de {{(min(float(states(''sensor.meter_plus_16c6'')),float(states(''sensor.chambre_leo_temperature''))))|string
+      message: 'Activation de la climatisation de Léo : température de {{min(float(states(''sensor.meter_plus_16c6''),0),float(states(''sensor.chambre_leo_temperature''),0))|string
         }}º (par {{ trigger.to_state.name }}).'
-  - wait_template: '{{ is_state(''climate.clim_leo'', ''off'') or is_state(''schedule.calendrier_chauffage_chambres'',
-      ''off'') or states(''sensor.chambre_leo_temperature'')>states(''input_number.seuil_temperature_chambres'')
-      or states(''sensor.meter_plus_16c6'')>states(''input_number.seuil_temperature_chambres'')  }}'
-    continue_on_timeout: true
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 5
-      milliseconds: 0
-  - wait_template: '{{ is_state(''climate.clim_leo'', ''off'') or is_state(''schedule.calendrier_chauffage_chambres'',
-      ''off'') or states(''sensor.chambre_leo_temperature'')>states(''input_number.seuil_temperature_chambres'')
-      or states(''sensor.meter_plus_16c6'')>states(''input_number.seuil_temperature_chambres'')  }}'
-    continue_on_timeout: true
-  - if:
-    - condition: template
-      value_template: '{{trigger.to_state.entity_id == ''climate.clim_leo''}}'
-    then:
-    - wait_template: '{{ is_state(''climate.clim_leo'', ''off'')  }}'
-      continue_on_timeout: true
-    else:
-    - wait_template: '{{ is_state(''climate.clim_leo'', ''heat'')  }}'
-      continue_on_timeout: true
-    - repeat:
-        until:
-        - condition: template
-          value_template: '{{ (is_state(''climate.clim_leo'', ''off'') or is_state(''climate.clim_leo'',
-            ''heat'')) and repeat.index < 10 }}'
-        sequence:
-        - action: homeassistant.reload_config_entry
-          metadata: {}
-          data: {}
-          target:
-            label_id: clim
+  - parallel:
+    - sequence:
+      - wait_for_trigger:
+        - trigger: state
+          entity_id:
+          - climate.clim_leo
+          to: 'off'
+          for:
+            hours: 0
+            minutes: 0
+            seconds: 5
+          id: Extinction Clim
+      - action: notify.mobile_app_iphone_de_mat_old
+        metadata: {}
+        data:
+          message: 'Fin Clim Léo ({{ (((now() | as_timestamp)- (state_attr(''automation.activation_clim_leo'',''last_triggered'')
+            | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_16c6'')),float(states(''sensor.chambre_leo_temperature''))))|string
+            }}º (extinction).'
+      - stop: Extinction Clim Léo
+      - action: automation.reload
+        metadata: {}
+        data: {}
+    - sequence:
+      - wait_for_trigger:
+        - trigger: state
+          entity_id:
+          - schedule.calendrier_chauffage_chambres
+          to: 'off'
+          for:
+            hours: 0
+            minutes: 0
+            seconds: 0
+          id: Fin de chauffage
+      - if:
+        - condition: or
+          conditions:
+          - condition: state
+            entity_id: climate.clim_leo
+            state: unavailable
+          - condition: state
+            entity_id: climate.clim_leo
+            state: unknown
+        then:
+        - repeat:
+            until:
+            - condition: template
+              value_template: '{{ (is_state(''climate.clim_leo'', ''off'') or is_state(''climate.clim_leo'',
+                ''heat'')) and repeat.index < 10 }}'
+            sequence:
+            - action: homeassistant.reload_config_entry
+              metadata: {}
+              data: {}
+              target:
+                label_id: clim
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 2
+                milliseconds: 0
+        else:
         - delay:
             hours: 0
             minutes: 0
-            seconds: 3
+            seconds: 2
             milliseconds: 0
-    - device_id: d2910ca682aff1ab63ccc59776862bbf
-      domain: climate
-      entity_id: f134f6c77732ee45a8c2eb02f1419140
-      type: set_hvac_mode
-      hvac_mode: 'off'
-  - action: notify.mobile_app_iphone_de_mat_old
-    metadata: {}
-    data:
-      message: 'Fin Clim Léo ({{ (((now() | as_timestamp)- (state_attr(''automation.activation_clim_leo'',''last_triggered'')
-        | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_16c6'')),float(states(''sensor.chambre_leo_temperature''))))|string
-        }}º (par {{ trigger.to_state.name }}).'
+        - if:
+          - condition: state
+            entity_id: climate.clim_leo
+            state: heat
+          then:
+          - action: climate.turn_off
+            metadata: {}
+            data: {}
+            target:
+              device_id: d2910ca682aff1ab63ccc59776862bbf
+          - action: notify.mobile_app_iphone_de_mat_old
+            metadata: {}
+            data:
+              message: 'Fin Clim Léo ({{ (((now() | as_timestamp)-(state_attr(''automation.activation_clim_leo'',''last_triggered'')
+                | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_16c6''),0),float(states(''sensor.chambre_leo_temperature''),0)))|string
+                }}º (Fin de chauffage).'
+          else:
+          - action: notify.mobile_app_iphone_de_mat_old
+            metadata: {}
+            data:
+              message: 'Fin Clim Léo ({{ (((now() | as_timestamp)- (state_attr(''automation.activation_clim_leo'',''last_triggered'')
+                | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_16c6'')),float(states(''sensor.chambre_leo_temperature''))))|string
+                }}º (Fin de chauffage).'
+      - stop: Fin Chauffage
+    - sequence:
+      - wait_for_trigger:
+        - trigger: numeric_state
+          entity_id:
+          - sensor.meter_plus_16c6
+          above: input_number.seuil_temperature_chambres
+          id: Temperature atteinte
+      - if:
+        - condition: or
+          conditions:
+          - condition: state
+            entity_id: climate.clim_leo
+            state: unavailable
+          - condition: state
+            entity_id: climate.clim_leo
+            state: unknown
+        then:
+        - repeat:
+            until:
+            - condition: template
+              value_template: '{{ (is_state(''climate.clim_leo'', ''off'') or is_state(''climate.clim_leo'',
+                ''heat'')) and repeat.index < 10 }}'
+            sequence:
+            - action: homeassistant.reload_config_entry
+              metadata: {}
+              data: {}
+              target:
+                label_id: clim
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 2
+                milliseconds: 0
+        else:
+        - delay:
+            hours: 0
+            minutes: 0
+            seconds: 2
+            milliseconds: 0
+        - if:
+          - condition: state
+            entity_id: climate.clim_leo
+            state: heat
+          then:
+          - action: climate.turn_off
+            metadata: {}
+            data: {}
+            target:
+              device_id: d2910ca682aff1ab63ccc59776862bbf
+          - action: notify.mobile_app_iphone_de_mat_old
+            metadata: {}
+            data:
+              message: 'Fin Clim Léo ({{ (((now() | as_timestamp)-(state_attr(''automation.activation_clim_leo'',''last_triggered'')
+                | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_16c6'')),float(states(''sensor.chambre_leo_temperature''))))|string
+                }}º (seuil atteint).'
+          else:
+          - action: notify.mobile_app_iphone_de_mat_old
+            metadata: {}
+            data:
+              message: 'Fin Clim Léo ({{ (((now() | as_timestamp)- (state_attr(''automation.activation_clim_leo'',''last_triggered'')
+                | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_16c6'')),float(states(''sensor.chambre_leo_temperature''))))|string
+                }}º (seuil atteint).'
+      - stop: Température Atteinte
+    - sequence:
+      - wait_for_trigger:
+        - trigger: numeric_state
+          entity_id:
+          - sensor.chambre_leo_temperature
+          above: input_number.seuil_temperature_chambres
+          id: Temperature atteinte
+      - if:
+        - condition: or
+          conditions:
+          - condition: state
+            entity_id: climate.clim_leo
+            state: unavailable
+          - condition: state
+            entity_id: climate.clim_leo
+            state: unknown
+        then:
+        - repeat:
+            until:
+            - condition: template
+              value_template: '{{ (is_state(''climate.clim_leo'', ''off'') or is_state(''climate.clim_leo'',
+                ''heat'')) and repeat.index < 10 }}'
+            sequence:
+            - action: homeassistant.reload_config_entry
+              metadata: {}
+              data: {}
+              target:
+                label_id: clim
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 2
+                milliseconds: 0
+        else:
+        - delay:
+            hours: 0
+            minutes: 0
+            seconds: 2
+            milliseconds: 0
+        - if:
+          - condition: state
+            entity_id: climate.clim_leo
+            state: heat
+          then:
+          - action: climate.turn_off
+            metadata: {}
+            data: {}
+            target:
+              device_id: d2910ca682aff1ab63ccc59776862bbf
+          - action: notify.mobile_app_iphone_de_mat_old
+            metadata: {}
+            data:
+              message: 'Fin Clim Léo ({{ (((now() | as_timestamp)-(state_attr(''automation.activation_clim_leo'',''last_triggered'')
+                | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_16c6'')),float(states(''sensor.chambre_leo_temperature''))))|string
+                }}º (seuil atteint).'
+          else:
+          - action: notify.mobile_app_iphone_de_mat_old
+            metadata: {}
+            data:
+              message: 'Fin Clim Léo ({{ (((now() | as_timestamp)- (state_attr(''automation.activation_clim_leo'',''last_triggered'')
+                | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_16c6'')),float(states(''sensor.chambre_leo_temperature''))))|string
+                }}º (seuil atteint).'
+      - stop: Température atteinte
   mode: single
 - id: '1731443950550'
   alias: 'Activation routeur solaire '
@@ -2563,7 +2765,7 @@
       seconds: 0
   - trigger: numeric_state
     entity_id:
-    - switch.cumulus
+    - sensor.cumulus_2
     for:
       hours: 0
       minutes: 1
@@ -2612,6 +2814,8 @@
   alias: Clim Lisa
   description: ''
   triggers:
+  - trigger: homeassistant
+    event: start
   - trigger: numeric_state
     entity_id:
     - sensor.chambre_lisa_temperature
@@ -2698,24 +2902,30 @@
         - delay:
             hours: 0
             minutes: 0
-            seconds: 5
+            seconds: 2
             milliseconds: 0
-  - action: climate.set_temperature
-    metadata: {}
-    data:
-      hvac_mode: heat
-      temperature: '{{ states(''input_number.seuil_temperature_chambres'') }}'
-    target:
+  - if:
+    - condition: state
       entity_id: climate.clim_lisa
-  - type: turn_on
-    device_id: ca5a1d4d5c652e5a540deaaae09f9405
-    entity_id: d97a95ca27a4528361dd32707c0973b9
-    domain: switch
-  - device_id: ca5a1d4d5c652e5a540deaaae09f9405
-    domain: climate
-    entity_id: 75d43c2f5470d1d38b1db785215bfc05
-    type: set_preset_mode
-    preset_mode: sleep
+      state: heat
+    then: []
+    else:
+    - action: climate.set_temperature
+      metadata: {}
+      data:
+        hvac_mode: heat
+        temperature: '{{ states(''input_number.seuil_temperature_chambres'') }}'
+      target:
+        entity_id: climate.clim_lisa
+    - device_id: ca5a1d4d5c652e5a540deaaae09f9405
+      domain: climate
+      entity_id: 75d43c2f5470d1d38b1db785215bfc05
+      type: set_preset_mode
+      preset_mode: none
+    - type: turn_on
+      device_id: ca5a1d4d5c652e5a540deaaae09f9405
+      entity_id: d97a95ca27a4528361dd32707c0973b9
+      domain: switch
   - action: notify.mobile_app_iphone_de_mat_old
     metadata: {}
     data:
@@ -2735,30 +2945,57 @@
       or states(''sensor.meter_plus_938f'')>states(''input_number.seuil_temperature_chambres'')  }}'
     continue_on_timeout: true
   - if:
-    - condition: template
-      value_template: '{{ trigger.to_state.entity_id == ''climate.clim_lisa''}}'
+    - condition: or
+      conditions:
+      - condition: state
+        entity_id: climate.clim_lisa
+        state: unavailable
+      - condition: state
+        entity_id: climate.clim_lisa
+        state: unknown
     then:
-    - wait_template: '{{ is_state(''climate.clim_lisa'', ''off'')  }}'
-      continue_on_timeout: true
-    - device_id: ca5a1d4d5c652e5a540deaaae09f9405
-      domain: climate
-      entity_id: 75d43c2f5470d1d38b1db785215bfc05
-      type: set_hvac_mode
-      hvac_mode: 'off'
+    - repeat:
+        until:
+        - condition: template
+          value_template: '{{ (is_state(''climate.clim_lisa'', ''off'') or is_state(''climate.clim_lisa'',
+            ''heat'')) and repeat.index < 10 }}'
+        sequence:
+        - action: homeassistant.reload_config_entry
+          metadata: {}
+          data: {}
+          target:
+            label_id: clim
+        - delay:
+            hours: 0
+            minutes: 0
+            seconds: 2
+            milliseconds: 0
     else:
-    - wait_template: '{{ is_state(''climate.clim_lisa'', ''heat'')  }}'
-      continue_on_timeout: true
-    - device_id: ca5a1d4d5c652e5a540deaaae09f9405
-      domain: climate
-      entity_id: 75d43c2f5470d1d38b1db785215bfc05
-      type: set_hvac_mode
-      hvac_mode: 'off'
-  - action: notify.mobile_app_iphone_de_mat_old
-    metadata: {}
-    data:
-      message: 'Fin Clim Lisa ({{ (((now() | as_timestamp)- (state_attr(''automation.clim'',''last_triggered'')
-        | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_938f'')),float(states(''sensor.chambre_lisa_temperature''))))|string
-        }}º (par {{ trigger.to_state.name }}).'
+    - if:
+      - condition: state
+        entity_id: climate.clim_lisa
+        state: heat
+      then:
+      - action: climate.turn_off
+        metadata: {}
+        data: {}
+        target:
+          device_id: ca5a1d4d5c652e5a540deaaae09f9405
+      - action: notify.mobile_app_iphone_de_mat_old
+        metadata: {}
+        data:
+          message: 'Fin Clim Lisa ({{ (((now() | as_timestamp)-(state_attr(''automation.activation_clim_lisa'',''last_triggered'')
+            | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_938f'')),float(states(''sensor.chambre_lisa_temperature''))))|string
+            }}º ({% if float(states(''sensor.chambre_lisa_temperature''))>float(states(''input_number.seuil_temperature_chambres''))
+            or float(states(''sensor.meter_plus_938f''))>float(states(''input_number.seuil_temperature_chambres''))%}seuil
+            atteint{% else %}Fin de chauffage{% endif %}).'
+      else:
+      - action: notify.mobile_app_iphone_de_mat_old
+        metadata: {}
+        data:
+          message: 'Fin Clim Lisa ({{ (((now() | as_timestamp)- (state_attr(''automation.activation_clim_lisa'',''last_triggered'')
+            | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_938f'')),float(states(''sensor.chambre_lisa_temperature''))))|string
+            }}º (extinction).'
   mode: single
 - id: '1731784603523'
   alias: Clim Entrée
@@ -3643,4 +3880,65 @@
     metadata: {}
     data:
       config_entry_id: 01JE4R5GQFZ79A965KDNARF0TG
+  mode: single
+- id: '1733407247996'
+  alias: Relance Gree Climate
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - climate.clim_entree
+    to: unavailable
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 5
+  - trigger: state
+    entity_id:
+    - climate.clim_leo
+    to: unavailable
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 5
+  - trigger: state
+    entity_id:
+    - climate.clim_lisa
+    to: unavailable
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 5
+  - trigger: state
+    entity_id:
+    - climate.clim_parents
+    to: unavailable
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 5
+  conditions:
+  - condition: state
+    entity_id: switch.disjoncteur_3_none
+    state: 'on'
+  actions:
+  - repeat:
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 2
+          milliseconds: 0
+      - action: homeassistant.reload_config_entry
+        metadata: {}
+        data: {}
+        target:
+          label_id: clim
+      until:
+      - condition: template
+        value_template: '{{ (states(''climate.clim_entree'')==''heat'' or states(''climate.clim_entree'')==''off'')
+          and (states(''climate.clim_leo'')==''heat'' or states(''climate.clim_leo'')==''off'')
+          and (states(''climate.clim_lisa'')==''heat'' or states(''climate.clim_lisa'')==''off'')
+          and (states(''climate.clim_parents'')==''heat'' or states(''climate.clim_parents'')==''off'')
+          }} '
   mode: single

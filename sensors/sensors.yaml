@@ -4,7 +4,7 @@ template:
 #ECS
 
       - name: "Durée cycle ECS sensor"
-        state: "{{ (states('input_number.duree_cycle_ecs')|float(0))| round(0) }}"
+        state: "{{ (float(states('input_number.duree_cycle_ecs'),0))| round(0) }}"
         unique_id: "duree_cycle_ecs_sensor"
         unit_of_measurement: "min"
         device_class: duration   # Exemples de valeurs possibles
@@ -13,7 +13,7 @@ template:
 # FRIGO
 
       - name: "Durée cycle Frigo sensor"
-        state: "{{ (states('input_number.duree_cycle_frigo')|float(0))| round(0) }}"
+        state: "{{ (float(states('input_number.duree_cycle_frigo'),0))| round(0) }}"
         unique_id: "duree_cycle_frigo_sensor"
         unit_of_measurement: "s"
         device_class: duration   # Exemples de valeurs possibles
