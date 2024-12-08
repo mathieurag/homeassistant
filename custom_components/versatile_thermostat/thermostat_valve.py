@@ -1,4 +1,4 @@
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long, abstract-method
 """ A climate over switch classe """
 import logging
 from datetime import timedelta, datetime
@@ -25,9 +25,6 @@ from .const import (
 from .underlyings import UnderlyingValve
 
 _LOGGER = logging.getLogger(__name__)
-_LOGGER_ENERGY = logging.getLogger(
-    "custom_components.versatile_thermostat.energy_debug"
-)
 
 class ThermostatOverValve(BaseThermostat[UnderlyingValve]):  # pylint: disable=abstract-method
     """Representation of a class for a Versatile Thermostat over a Valve"""
@@ -46,6 +43,7 @@ class ThermostatOverValve(BaseThermostat[UnderlyingValve]):  # pylint: disable=a
                 "auto_regulation_dpercent",
                 "auto_regulation_period_min",
                 "last_calculation_timestamp",
+                "calculated_on_percent",
             }
         )
     )
@@ -99,6 +97,7 @@ class ThermostatOverValve(BaseThermostat[UnderlyingValve]):  # pylint: disable=a
             self._cycle_min,
             self._minimal_activation_delay,
             self.name,
+            max_on_percent=self._max_on_percent,
         )
 
         lst_valves = config_entry.get(CONF_UNDERLYING_LIST)
@@ -182,6 +181,9 @@ class ThermostatOverValve(BaseThermostat[UnderlyingValve]):  # pylint: disable=a
             if self._last_calculation_timestamp
             else None
         )
+        self._attr_extra_state_attributes[
+            "calculated_on_percent"
+        ] = self._prop_algorithm.calculated_on_percent
 
         self.async_write_ha_state()
         _LOGGER.debug(
@@ -246,8 +248,9 @@ class ThermostatOverValve(BaseThermostat[UnderlyingValve]):  # pylint: disable=a
 
         self._valve_open_percent = new_valve_percent
 
-        for under in self._underlyings:
-            under.set_valve_open_percent()
+        # is one in start_cycle now
+        # for under in self._underlyings:
+        #    under.set_valve_open_percent()
 
         self._last_calculation_timestamp = now
 
@@ -267,14 +270,14 @@ class ThermostatOverValve(BaseThermostat[UnderlyingValve]):  # pylint: disable=a
 
         if self._total_energy is None:
             self._total_energy = added_energy
-            _LOGGER_ENERGY.debug(
+            _LOGGER.debug(
                 "%s - incremente_energy set energy is %s",
                 self,
                 self._total_energy,
             )
         else:
             self._total_energy += added_energy
-            _LOGGER_ENERGY.debug(
+            _LOGGER.debug(
                 "%s - get_my_previous_state increment energy is %s",
                 self,
                 self._total_energy,

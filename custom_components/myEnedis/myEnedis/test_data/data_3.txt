@@ -1,0 +1,14 @@
+<!doctype html>
+<html data-adblockkey="MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANDrp2lz7AOmADaN8tA50LsWcjLFyQFcb/P2Txc58oYOeILb3vBw7J6f4pamkAQVSQuqYsKx3YzdUHCvbVZvFUsCAwEAAQ==_VZ0+G/mg7PrbcvycfJEAqi4o4N9HXf6LmcRVViGbUBYt2EL7kHZjBZmM9et26GHQMJOJV65KGRXGybS18Pl7fQ==" lang="en" style="background: #2B2B2B;">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVQI12P4//8/AAX+Av7czFnnAAAAAElFTkSuQmCC">
+    <link rel="preconnect" href="https://www.google.com" crossorigin>
+</head>
+<body>
+<div id="target" style="opacity: 0"></div>
+<script>window.park = "eyJ1dWlkIjoiN2Q5M2NiZWUtNmFmYi00ZTkyLWJhZDctYjUwNTY4MWRhYmNhIiwicGFnZV90aW1lIjoxNzMzNjc3NDg1LCJwYWdlX3VybCI6Imh0dHA6Ly93dzI1LmVuZWRpc2dhdGV3YXkudGVjaC9hcGk/c3ViaWQxPTIwMjQxMjA5LTA0MDQtNDQ3Ny1iYWJiLWE3ZWU0NjNhN2IyNiIsInBhZ2VfbWV0aG9kIjoiR0VUIiwicGFnZV9yZXF1ZXN0Ijp7InN1YmlkMSI6IjIwMjQxMjA5LTA0MDQtNDQ3Ny1iYWJiLWE3ZWU0NjNhN2IyNiJ9LCJwYWdlX2hlYWRlcnMiOnt9LCJob3N0Ijoid3cyNS5lbmVkaXNnYXRld2F5LnRlY2giLCJpcCI6IjE3Ni4xMjkuMTMxLjIzNCJ9Cg==";</script>
+<script src="/bcqQSnKsJ.js"></script>
+</body>
+</html>

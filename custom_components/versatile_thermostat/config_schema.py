@@ -197,6 +197,31 @@ STEP_AUTO_START_STOP = vol.Schema(  # pylint: disable=invalid-name
     }
 )
 
+STEP_VALVE_REGULATION = vol.Schema(  # pylint: disable=invalid-name
+    {
+        vol.Required(CONF_OPENING_DEGREE_LIST): selector.EntitySelector(
+            selector.EntitySelectorConfig(
+                domain=[NUMBER_DOMAIN, INPUT_NUMBER_DOMAIN], multiple=True
+            ),
+        ),
+        vol.Optional(CONF_OFFSET_CALIBRATION_LIST): selector.EntitySelector(
+            selector.EntitySelectorConfig(
+                domain=[NUMBER_DOMAIN, INPUT_NUMBER_DOMAIN], multiple=True
+            ),
+        ),
+        vol.Optional(CONF_CLOSING_DEGREE_LIST): selector.EntitySelector(
+            selector.EntitySelectorConfig(
+                domain=[NUMBER_DOMAIN, INPUT_NUMBER_DOMAIN], multiple=True
+            ),
+        ),
+        vol.Required(CONF_PROP_FUNCTION, default=PROPORTIONAL_FUNCTION_TPI): vol.In(
+            [
+                PROPORTIONAL_FUNCTION_TPI,
+            ]
+        ),
+    }
+)
+
 STEP_TPI_DATA_SCHEMA = vol.Schema(  # pylint: disable=invalid-name
     {
         vol.Required(CONF_USE_TPI_CENTRAL_CONFIG, default=True): cv.boolean,
@@ -205,8 +230,16 @@ STEP_TPI_DATA_SCHEMA = vol.Schema(  # pylint: disable=invalid-name
 
 STEP_CENTRAL_TPI_DATA_SCHEMA = vol.Schema(  # pylint: disable=invalid-name
     {
-        vol.Required(CONF_TPI_COEF_INT, default=0.6): vol.Coerce(float),
-        vol.Required(CONF_TPI_COEF_EXT, default=0.01): vol.Coerce(float),
+        vol.Required(CONF_TPI_COEF_INT, default=0.6): selector.NumberSelector(
+            selector.NumberSelectorConfig(
+                min=0.0, max=1.0, step=0.01, mode=selector.NumberSelectorMode.BOX
+            )
+        ),
+        vol.Required(CONF_TPI_COEF_EXT, default=0.01): selector.NumberSelector(
+            selector.NumberSelectorConfig(
+                min=0.0, max=1.0, step=0.01, mode=selector.NumberSelectorMode.BOX
+            )
+        ),
     }
 )
 

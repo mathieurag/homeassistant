@@ -7,7 +7,7 @@
           "host": "Hôte",
           "username": "Utilisateur",
           "password": "Mot de passe",
-          "scan_interval": "Intervalle d'analyse des mises à jour en secondes",
+          "scan_interval": "Intervalle des mises à jour en secondes",
           "verify_ssl": "Vérifier SSL pour la connexion https"
         }
       }
@@ -21,7 +21,7 @@
           "host": "Hôte",
           "username": "Utilisateur",
           "password": "Mot de passe",
-          "scan_interval": "Intervalle d'analyse des mises à jour en secondes",
+          "scan_interval": "Intervalle des mises à jour en secondes",
           "verify_ssl": "Vérifier SSL pour la connexion https"
         }
       }

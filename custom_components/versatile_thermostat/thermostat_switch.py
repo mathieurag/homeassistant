@@ -1,4 +1,4 @@
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long, abstract-method
 
 """ A climate over switch classe """
 import logging
@@ -7,6 +7,7 @@ from homeassistant.helpers.event import (
     async_track_state_change_event,
     EventStateChangedData,
 )
+from homeassistant.core import HomeAssistant
 from homeassistant.components.climate import HVACMode
 
 from .const import (
@@ -21,9 +22,6 @@ from .underlyings import UnderlyingSwitch
 from .prop_algorithm import PropAlgorithm
 
 _LOGGER = logging.getLogger(__name__)
-_LOGGER_ENERGY = logging.getLogger(
-    "custom_components.versatile_thermostat.energy_debug"
-)
 
 class ThermostatOverSwitch(BaseThermostat[UnderlyingSwitch]):
     """Representation of a base class for a Versatile Thermostat over a switch."""
@@ -42,16 +40,16 @@ class ThermostatOverSwitch(BaseThermostat[UnderlyingSwitch]):
                     "tpi_coef_int",
                     "tpi_coef_ext",
                     "power_percent",
+                    "calculated_on_percent",
                 }
             )
         )
     )
 
-    # useless for now
-    # def __init__(self, hass: HomeAssistant, unique_id, name, config_entry) -> None:
-    #    """Initialize the thermostat over switch."""
-    #    super().__init__(hass, unique_id, name, config_entry)
-    _is_inversed: bool | None = None
+    def __init__(self, hass: HomeAssistant, unique_id, name, config_entry) -> None:
+        """Initialize the thermostat over switch."""
+        self._is_inversed: bool | None = None
+        super().__init__(hass, unique_id, name, config_entry)
 
     @property
     def is_over_switch(self) -> bool:
@@ -84,6 +82,7 @@ class ThermostatOverSwitch(BaseThermostat[UnderlyingSwitch]):
             self._cycle_min,
             self._minimal_activation_delay,
             self.name,
+            max_on_percent=self._max_on_percent,
         )
 
         lst_switches = config_entry.get(CONF_UNDERLYING_LIST)
@@ -149,6 +148,9 @@ class ThermostatOverSwitch(BaseThermostat[UnderlyingSwitch]):
         self._attr_extra_state_attributes["function"] = self._proportional_function
         self._attr_extra_state_attributes["tpi_coef_int"] = self._tpi_coef_int
         self._attr_extra_state_attributes["tpi_coef_ext"] = self._tpi_coef_ext
+        self._attr_extra_state_attributes[
+            "calculated_on_percent"
+        ] = self._prop_algorithm.calculated_on_percent
 
         self.async_write_ha_state()
         _LOGGER.debug(
@@ -185,14 +187,14 @@ class ThermostatOverSwitch(BaseThermostat[UnderlyingSwitch]):
 
         if self._total_energy is None:
             self._total_energy = added_energy
-            _LOGGER_ENERGY.debug(
+            _LOGGER.debug(
                 "%s - incremente_energy set energy is %s",
                 self,
                 self._total_energy,
             )
         else:
             self._total_energy += added_energy
-            _LOGGER_ENERGY.debug(
+            _LOGGER.debug(
                 "%s - incremente_energy increment energy is %s",
                 self,
                 self._total_energy,
