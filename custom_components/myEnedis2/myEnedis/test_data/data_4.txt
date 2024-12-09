@@ -1,0 +1,1 @@
+{"detail":"Vous avez dépassé votre quota journalier (50)"}
