@@ -8,6 +8,7 @@
         "power_outage_memory": "restore",
         "child_lock": "UNLOCK",
         "linkquality": 180,
+        "linkquality": 180,
         "indicator_mode": "off"
     },
     "0x3c6a2cfffed4a7de": {
@@ -20,12 +21,16 @@
         "battery": 66,
         "voltage": 2800,
         "linkquality": 180
+        "linkquality": 180
     },
     "0xa4c138682a772531": {
         "illuminance": 78,
         "illuminance_average_20min": 80,
         "illuminance_maximum_today": 6252,
         "cleaning_reminder": true,
+        "rain_intensity": 0,
+        "linkquality": 180,
+        "rain": false
         "rain_intensity": 3106,
         "linkquality": 180,
         "rain": true
