@@ -1,0 +1,81 @@
+template:
+  - sensor:
+      - name: "Coût d'hier"
+        unique_id: "myelectricaldata_daily_cost"
+        state: "{{state_attr('sensor.linky_16127930466069_consumption','daily_cost') }}"
+        unit_of_measurement: "€"
+        device_class: monetary
+
+      - name: "Conso Hier"
+        unique_id: "myelectricaldata_yesterday"
+        state: "{{ state_attr('sensor.linky_16127930466069_consumption','day_2') }}"
+        unit_of_measurement: "kWh"
+        device_class: energy
+
+      - name: "Conso de la semaine"
+        unique_id: "myelectricaldata_current_week"
+        state: "{{ state_attr('sensor.linky_16127930466069_consumption','current_week') }}"
+        unit_of_measurement: "kWh"
+        device_class: energy
+
+      - name: "Conso du mois"
+        unique_id: "myelectricaldata_current_month"
+        state: "{{ state_attr('sensor.linky_16127930466069_consumption','current_month') }}"
+        unit_of_measurement: "kWh"
+        device_class: energy
+
+      - name: "Conso année en cours"
+        unique_id: "myelectricaldata_current_year"
+        state: "{{ state_attr('sensor.linky_16127930466069_consumption','current_year') }}"
+        unit_of_measurement: "kWh"
+        device_class: energy
+
+      - name: "Conso semaine dernière"
+        unique_id: "myelectricaldata_last_week"
+        state: "{{ state_attr('sensor.linky_16127930466069_consumption','last_week') }}"
+        unit_of_measurement: "kWh"
+        device_class: energy
+
+      - name: "Conso du mois dernier"
+        unique_id: "myelectricaldata_last_month"
+        state: "{{state_attr('sensor.linky_16127930466069_consumption','last_month') }}"
+        unit_of_measurement: "kWh"
+        device_class: energy
+
+      - name: "Conso année dernière"
+        unique_id: "myelectricaldata_last_year"
+        state: "{{ state_attr('sensor.linky_16127930466069_consumption','current_year_last_year') }}"
+        unit_of_measurement: "kWh"
+        device_class: energy
+
+      - name: "Date Mise à Jour"
+        unique_id: "myelectricaldata_last_update"
+        state: "{{ as_timestamp(state_attr('sensor.linky_16127930466069_consumption','lastUpdate')) | timestamp_custom('%d/%m/%Y %H:%M',local=True)}}"
+
+      - name: "Coût dernière semaine"
+        unique_id: "myelectricaldata_last_week_cost"
+        state: "{{(float(state_attr('sensor.linky_16127930466069_consumption','last_week'),0)  * 0.195) | round(2) }}"
+        unit_of_measurement: "€"
+        device_class: monetary
+
+      - name: "Coût du mois dernier"
+        unique_id: "myelectricaldata_last_month_cost"
+        state: "{{(float(state_attr('sensor.linky_16127930466069_consumption','last_month'),0)  * 0.195) | round(2) }}"
+        unit_of_measurement: "€"
+        device_class: monetary
+
+      - name: "Coût de l'année dernière"
+        unique_id: "myelectricaldata_last_year_cost"
+        state: "{{(float(state_attr('sensor.linky_16127930466069_consumption','current_year_last_year'))  * 0.195) | round(2) }}"
+        unit_of_measurement: "€"
+        device_class: monetary
+
+      - name: "Puissance Max d'hier"
+        unique_id: "myelectricaldata_yesterdayconsumptionmaxpower"
+        state: "{{ float(state_attr('sensor.linky_16127930466069_consumption','yesterdayConsumptionMaxPower')) * 0.001 }}"
+        unit_of_measurement: "kVa"
+
+      - name: "Puissance Souscrite"
+        unique_id: "myelectricaldata_subscribed_power"
+        state: "{{ state_attr('sensor.linky_16127930466069_consumption','subscribed_power').split(' ')[0]}}"
+        unit_of_measurement: "kVa"
