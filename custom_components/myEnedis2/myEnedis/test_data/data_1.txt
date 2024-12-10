@@ -1,1 +1,1 @@
-Bad Gateway
+{"customer":{"customer_id":"-1157431742","usage_points":[{"usage_point":{"usage_point_id":"16127930466069","usage_point_status":"com","meter_type":"AMM"},"contracts":{"segment":"C5","subscribed_power":"9 kVA","last_activation_date":"2022-04-11+02:00","distribution_tariff":"BTINFMU4","offpeak_hours":"HC (21H08-5H08)","contract_status":"SERVC","last_distribution_tariff_change_date":"2023-08-14+02:00"}}]}}

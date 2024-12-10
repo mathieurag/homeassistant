@@ -185,9 +185,6 @@ rest:
         device_class: power
         unit_of_measurement: kW
         json_attributes:
-          - "today_eq"
-          - "month_eq"
-          - "year_eq"
           - "real_power"
           - "plant_tree"
           - "data_time"
@@ -211,3 +208,15 @@ rest:
         unique_id: "estar_maj_data"
         icon: mdi:clock
         value_template: "{{ value_json.data.last_data_time | as_datetime | relative_time }}"
+      - name: "Estar Centrale Energy"
+        unique_id: "estar_centrale_energy"
+        icon: mdi:flash
+        json_attributes_path: "$.data"
+        value_template: "{{ value_json.data.today_eq}}"
+        device_class: energy
+        state_class: measurement
+        unit_of_measurement: Wh
+        json_attributes:
+          - "today_eq"
+          - "month_eq"
+          - "year_eq"

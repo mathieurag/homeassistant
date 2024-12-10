@@ -1,14 +1,1 @@
-<!doctype html>
-<html data-adblockkey="MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANDrp2lz7AOmADaN8tA50LsWcjLFyQFcb/P2Txc58oYOeILb3vBw7J6f4pamkAQVSQuqYsKx3YzdUHCvbVZvFUsCAwEAAQ==_VjphJ9YuAqK9biMdTuH9dQNMVq049w2ny+QHsy4fy7l68wOG1vAp4KPstc7NS5vNuRPSSX0kOdDDN7dFm5qsdw==" lang="en" style="background: #2B2B2B;">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVQI12P4//8/AAX+Av7czFnnAAAAAElFTkSuQmCC">
-    <link rel="preconnect" href="https://www.google.com" crossorigin>
-</head>
-<body>
-<div id="target" style="opacity: 0"></div>
-<script>window.park = "eyJ1dWlkIjoiMWE2OGMzZjctMGE0Ni00NWY3LWJiNjgtNTYwYzZiMTQ0Yzg4IiwicGFnZV90aW1lIjoxNzMzNjg0ODIwLCJwYWdlX3VybCI6Imh0dHA6Ly93dzI1LmVuZWRpc2dhdGV3YXkudGVjaC9hcGk/c3ViaWQxPTIwMjQxMjA5LTA2MDctMDBhZi04ZjE4LTZhOTY3ZWRkZDFjYiIsInBhZ2VfbWV0aG9kIjoiR0VUIiwicGFnZV9yZXF1ZXN0Ijp7InN1YmlkMSI6IjIwMjQxMjA5LTA2MDctMDBhZi04ZjE4LTZhOTY3ZWRkZDFjYiJ9LCJwYWdlX2hlYWRlcnMiOnt9LCJob3N0Ijoid3cyNS5lbmVkaXNnYXRld2F5LnRlY2giLCJpcCI6IjE3Ni4xMjkuMTMxLjIzNCJ9Cg==";</script>
-<script src="/bsUFNtFLE.js"></script>
-</body>
-</html>
+{"meter_reading":{"usage_point_id":"16127930466069","start":"2024-12-03","end":"2024-12-10","quality":"BRUT","reading_type":{"measurement_kind":"energy","measuring_period":"P1D","unit":"Wh","aggregate":"sum"},"interval_reading":[{"value":"18717","date":"2024-12-03"},{"value":"30319","date":"2024-12-04"},{"value":"24381","date":"2024-12-05"},{"value":"10662","date":"2024-12-06"},{"value":"15099","date":"2024-12-07"},{"value":"32347","date":"2024-12-08"},{"value":"26645","date":"2024-12-09"}]}}
