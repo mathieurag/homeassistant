@@ -36,17 +36,10 @@ tts
 ip_bans.yaml
 secrets.yaml
 known_devices.yaml
+#Zigbee2Mqtt :
+zigbee2mqtt/coordinator_backup.json
+zigbee2mqtt/state.json
 zigbee2mqtt/coordinator_backup.json
 zigbee2mqtt/state.json
 state.json
 zigbee2mqtt/*.json
-custom_components/archives2
-custom_components/archives2/**
-update*
-data*.txt
-custom_components/archive2/myEnedis/16127930466069/lastCall.json
-custom_components/myEnedis2
-custom_components/myEnedis2/**
-custom_components/myEnedis2/myEnedis/test_data/data_*.txt
-zigbee2mqtt/coordinator_backup.json
-zigbee2mqtt/state.json
