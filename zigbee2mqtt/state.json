@@ -2,8 +2,8 @@
     "0x70b3d52b6005f633": {
         "state": "ON",
         "power": 0,
-        "current": 0,
-        "voltage": 240,
+        "current": 0.035,
+        "voltage": 238,
         "energy": 0,
         "power_outage_memory": "restore",
         "child_lock": "UNLOCK",
@@ -13,7 +13,7 @@
     "0x3c6a2cfffed4a7de": {
         "voltage": 2600,
         "battery": 42.5,
-        "temperature": 26.4,
+        "temperature": 17.4,
         "linkquality": 220
     },
     "0xa4c138d9a41bd98f": {

@@ -4,6 +4,7 @@ mqtt:
         state_topic: "shellyproem50-08f9e0e69644/status/em1:0"
         value_template: "{{ value_json.act_power }}"
         unit_of_measurement: "W"
+        device_class: power
         json_attributes_topic: "shellyproem50-08f9e0e69644/status/em1:0"
         json_attributes_template: "{{ value_json | tojson }}"
 
@@ -11,6 +12,7 @@ mqtt:
         state_topic: "shellyproem50-08f9e0e69644/status/em1:1"
         value_template: "{{ value_json.act_power }}"
         unit_of_measurement: "W"
+        device_class: power
         json_attributes_topic: "shellyproem50-08f9e0e69644/status/em1:1"
         json_attributes_template: "{{ value_json | tojson }}"
 

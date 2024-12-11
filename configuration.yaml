@@ -15,48 +15,6 @@ scene: !include scenes.yaml
 recorder:
   purge_keep_days: 10
 
-#   include :
-#     domains:
-#       - sensor
-#       - binary_sensor
-#       - input_number
-#       - input_boolean
-#       - alarm_control_panel
-#     entities:
-#       - sensor.solcast_pv_forecast_previsions_pour_aujourd_hui
-#       - sensor.solcast_pv_forecast_previsions_du_pic_aujourd_hui
-#   exclude:
-#     domains:
-#       - automation
-#       - script
-#       - device_tracker
-#       - camera
-#       - cover
-#       - update
-#       - button
-#       - input_button
-#       - number
-#       - switch
-#       - scene
-#       - select
-#       - lock
-#     entity_globs:
-#       - sensor.sun*
-#       - sensor.energy*
-#       - sensor.power*
-#       - sensor.iphone*
-#       - camera.*
-#       - binary_sensor.camera*
-#       - switch.camera*
-#       - switch.doorbell*
-#       - event.*
-#       - sensor.*current*
-#       - sensor.solcast_pv_forecas*
-#       - sensor.system_monitor*
-#       - sensor.talence*
-#     entities:
-#       - sensor.power_production_now
-
 homeassistant:
   packages: !include_dir_named sensors/
   allowlist_external_dirs:
@@ -85,3 +43,14 @@ my:
 
 device_tracker:
   - platform: bluetooth_le_tracker
+
+proxmoxve:
+  - host: 192.168.1.84
+    verify_ssl: false
+    username: !secret username_proxmox
+    password: !secret password_proxmox
+    nodes:
+      - node: Host_001
+        vms:
+          - 100
+          - 101
