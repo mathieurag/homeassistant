@@ -1,37 +1,19 @@
 template:
   - sensor:
-
-#ECS
+      #ECS
 
       - name: "Durée cycle ECS sensor"
         state: "{{ (float(states('input_number.duree_cycle_ecs'),0))| round(0) }}"
         unique_id: "duree_cycle_ecs_sensor"
         unit_of_measurement: "min"
-        device_class: duration   # Exemples de valeurs possibles
-        state_class: measurement   # Exemples de valeurs possibles
-    
-# FRIGO
+        device_class: duration # Exemples de valeurs possibles
+        state_class: measurement # Exemples de valeurs possibles
+
+      # FRIGO
 
       - name: "Durée cycle Frigo sensor"
         state: "{{ (float(states('input_number.duree_cycle_frigo'),0))| round(0) }}"
         unique_id: "duree_cycle_frigo_sensor"
         unit_of_measurement: "s"
-        device_class: duration   # Exemples de valeurs possibles
-        state_class: measurement   # Exemples de valeurs possibles
-
-#PRISE SALON
- 
-    
-# LL
-
-
-# LV
-
-
-
-# TV
-
-
-# FOUR
-
-    
+        device_class: duration # Exemples de valeurs possibles
+        state_class: measurement # Exemples de valeurs possibles

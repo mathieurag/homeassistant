@@ -214,7 +214,6 @@ rest:
         json_attributes_path: "$.data"
         value_template: "{{ value_json.data.today_eq}}"
         device_class: energy
-        state_class: measurement
         unit_of_measurement: Wh
         json_attributes:
           - "today_eq"

@@ -15,8 +15,8 @@
 !esphome/**
 !custom_components
 !custom_components/**
-zigbee2mqtt
-zigbee2mqtt/**
+!zigbee2mqtt
+!zigbee2mqtt/**
 !www
 !lovelace*
 
@@ -41,5 +41,6 @@ zigbee2mqtt/coordinator_backup.json
 zigbee2mqtt/state.json
 zigbee2mqtt/coordinator_backup.json
 zigbee2mqtt/state.json
-state.json
+*state.json
 zigbee2mqtt/*.json
+zigbee2mqtt/state.json
