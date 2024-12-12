@@ -3,7 +3,7 @@
         "state": "ON",
         "power": 0,
         "current": 0.035,
-        "voltage": 238,
+        "voltage": 241,
         "energy": 0,
         "power_outage_memory": "restore",
         "child_lock": "UNLOCK",
@@ -12,13 +12,13 @@
     },
     "0x3c6a2cfffed4a7de": {
         "voltage": 2600,
-        "battery": 42.5,
-        "temperature": 17.4,
+        "battery": 42,
+        "temperature": 22.7,
         "linkquality": 220
     },
     "0xa4c138d9a41bd98f": {
-        "battery": 60,
-        "voltage": 2800,
+        "battery": 59,
+        "voltage": 2700,
         "linkquality": 124
     },
     "0xa4c138682a772531": {

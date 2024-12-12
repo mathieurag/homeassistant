@@ -43,14 +43,3 @@ my:
 
 device_tracker:
   - platform: bluetooth_le_tracker
-
-proxmoxve:
-  - host: 192.168.1.84
-    verify_ssl: false
-    username: !secret username_proxmox
-    password: !secret password_proxmox
-    nodes:
-      - node: Host_001
-        vms:
-          - 100
-          - 101

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "lovelace_dashboards",
+  "data": {
+    "items": [
+      {
+        "id": "map",
+        "icon": "mdi:map",
+        "title": "Map",
+        "url_path": "map",
+        "show_in_sidebar": false,
+        "mode": "storage",
+        "require_admin": false
+      },
+      {
+        "id": "tableau_de_bord",
+        "show_in_sidebar": true,
+        "icon": "mdi:border-all",
+        "title": "Tableau de bord",
+        "require_admin": false,
+        "mode": "storage",
+        "url_path": "tableau-de-bord"
+      }
+    ]
+  }
+}

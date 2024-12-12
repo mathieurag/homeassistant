@@ -2416,12 +2416,14 @@
         seconds: 2
         milliseconds: 0
   - if:
-    - condition: state
-      entity_id: climate.clim_leo
-      state: heat
-    - condition: trigger
-      id:
-      - Home Assistant Start
+    - condition: or
+      conditions:
+      - condition: state
+        entity_id: climate.clim_leo
+        state: heat
+      - condition: trigger
+        id:
+        - Home Assistant Start
     then: []
     else:
     - action: climate.set_temperature
@@ -2465,10 +2467,10 @@
           message: 'Fin Clim Léo ({{ (((now() | as_timestamp)- (state_attr(''automation.activation_clim_leo'',''last_triggered'')
             | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_16c6'')),float(states(''sensor.chambre_leo_temperature''))))|string
             }}º (extinction).'
-      - stop: Extinction Clim Léo
       - action: automation.reload
         metadata: {}
         data: {}
+      - stop: Extinction Clim Léo
     - sequence:
       - wait_for_trigger:
         - trigger: state
@@ -2535,6 +2537,9 @@
               message: 'Fin Clim Léo ({{ (((now() | as_timestamp)- (state_attr(''automation.activation_clim_leo'',''last_triggered'')
                 | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_16c6'')),float(states(''sensor.chambre_leo_temperature''))))|string
                 }}º (Fin de chauffage).'
+      - action: automation.reload
+        metadata: {}
+        data: {}
       - stop: Fin Chauffage
     - sequence:
       - wait_for_trigger:
@@ -2598,6 +2603,9 @@
               message: 'Fin Clim Léo ({{ (((now() | as_timestamp)- (state_attr(''automation.activation_clim_leo'',''last_triggered'')
                 | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_16c6'')),float(states(''sensor.chambre_leo_temperature''))))|string
                 }}º (seuil atteint).'
+      - action: automation.reload
+        metadata: {}
+        data: {}
       - stop: Température Atteinte
     - sequence:
       - wait_for_trigger:
@@ -2661,7 +2669,14 @@
               message: 'Fin Clim Léo ({{ (((now() | as_timestamp)- (state_attr(''automation.activation_clim_leo'',''last_triggered'')
                 | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_16c6'')),float(states(''sensor.chambre_leo_temperature''))))|string
                 }}º (seuil atteint).'
+      - action: automation.reload
+        metadata: {}
+        data: {}
       - stop: Température atteinte
+  - action: notify.mobile_app_iphone_de_mat_old
+    metadata: {}
+    data:
+      message: Fin Automatisation Clim Léo.
   mode: single
 - id: '1731443950550'
   alias: 'Activation routeur solaire '

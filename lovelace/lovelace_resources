@@ -1,0 +1,179 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "lovelace_resources",
+  "data": {
+    "items": [
+      {
+        "id": "55f6060377d94f298e2f9f487d3de86c",
+        "url": "/hacsfiles/lovelace-mushroom/mushroom.js?hacstag=444350375421",
+        "type": "module"
+      },
+      {
+        "id": "9b4d465f682443bc8770f66d759477b5",
+        "url": "/hacsfiles/mini-graph-card/mini-graph-card-bundle.js?hacstag=1512800620121",
+        "type": "module"
+      },
+      {
+        "id": "495574bafd0a418586f0d2f1850bf97c",
+        "url": "/hacsfiles/button-card/button-card.js?hacstag=146194325412",
+        "type": "module"
+      },
+      {
+        "id": "f716d095636541928acc09d2e6fd97c0",
+        "url": "/hacsfiles/Bubble-Card/bubble-card.js?hacstag=680112919232",
+        "type": "module"
+      },
+      {
+        "id": "f2ab3a54c588490782a35e250761c3bd",
+        "url": "/hacsfiles/lovelace-auto-entities/auto-entities.js?hacstag=1677445841130",
+        "type": "module"
+      },
+      {
+        "id": "a2d82ae731504079a05f85f0735cc662",
+        "url": "/hacsfiles/lovelace-layout-card/layout-card.js?hacstag=156434866245",
+        "type": "module"
+      },
+      {
+        "id": "1ce44d4a6dd34f4fa74efb19384c0b90",
+        "url": "/hacsfiles/battery-state-card/battery-state-card.js?hacstag=256292682321",
+        "type": "module"
+      },
+      {
+        "id": "56d641bccf304f32a434df14ded90230",
+        "url": "/hacsfiles/lovelace-multiple-entity-row/multiple-entity-row.js?hacstag=178921037451",
+        "type": "module"
+      },
+      {
+        "id": "e99fbf05d45e4a08a7a0ec918d41bc9f",
+        "url": "/hacsfiles/simple-thermostat/simple-thermostat.js?hacstag=158654878250",
+        "type": "module"
+      },
+      {
+        "id": "3dbd15e2b66749709b87a5eacb521ece",
+        "url": "/hacsfiles/kiosk-mode/kiosk-mode.js?hacstag=497319128640",
+        "type": "module"
+      },
+      {
+        "id": "4258b3272bf445dea864a3ef7fb050eb",
+        "url": "/hacsfiles/lovelace-state-switch/state-switch.js?hacstag=158756598195",
+        "type": "module"
+      },
+      {
+        "id": "303bbfeeef9f49669e12134067196ff6",
+        "url": "/hacsfiles/lovelace-mini-gauge-card/mini-gauge-card.js?hacstag=444181776032",
+        "type": "module"
+      },
+      {
+        "id": "ebde8a2036ec4aa0a5678227481499db",
+        "url": "/hacsfiles/stack-in-card/stack-in-card.js?hacstag=248954055020",
+        "type": "module"
+      },
+      {
+        "id": "24eeb9b3b7e74b6f9d846d8ba880d030",
+        "url": "/hacsfiles/energy-gauge-bundle-card/energy-gauge-bundle-card.js?hacstag=640516976003",
+        "type": "module"
+      },
+      {
+        "id": "c71af2d7c9b04044ac9130333abf1baa",
+        "url": "/hacsfiles/dual-gauge-card/dual-gauge-card.js?hacstag=143762825053",
+        "type": "module"
+      },
+      {
+        "id": "9bcf88e2cd59459b97449173179d4076",
+        "url": "/hacsfiles/gauge-card/gauge-card.js?hacstag=187245495023",
+        "type": "module"
+      },
+      {
+        "id": "33e0f98769d74a55b498da8bdb9618ed",
+        "url": "/hacsfiles/rain-gauge-card/rain-gauge-card.js?hacstag=609593305140",
+        "type": "module"
+      },
+      {
+        "id": "4aa2a13293c744ee8788d48235c35c4e",
+        "url": "/hacsfiles/apexcharts-card/apexcharts-card.js?hacstag=331701152204",
+        "type": "module"
+      },
+      {
+        "id": "270193caa7664aa78ea545b6534fcf19",
+        "url": "/hacsfiles/bar-card/bar-card.js?hacstag=163363577320",
+        "type": "module"
+      },
+      {
+        "id": "f490cea232a44dabb8755b162361285e",
+        "url": "/hacsfiles/power-flow-card/power-flow-card.js?hacstag=484538222262",
+        "type": "module"
+      },
+      {
+        "id": "2b932f26682e45aba12b81ae01c3305e",
+        "url": "/hacsfiles/flex-table-card/flex-table-card.js?hacstag=156292058077",
+        "type": "module"
+      },
+      {
+        "id": "3dba18502f884335b82044ec7f3767d4",
+        "url": "/hacsfiles/energy-flow-card-plus/energy-flow-card-plus.js?hacstag=6382302440121",
+        "type": "module"
+      },
+      {
+        "id": "48a316c3744c4df7a5fa6b8d642fcd78",
+        "url": "/hacsfiles/energy-period-selector-plus/energy-period-selector-plus.js?hacstag=639953950023",
+        "type": "module"
+      },
+      {
+        "id": "0e31c526fd224dcd8f76b6baa5968c13",
+        "url": "/hacsfiles/power-flow-card-plus/power-flow-card-plus.js?hacstag=618081815024",
+        "type": "module"
+      },
+      {
+        "id": "7cd935d5864c4fdc91a2d3f406688b9c",
+        "url": "/hacsfiles/lovelace-card-mod/card-mod.js?hacstag=190927524343",
+        "type": "module"
+      },
+      {
+        "id": "96772e6410d148d08234a0f25acce656",
+        "url": "/hacsfiles/secondaryinfo-entity-row/secondaryinfo-entity-row.js?hacstag=15971160550",
+        "type": "module"
+      },
+      {
+        "id": "ab97570d6c354bcaabcc362a43e1ee51",
+        "url": "/hacsfiles/lovelace-card-tools/card-tools.js?hacstag=16140332811",
+        "type": "module"
+      },
+      {
+        "id": "2ffb9c8c7deb4de3be412d15e0f02b0f",
+        "url": "/hacsfiles/lovelace-slider-entity-row/slider-entity-row.js?hacstag=1448997001741",
+        "type": "module"
+      },
+      {
+        "id": "1fe4cc510c6b4889b9091abe26570fec",
+        "url": "/hacsfiles/lovelace-template-entity-row/template-entity-row.js?hacstag=231674882141",
+        "type": "module"
+      },
+      {
+        "id": "341fc5049c734d3c9314ee55ced5457b",
+        "url": "/hacsfiles/config-template-card/config-template-card.js?hacstag=172177543136",
+        "type": "module"
+      },
+      {
+        "id": "b0f22e0fb7b148439fe1da4eaafacc47",
+        "url": "/hacsfiles/lovelace-plotly-graph-card/plotly-graph-card.js?hacstag=413812496335",
+        "type": "module"
+      },
+      {
+        "id": "a04b5a551b244df0b7c11e3366c43b18",
+        "url": "/hacsfiles/content-card-linky/content-card-linky.js?hacstag=685587858155",
+        "type": "module"
+      },
+      {
+        "id": "0ca9f8cc99a3442e95fef2c9a13ce702",
+        "url": "/root/homeassistant/sensors/custom_card_apexcharts_elec.yaml",
+        "type": "module"
+      },
+      {
+        "id": "4ab30fb3b6ae4118a7fe4b3c4539bcd9",
+        "url": "/hacsfiles/vertical-stack-in-card/vertical-stack-in-card.js?hacstag=142051833100",
+        "type": "module"
+      }
+    ]
+  }
+}
