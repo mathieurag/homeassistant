@@ -4,27 +4,32 @@ DOMAIN = "bbox"
 BBOX_NAME = "Bbox"
 MANUFACTURER = "Bouygues"
 DEFAULT_TITLE = f"{MANUFACTURER} {BBOX_NAME}"
-CONF_PASSWORD = "password"  # nosec B105
-CONF_HOST = "host"
 CONF_USE_TLS = "use_tls"
 CONF_REFRESH_RATE = "refresh_rate"
+DEFAULT_HOST = "mabbox.bytel.fr"
+DEFAULT_USE_TLS = True
+DEFAULT_VERIFY_SSL = True
+DEFAULT_REFRESH_RATE = 60
 
-CONF_DEFAULTS = {
-    CONF_HOST: "mabbox.bytel.fr",
-    CONF_USE_TLS: True,
-    CONF_REFRESH_RATE: 60,
-}
 TO_REDACT = {
-    "username",
-    "password",
+    "account",
+    "api_key",
+    "bssid",
     "encryption_password",
     "encryption_salt",
     "host",
-    "api_key",
-    "serial",
-    "system_serial",
+    "hostname",
     "ip4_addr",
     "ip6_addr",
-    "account",
+    "ipaddress",
     "key",
+    "macaddress",
+    "passphrase",
+    "password",
+    "serial",
+    "starealmac",
+    "system_serial",
+    "username",
+    "imei",
+    "mac",
 }

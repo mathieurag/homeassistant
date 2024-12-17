@@ -2,18 +2,39 @@
 
 from __future__ import annotations
 
-import logging
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
 
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
-from homeassistant.const import PERCENTAGE, UnitOfDataRate, UnitOfInformation, UnitOfTemperature
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
+    SensorStateClass,
+)
+from homeassistant.const import (
+    PERCENTAGE,
+    UnitOfDataRate,
+    UnitOfInformation,
+    UnitOfTemperature,
+    UnitOfTime,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.typing import StateType
 
 from . import BBoxConfigEntry
 from .entity import BboxEntity
-from .helpers import BboxSensorDescription, finditem
+from .helpers import finditem
 
-_LOGGER = logging.getLogger(__name__)
+
+@dataclass(frozen=True)
+class BboxSensorDescription(SensorEntityDescription):
+    """Describes a sensor."""
+
+    get_value: Callable[..., Any] | None = None
+    value_fn: Callable[..., StateType] | None = None
+
 
 SENSOR_TYPES: tuple[BboxSensorDescription, ...] = (
     BboxSensorDescription(
@@ -58,9 +79,17 @@ SENSOR_TYPES: tuple[BboxSensorDescription, ...] = (
         device_class=SensorDeviceClass.POWER_FACTOR,
         icon="mdi:upload-network",
         get_value=lambda self: (
-            float(finditem(self.coordinator.data, "wan_ip_stats.wan.ip.stats.rx.bandwidth"))
+            float(
+                finditem(
+                    self.coordinator.data, "wan_ip_stats.wan.ip.stats.rx.bandwidth"
+                )
+            )
             * 100
-            / float(finditem(self.coordinator.data, "wan_ip_stats.wan.ip.stats.rx.maxBandwidth"))
+            / float(
+                finditem(
+                    self.coordinator.data, "wan_ip_stats.wan.ip.stats.rx.maxBandwidth"
+                )
+            )
         ),
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -99,12 +128,42 @@ SENSOR_TYPES: tuple[BboxSensorDescription, ...] = (
         device_class=SensorDeviceClass.POWER_FACTOR,
         icon="mdi:upload-network",
         get_value=lambda self: (
-            float(finditem(self.coordinator.data, "wan_ip_stats.wan.ip.stats.tx.bandwidth"))
+            float(
+                finditem(
+                    self.coordinator.data, "wan_ip_stats.wan.ip.stats.tx.bandwidth"
+                )
+            )
             * 100
-            / float(finditem(self.coordinator.data, "wan_ip_stats.wan.ip.stats.tx.maxBandwidth"))
+            / float(
+                finditem(
+                    self.coordinator.data, "wan_ip_stats.wan.ip.stats.tx.maxBandwidth"
+                )
+            )
         ),
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BboxSensorDescription(
+        key="wan_ip.wan.ip.address",
+        name="IP Address",
+        icon="mdi:wan",
+    ),
+    BboxSensorDescription(
+        key="wan_ip.wan.ip.ip6address.0.ipaddress",
+        name="IPv6 Address",
+        icon="mdi:wan",
+    ),
+    BboxSensorDescription(
+        key="info.device.numberofboots",
+        name="Boot counter",
+        icon="mdi:counter",
+    ),
+    BboxSensorDescription(
+        key="info.device.uptime",
+        name="Uptime",
+        icon="mdi:clock",
+        state_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
     ),
 )
 

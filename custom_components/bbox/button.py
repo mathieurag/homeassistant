@@ -3,6 +3,7 @@
 import logging
 
 from bboxpy.exceptions import BboxException
+
 from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -21,11 +22,15 @@ async def async_setup_entry(
     entities = [
         RestartButton(
             coordinator,
-            ButtonEntityDescription(key="restart", name="Restart", icon="mdi:restart-alert"),
+            ButtonEntityDescription(
+                key="restart", name="Restart", icon="mdi:restart-alert"
+            ),
         ),
         RefreshButton(
             coordinator,
-            ButtonEntityDescription(key="refresh", name="Refresh", icon="mdi:refresh-circle"),
+            ButtonEntityDescription(
+                key="refresh", name="Refresh", icon="mdi:refresh-circle"
+            ),
         ),
     ]
     async_add_entities(entities)

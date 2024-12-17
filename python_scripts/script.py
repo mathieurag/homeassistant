@@ -19,9 +19,6 @@ ts0 = datetime.datetime.timestamp(dt0)
 entity = "sensor.ecojoko_consommation_temps_reel"
 print("entité =",entity)
 
-query0 = "pragma query_only=0"
-data=database.execute(query0)
-
 query0 = "SELECT metadata_id FROM 'states_meta' where entity_id='" + entity +"'"
 #print("requete=",query0)
 data=database.execute(query0)

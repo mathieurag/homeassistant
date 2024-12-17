@@ -120,22 +120,6 @@
       message: 'Utilisation du CPU importante : {{states(''sensor.system_monitor_charge_5m'')}}'
     action: persistent_notification.create
   mode: single
-- id: '1719836425210'
-  alias: Alerte Swap
-  description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id:
-    - sensor.system_monitor_espace_d_echange_libre
-    below: 650
-  condition: []
-  action:
-  - service: notify.send_message
-    metadata: {}
-    data:
-      message: 'Utilisation du SWAP < 10Mo : {{states(''sensor.system_monitor_utilisation_de_la_memoire'')}}
-        Mo restants'
-  mode: single
 - id: '1719933755667'
   alias: Début ECS
   description: ''
@@ -1457,6 +1441,7 @@
   - action: shell_command.startup
     data: {}
     response_variable: count
+    enabled: false
   - action: rest.reload
     data: {}
   - action: homeassistant.reload_config_entry
@@ -2444,11 +2429,11 @@
       domain: switch
     - wait_template: '{{ is_state(''climate.clim_leo'', ''heat'')}}'
       continue_on_timeout: true
-  - action: notify.mobile_app_iphone_de_mat_old
-    metadata: {}
-    data:
-      message: 'Activation de la climatisation de Léo : température de {{min(float(states(''sensor.meter_plus_16c6''),0),float(states(''sensor.chambre_leo_temperature''),0))|string
-        }}º (par {{ trigger.to_state.name }}).'
+    - action: notify.mobile_app_iphone_de_mat_old
+      metadata: {}
+      data:
+        message: 'Activation de la climatisation de Léo : température de {{min(float(states(''sensor.meter_plus_16c6''),0),float(states(''sensor.chambre_leo_temperature''),0))|string
+          }}º (par {{ trigger.to_state.name }}).'
   - parallel:
     - sequence:
       - wait_for_trigger:
@@ -3956,4 +3941,37 @@
           and (states(''climate.clim_lisa'')==''heat'' or states(''climate.clim_lisa'')==''off'')
           and (states(''climate.clim_parents'')==''heat'' or states(''climate.clim_parents'')==''off'')
           }} '
+  mode: single
+- id: '1734120553669'
+  alias: Reboot SQL Error
+  description: ''
+  triggers:
+  - event_type: system_log_event
+    event_data:
+      logger: homeassistant.components.recorder.core
+    trigger: event
+  conditions:
+  - condition: template
+    value_template: '{{ "SQLAlchemyError error processing task CommitTask()" in trigger.event.data.message[0]
+      }}'
+    enabled: false
+  actions:
+  - action: notify.mobile_app_iphone_de_mat_old
+    metadata: {}
+    data:
+      message: 'Erreur SQL : reboot dans 1 minute...'
+  - action: notify.persistent_notification
+    metadata: {}
+    data:
+      message: 'Erreur SQL : reboot dans 1 minute...'
+      title: SQLAlchemy
+  - delay:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
+  - action: hassio.host_reboot
+    metadata: {}
+    data: {}
+    enabled: false
   mode: single

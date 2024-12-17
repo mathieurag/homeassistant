@@ -44,3 +44,4 @@ zigbee2mqtt/state.json
 *state.json
 zigbee2mqtt/*.json
 zigbee2mqtt/state.json
+*.pyc

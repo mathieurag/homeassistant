@@ -21,6 +21,10 @@ homeassistant:
     - /config
 
 python_script:
+
+system_log:
+  fire_event: true
+
 logger:
   default: info
   logs:
@@ -31,8 +35,12 @@ logger:
     homeassistant.components.automation.wled_surplus: error
     homeassistant.components.automation.wled_prod: error
     homeassistant.components.automation.wled*: error
-    homeassistant.components.gree.coordinator: fatal
+    homeassistant.components.gree.coordinator: info
+    greeclimate.discovery: warning
     homeassistant.components.automation.gestion_radiateur: error
+    pyhap.hap_protocol: warning
+    root: warning
+    aioesphomeapi.reconnect_logic: error
 
 shell_command:
   batch_py: python3 /config/python_scripts/script.py
@@ -40,6 +48,3 @@ shell_command:
   startup: python3 /config/python_scripts/startup.py
 
 my:
-
-device_tracker:
-  - platform: bluetooth_le_tracker

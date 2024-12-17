@@ -2,19 +2,31 @@
 
 from __future__ import annotations
 
-import logging
+from collections.abc import Callable
+from dataclasses import dataclass
 
-from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity
+from homeassistant.components.binary_sensor import (
+    BinarySensorDeviceClass,
+    BinarySensorEntity,
+    BinarySensorEntityDescription,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.typing import StateType
 
 from . import BBoxConfigEntry
 from .entity import BboxEntity
-from .helpers import BboxBinarySensorDescription, finditem
+from .helpers import finditem
 
-_LOGGER = logging.getLogger(__name__)
 
-SENSOR_TYPES: tuple[BboxBinarySensorDescription, ...] = (
+@dataclass(frozen=True)
+class BboxBinarySensorDescription(BinarySensorEntityDescription):
+    """Describes a sensor."""
+
+    value_fn: Callable[..., StateType] | None = None
+
+
+BINARIES_SENSORS: tuple[BboxBinarySensorDescription, ...] = (
     BboxBinarySensorDescription(
         key="info.device.status",
         name="Link status",
@@ -29,7 +41,9 @@ async def async_setup_entry(
 ) -> None:
     """Set up sensor."""
     coordinator = entry.runtime_data
-    entities = [BboxBinarySensor(coordinator, description) for description in SENSOR_TYPES]
+    entities = [
+        BboxBinarySensor(coordinator, description) for description in BINARIES_SENSORS
+    ]
     async_add_entities(entities)
 
 
@@ -39,7 +53,6 @@ class BboxBinarySensor(BboxEntity, BinarySensorEntity):
     @property
     def is_on(self):
         """Return sensor state."""
-        _LOGGER.debug("%s %s", self.name, self.entity_description.key)
         data = finditem(self.coordinator.data, self.entity_description.key)
         if self.entity_description.value_fn is not None:
             return self.entity_description.value_fn(data)
