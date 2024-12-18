@@ -35,7 +35,7 @@ logger:
     homeassistant.components.automation.wled_surplus: error
     homeassistant.components.automation.wled_prod: error
     homeassistant.components.automation.wled*: error
-    homeassistant.components.gree.coordinator: info
+    homeassistant.components.gree.coordinator: error
     greeclimate.discovery: warning
     homeassistant.components.automation.gestion_radiateur: error
     pyhap.hap_protocol: warning

@@ -340,6 +340,8 @@
       - sensor.salon_jour
       - switch.router_data_fetching
       - button.reboot
+      - sensor.shelly_em_temperature
+      - sensor.gs108e_192_168_1_44_switch_traffic_sent
       domains:
       - climate
       - automation
@@ -373,6 +375,12 @@
       - sensor.*retour_maximum
       - switch.*wifi*
       - sensor.estar*
+      - sensor.gs108e*
+      - sensor.qemu*
+      - sensor.*host_001*
+      - sensor.shelly_pro_em_power_*
+      - sensor.bbox*
+      - sensor.*vu_pour_la_derniere_fois
     action: recorder.purge_entities
   mode: single
 - id: '1724796582689'

@@ -1,6 +1,18 @@
 # Example .gitignore file for your config dir.
 # An * ensures that everything will be ignored.
 *
+# Ensure these YAML files are ignored, otherwise your secret data/credentials will leak.
+ip_bans.yaml
+secrets.yaml
+known_devices.yaml
+#Zigbee2Mqtt :
+zigbee2mqtt/coordinator_backup.json
+zigbee2mqtt/state.json
+*state.json
+state.json
+zigbee2mqtt/*.json
+zigbee2mqtt/state.json
+*.pyc
 # Include
 !*.yaml
 !.gitignore
@@ -31,7 +43,6 @@ tts
 *.db*
 *.db
 
-
 # Ensure these YAML files are ignored, otherwise your secret data/credentials will leak.
 ip_bans.yaml
 secrets.yaml
@@ -39,9 +50,9 @@ known_devices.yaml
 #Zigbee2Mqtt :
 zigbee2mqtt/coordinator_backup.json
 zigbee2mqtt/state.json
-zigbee2mqtt/coordinator_backup.json
-zigbee2mqtt/state.json
 *state.json
+state.json
 zigbee2mqtt/*.json
 zigbee2mqtt/state.json
 *.pyc
+
