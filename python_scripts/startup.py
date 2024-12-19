@@ -235,29 +235,29 @@ else:
         delta_hc_total=delta_hc_total+delta_hc[i]
         delta_hp_total=delta_hp_total+delta_hp[i]
 
-        if delta_hc[i]>1:
+        if delta_hc[i]>0:
             query="UPDATE statistics set sum=sum+"+str(delta_hc[i])+" where metadata_id='"+str(id_entity_hc)+"' and start_ts>=" + str(ts0+i*3600)
             print(query)
             data=database.execute(query)
             query="UPDATE statistics_short_term set sum=sum+"+str(delta_hc[i])+" where metadata_id='"+str(id_entity_hc)+"' and start_ts>=" + str(ts0+i*3600)
             data=database.execute(query)    
-        elif delta_hc[i]<-1:
+        elif delta_hc[i]<0:
             query="UPDATE statistics set sum=sum"+str(delta_hc[i])+" where metadata_id='"+str(id_entity_hc)+"' and start_ts>=" + str(ts0+i*3600)    
             print(query)
             data=database.execute(query)
             query="UPDATE statistics_short_term set sum=sum+"+str(delta_hc[i])+" where metadata_id='"+str(id_entity_hc)+"' and start_ts>=" + str(ts0+i*3600)
             data=database.execute(query)
-        if delta_hp[i]>1:
+        if delta_hp[i]>0:
             query="UPDATE statistics set sum=sum+"+str(delta_hp[i])+" where metadata_id='"+str(id_entity_hp)+"' and start_ts>=" + str(ts0+i*3600)
             print(query)
             data=database.execute(query)
-            query="UPDATE statistics_short_term set sum=sum+"+str(delta_hc[i])+" where metadata_id='"+str(id_entity_hc)+"' and start_ts>=" + str(ts0+i*3600)
+            query="UPDATE statistics_short_term set sum=sum+"+str(delta_hp[i])+" where metadata_id='"+str(id_entity_hp)+"' and start_ts>=" + str(ts0+i*3600)
             data=database.execute(query)
-        elif delta_hp[i]<-1:
+        elif delta_hp[i]<0:
             query="UPDATE statistics set sum=sum"+str(delta_hp[i])+" where metadata_id='"+str(id_entity_hp)+"' and start_ts>=" + str(ts0+i*3600)
             print(query)
             data=database.execute(query)
-            query="UPDATE statistics_short_term set sum=sum+"+str(delta_hc[i])+" where metadata_id='"+str(id_entity_hc)+"' and start_ts>=" + str(ts0+i*3600)
+            query="UPDATE statistics_short_term set sum=sum+"+str(delta_hp[i])+" where metadata_id='"+str(id_entity_hp)+"' and start_ts>=" + str(ts0+i*3600)
             data=database.execute(query)
 
 print("linky_hc",energy_linky_hc_total,"détails :",energy_linky_hc)
