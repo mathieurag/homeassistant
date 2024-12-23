@@ -8,7 +8,7 @@ except:
 import time
 import datetime
 error=0
-jours=1
+jours=5
 row=""
 
 entity = "sensor.energie_consommee_j_hp"
@@ -271,7 +271,7 @@ if query=="" or error==1:
     print("Pas de données à modifier")
 else:
     query0 = "commit"
-    print("Commit")
+    print("Mise à jour effectuée.")
     data=database.execute(query0)
 
 

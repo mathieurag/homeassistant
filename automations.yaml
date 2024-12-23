@@ -342,6 +342,10 @@
       - button.reboot
       - sensor.shelly_em_temperature
       - sensor.gs108e_192_168_1_44_switch_traffic_sent
+      - sensor.gs108e_192_168_1_44_port_2_traffic_received
+    action: recorder.purge_entities
+  - data:
+      keep_days: 1
       domains:
       - climate
       - automation
@@ -1079,16 +1083,16 @@
 - id: '1726659595098'
   alias: 'Alerte fonctionnement Frigo '
   description: ''
-  trigger:
-  - platform: state
-    entity_id:
+  triggers:
+  - entity_id:
     - input_boolean.frigo
     for:
-      hours: 1
+      hours: 2
       minutes: 0
       seconds: 0
-  condition: []
-  action:
+    trigger: state
+  conditions: []
+  actions:
   - data:
       message: Pas de démarrage du Frigo pendant 30 min !
     action: notify.notify
@@ -2383,6 +2387,7 @@
     - condition: state
       entity_id: input_boolean.automatisation
       state: 'on'
+      enabled: false
     - condition: or
       conditions:
       - condition: state
@@ -3681,4 +3686,89 @@
     metadata: {}
     data: {}
     enabled: false
+  mode: single
+- id: shelly_mqtt_event_stream
+  alias: Shelly BLE Event Stream
+  triggers:
+  - topic: shellyblugw-fcb4670003e0/events/rpc
+    trigger: mqtt
+  actions:
+  - repeat:
+      for_each: '{{ events }}'
+      sequence:
+      - variables:
+          mac: '{{ repeat.item.mac }}'
+          unique_id: '{{ mac | slugify }}'
+          rssi: '{{ repeat.item.rssi }}'
+          ts: '{{ repeat.item.ts }}'
+          topic: '{{ root }}/sensor/{{ unique_id }}'
+          state_topic: '{{ topic }}/state'
+      - alias: MQTT Discovery
+        data:
+          topic: '{{ topic }}/config'
+          payload: "{{\n  {\n    'name': unique_id,\n    'unique_id': unique_id,\n
+            \   'state_topic': state_topic,\n    'value_template': rssi,\n    'unit_of_measurement':
+            'dBm',\n    'device_class': 'signal_strength',\n    'json_attributes_topic':
+            state_topic,\n  } | to_json\n}}\n"
+          retain: true
+        action: mqtt.publish
+      - alias: MQTT State Update
+        data:
+          topic: '{{ state_topic }}'
+          payload: "{{\n  {\n    'state': rssi,\n    'attributes': {\n      'ts':
+            ts,\n      'mac': mac\n    } | to_json\n  } | to_json\n}}\n"
+          retain: true
+        action: mqtt.publish
+  variables:
+    root: homeassistant
+    domain: sensor
+    payload: '{{ trigger.payload_json }}'
+    events: "{% set payload = trigger.payload_json | default({}) %} {% if payload
+      and payload.params and payload.params.events %}\n  {% set ns = namespace(items=[])
+      %}\n  {% for event in payload.params.events %}\n    {% if event.data and event.data[1]
+      %}\n      {% for device in event.data[1] %}\n        {% set mac = device[0]
+      %}\n        {% set rssi = device[1] %}\n        {% set ts = event.ts %}\n        {%
+      set ns.items = ns.items + [ dict(mac=mac, rssi=rssi, ts=ts) ] %}\n      {% endfor
+      %}\n    {% endif %}\n  {% endfor %}\n  {{ ns.items | to_json }}\n{% else %}\n
+      \ []\n{% endif %}\n"
+  mode: parallel
+- id: '1734880030099'
+  alias: MAJ SQL
+  description: ''
+  triggers:
+  - trigger: time_pattern
+    minutes: '2'
+  conditions: []
+  actions:
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - sensor.database
+      - sensor.top_values
+      - sensor.maj_linky
+  mode: single
+- id: '1734880314223'
+  alias: Log Event
+  description: ''
+  triggers:
+  - trigger: event
+    event_type: system_log_event
+    event_data:
+      level: ERROR
+  conditions: []
+  actions:
+  - action: notify.mobile_app_iphone_de_mat_old
+    metadata: {}
+    data_template:
+      message: '{{ trigger.event.data.message }}
+
+        '
+      title: 'Erreur Log HA '
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
   mode: single
