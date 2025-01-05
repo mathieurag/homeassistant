@@ -8,7 +8,7 @@ except:
 import time
 import datetime
 error=0
-jours=5
+jours=1
 row=""
 
 entity = "sensor.energie_consommee_j_hp"
@@ -89,8 +89,9 @@ if energy_linky >0 :
     print("Energie Linky J-",jours,":",energy_linky,"kWh","(HP:",energy_linky_hp,"/HC:",energy_linky_hc,")")
 else:
     print("Energie Linky J-",jours,":",energy_linky,"kWh","(HP:",energy_linky_hp,"/HC:",energy_linky_hc,")")
-    print("Energie Linky NOK")
+    retour="Energie Linky NOK"
     error=1
+    print(retour)
 
 #Récupération des données HP/HC en base
 sum_old=0
@@ -125,6 +126,10 @@ delta=round(energy_linky-energy_total,2)
 delta_hp=round(energy_linky_hp-energy_hp,2)
 delta_hc=round(energy_linky_hc-energy_hc,2)
 print ("Delta:",delta,"kWh","(HP:",delta_hp,"/HC:",delta_hc,")")
+
+if delta==0:
+    error=1
+    retour="Pas de données à modifier"
 
 #Analyse heure / heure :
 
@@ -222,9 +227,7 @@ delta_hp_total=0
 delta_hc_total=0
 
 query=""
-if error==1:
-    print("Pas de données LINKY !")
-else:
+if error==0:
     for i in range(0, 24):
         energy_linky_hc_total=energy_linky_hc_total+energy_linky_hc[i]
         energy_linky_hp_total=energy_linky_hp_total+energy_linky_hp[i]
@@ -260,19 +263,22 @@ else:
             query="UPDATE statistics_short_term set sum=sum+"+str(delta_hp[i])+" where metadata_id='"+str(id_entity_hp)+"' and start_ts>=" + str(ts0+i*3600)
             data=database.execute(query)
 
-print("linky_hc",energy_linky_hc_total,"détails :",energy_linky_hc)
-print("energy_hc",energy_hc_total,"détails :",energy_hc)
-print("linky_hp",energy_linky_hp_total,"détails :",energy_linky_hp)
-print("energy_hp",energy_hp_total,"détails :",energy_hp)
-print("delta_hc",delta_hc_total,"détails :",delta_hc)
-print("delta_hp",delta_hp_total,"détails :",delta_hp)
+    print("linky_hc",energy_linky_hc_total,"détails :",energy_linky_hc)
+    print("energy_hc",energy_hc_total,"détails :",energy_hc)
+    print("linky_hp",energy_linky_hp_total,"détails :",energy_linky_hp)
+    print("energy_hp",energy_hp_total,"détails :",energy_hp)
+    print("delta_hc",delta_hc_total,"détails :",delta_hc)
+    print("delta_hp",delta_hp_total,"détails :",delta_hp)
 
-if query=="" or error==1:
-    print("Pas de données à modifier")
+if query=="":
+    retour="Pas de données à modifier"
+    print(retour)
+elif error==1:
+    print(retour)
 else:
-    query0 = "commit"
-    print("Mise à jour effectuée.")
-    data=database.execute(query0)
+    retour= "Delta corrigé:"+str(delta)+" kWh (HP:"+str(round(delta_hp_total/1000,2))+"/HC:"+str(round(delta_hc_total/1000,2))+")"
+    print(retour)
+    data=database.execute("commit")
 
 
 

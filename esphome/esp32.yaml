@@ -12,6 +12,12 @@ esp32:
   framework:
     type: arduino
 
+
+#Bluetooth proxy
+
+bluetooth_proxy:
+    active: True
+    
 # Enable logging
 logger:
 

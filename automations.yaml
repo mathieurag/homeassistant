@@ -310,6 +310,7 @@
   - action: shell_command.supp_ecojoko
     data: {}
     response_variable: Count
+    enabled: false
   mode: single
 - id: '1720780669285'
   alias: Suppression données (purge recorder)
@@ -820,33 +821,6 @@
     target:
       device_id: e6e71c3420d1962f3698349154b8a91c
   mode: single
-- id: '1725825001282'
-  alias: Alerte Mesureur n2
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - sensor.bidirectional_energy_meter_tension
-    for:
-      hours: 0
-      minutes: 30
-      seconds: 0
-  condition: []
-  action:
-  - data:
-      message: Pas de réponse de Tuya Local sur Mesureur n2
-    action: notify.notify
-  - action: homeassistant.reload_config_entry
-    metadata: {}
-    data: {}
-    target:
-      device_id: ec387d4e4ebf0006d56be89fc2b09d1a
-  - delay:
-      hours: 0
-      minutes: 5
-      seconds: 0
-      milliseconds: 0
-  mode: single
 - id: '1725825034602'
   alias: Alerte Tuya Local
   description: ''
@@ -865,6 +839,7 @@
       minutes: 5
       seconds: 0
     trigger: state
+    enabled: false
   - entity_id:
     - sensor.disjoncteur_3_tension_2
     for:
@@ -886,6 +861,7 @@
       minutes: 5
       seconds: 0
     trigger: state
+    enabled: false
   - entity_id:
     - sensor.double_clamp_meter_voltage_a
     for:
@@ -894,7 +870,7 @@
       seconds: 0
     trigger: state
   - entity_id:
-    - sensor.bidirectional_energy_meter_tension
+    - sensor.mesureur_n2_local
     for:
       hours: 0
       minutes: 5
@@ -1087,14 +1063,14 @@
   - entity_id:
     - input_boolean.frigo
     for:
-      hours: 2
+      hours: 4
       minutes: 0
       seconds: 0
     trigger: state
   conditions: []
   actions:
   - data:
-      message: Pas de démarrage du Frigo pendant 30 min !
+      message: Pas de démarrage du Frigo pendant 4h !
     action: notify.notify
   - delay:
       hours: 0
@@ -2391,11 +2367,13 @@
     - condition: or
       conditions:
       - condition: state
-        entity_id: switch.wifi_smart_meter_switch_3_switch
-        state: 'off'
-      - condition: state
         entity_id: switch.cumulus
         state: 'off'
+      - condition: device
+        type: is_off
+        device_id: a7f1d9334e2a44ce460f2a4965813ab7
+        entity_id: b8187e650ac0c789099d4e8cd0afc449
+        domain: switch
   actions:
   - if:
     - condition: state
@@ -2413,15 +2391,17 @@
         seconds: 2
         milliseconds: 0
   - if:
-    - condition: state
-      entity_id: switch.disjoncteur_5_local_none
-      state: 'off'
+    - condition: device
+      type: is_off
+      device_id: a7f1d9334e2a44ce460f2a4965813ab7
+      entity_id: b8187e650ac0c789099d4e8cd0afc449
+      domain: switch
     then:
     - action: switch.turn_on
       metadata: {}
       data: {}
       target:
-        entity_id: switch.wifi_smart_meter_switch_3_switch
+        device_id: a7f1d9334e2a44ce460f2a4965813ab7
     - delay:
         hours: 0
         minutes: 0
@@ -2448,15 +2428,22 @@
     - condition: state
       entity_id: input_boolean.automatisation
       state: 'on'
-    - condition: state
-      entity_id: switch.wifi_smart_meter_switch_3_switch
-      state: 'on'
+      enabled: false
+    - condition: device
+      type: is_on
+      device_id: a7f1d9334e2a44ce460f2a4965813ab7
+      entity_id: b8187e650ac0c789099d4e8cd0afc449
+      domain: switch
   actions:
   - action: switch.turn_off
     metadata: {}
     data: {}
     target:
-      device_id: e3bace5581ce424b7b2da2b64b47dec0
+      device_id: a7f1d9334e2a44ce460f2a4965813ab7
+  - type: turn_off
+    device_id: 62be3297a0c0d75c708f1a2e49911819
+    entity_id: 84ede9c070c6abc84dbd5367e484c988
+    domain: switch
   mode: single
 - id: '1731688869372'
   alias: Fin chauffage ECS
@@ -3771,4 +3758,86 @@
       minutes: 0
       seconds: 5
       milliseconds: 0
+  mode: single
+- id: '1735138356842'
+  alias: Mode Alarme
+  description: ''
+  triggers:
+  - trigger: homeassistant
+    event: start
+  - trigger: state
+    entity_id:
+    - input_boolean.mode_alarme
+    to: 'on'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.mode_alarme
+    state: 'on'
+  actions:
+  - device_id: 48644d42db870bad9e0b916400abc8b2
+    domain: alarm_control_panel
+    entity_id: 881fd20583ecdf23a9ecd81ba1ca3732
+    type: arm_away
+  - device_id: 9b3bee1c6a0fa37faf4f513928c2e28a
+    domain: alarm_control_panel
+    entity_id: 693c7ad590f36f9694eb7443cab81826
+    type: arm_away
+  - repeat:
+      sequence:
+      - wait_for_trigger:
+        - trigger: state
+          entity_id:
+          - binary_sensor.detection_mouvement
+          to: 'on'
+      - action: notify.mobile_app_iphone_de_mat_old
+        metadata: {}
+        data:
+          title: Détection de mouvement
+          message: Détection de mouvement sur les caméras !
+      while:
+      - condition: or
+        conditions:
+        - condition: device
+          device_id: 48644d42db870bad9e0b916400abc8b2
+          domain: alarm_control_panel
+          entity_id: 881fd20583ecdf23a9ecd81ba1ca3732
+          type: is_armed_away
+        - condition: device
+          device_id: 9b3bee1c6a0fa37faf4f513928c2e28a
+          domain: alarm_control_panel
+          entity_id: 693c7ad590f36f9694eb7443cab81826
+          type: is_armed_away
+  mode: single
+- id: '1735164173198'
+  alias: MAJ Données énergie
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.maj_linky
+  conditions: []
+  actions:
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - if:
+    - condition: template
+      value_template: '{{ states(''sensor.maj_linky'')!=states(''input_datetime.maj_linky'')
+        }}'
+    then:
+    - action: shell_command.startup
+      data: {}
+      response_variable: retour
+    - action: input_datetime.set_datetime
+      metadata: {}
+      data:
+        datetime: '{{ states(''sensor.maj_linky'')}}'
+      target:
+        entity_id: input_datetime.maj_linky
+    - action: notify.mobile_app_iphone_de_mat_old
+      metadata: {}
+      data:
+        message: MAJ données LINKY OK
   mode: single
