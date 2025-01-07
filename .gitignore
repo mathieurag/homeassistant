@@ -5,14 +5,8 @@
 ip_bans.yaml
 secrets.yaml
 known_devices.yaml
-#Zigbee2Mqtt :
-zigbee2mqtt/coordinator_backup.json
-zigbee2mqtt/state.json
-*state.json
-state.json
-zigbee2mqtt/*.json
-zigbee2mqtt/state.json
 *.pyc
+
 # Include
 !*.yaml
 !.gitignore
@@ -28,7 +22,6 @@ zigbee2mqtt/state.json
 !custom_components
 !custom_components/**
 !zigbee2mqtt
-!zigbee2mqtt/**
 !www
 !lovelace*
 
@@ -47,12 +40,5 @@ tts
 ip_bans.yaml
 secrets.yaml
 known_devices.yaml
-#Zigbee2Mqtt :
-zigbee2mqtt/coordinator_backup.json
-zigbee2mqtt/state.json
-*state.json
-state.json
-zigbee2mqtt/*.json
-zigbee2mqtt/state.json
 *.pyc
 

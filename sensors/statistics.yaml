@@ -7,6 +7,7 @@ sensor:
     unique_id: "conso_tr_mini_last_24h"
     max_age:
       hours: 24
+    precision: 1
 
   - platform: statistics
     name: conso_tr_mini_last_24h_em06
@@ -15,6 +16,7 @@ sensor:
     unique_id: "conso_tr_mini_last_24h_em06"
     max_age:
       hours: 24
+    precision: 1
 
   - platform: statistics
     name: consommation_non_suivie_moyenne
@@ -23,3 +25,5 @@ sensor:
     unique_id: "consommation_non_suivie_moyenne"
     max_age:
       minutes: 5
+    sampling_size: 50
+    precision: 1

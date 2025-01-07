@@ -1,0 +1,12 @@
+# Example .gitignore file for your config dir.
+# An * ensures that everything will be ignored.
+
+# Ensure these YAML files are ignored, otherwise your secret data/credentials will leak.
+ip_bans.yaml
+secrets.yaml
+known_devices.yaml
+*.pyc
+#Ignore
+coordinator_backup.json*
+state.json
+*.log

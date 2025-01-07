@@ -1,0 +1,8 @@
+streams:
+    Sonnette1: homekit://192.168.68.102:36643?client_id=2a71d0dc-8145-407d-9d45-eefd34c313b5&client_private=50819c7c4409211d045e0cff7ecc2c9d3100a479279b01547baf47d93d547472cd9807c779165184d54ade895be44d67af9f4217ed4820f21c36949f872a8f3d&device_id=4D:2B:A7:6D:65:B0&device_public=fa8c38ca4b80b6a8bbf1c560d722d3458cec4aef577e9a990c8d5ff1a06f10ea
+    Garage: homekit://192.168.68.105:37131?client_id=418d0545-5d4a-48b0-b4f9-ae3e01d0e5da&client_private=6da547a9fc32d492c37ab3fc3f4af613a9862208ccc76b8be2231c3350e1403308b65f64d8b588ad8fce01503c2cc2998132bcf6be0d1d0019396e74c34059f8&device_id=F8:67:72:46:EE:24&device_public=29176e7f361993535177ad2e7173dc1833d275d0528349bc533f7f6abc755af7
+    Entree: homekit://192.168.68.104:37337?client_id=a0fdcfa6-7412-4cce-bb17-9124d55ff401&client_private=bb3bd930bf8038e8e5c9f0cb00b5fb44e50df15c5702342df55ec79f9eff201df0e34a350fed34f5420ba2403ba476af2ee5e5e98493e5e308c16a4cdbc2e42d&device_id=EB:B2:DB:5B:74:15&device_public=425d6c817dae2a1aba15f2fa67750ca3406a5ec6fd1b93f6cc52c51dff13c16d
+homekit:
+    Sonnette1:
+    Garage:
+    Entree:

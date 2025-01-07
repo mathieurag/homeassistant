@@ -863,12 +863,13 @@
     trigger: state
     enabled: false
   - entity_id:
-    - sensor.double_clamp_meter_voltage_a
+    - sensor.mesureur_n1_local_tension
     for:
       hours: 0
       minutes: 5
       seconds: 0
     trigger: state
+    enabled: true
   - entity_id:
     - sensor.mesureur_n2_local
     for:
@@ -1904,15 +1905,7 @@
 - id: '1730993292082'
   alias: Alerte Backup
   description: ''
-  triggers:
-  - trigger: state
-    entity_id:
-    - binary_sensor.backups_stale
-    for:
-      hours: 0
-      minutes: 1
-      seconds: 0
-    to: 'on'
+  triggers: []
   conditions: []
   actions:
   - action: homeassistant.reload_config_entry
@@ -3774,13 +3767,13 @@
     entity_id: input_boolean.mode_alarme
     state: 'on'
   actions:
-  - device_id: 48644d42db870bad9e0b916400abc8b2
+  - device_id: aab5f37f0a93de31749a7333b931244f
     domain: alarm_control_panel
-    entity_id: 881fd20583ecdf23a9ecd81ba1ca3732
+    entity_id: 239b258830c43f2639f97bd411235b17
     type: arm_away
-  - device_id: 9b3bee1c6a0fa37faf4f513928c2e28a
+  - device_id: 1322209f97873efa2a5eac11cbf5990b
     domain: alarm_control_panel
-    entity_id: 693c7ad590f36f9694eb7443cab81826
+    entity_id: f89926d6fd73142433881df57c7347aa
     type: arm_away
   - repeat:
       sequence:
@@ -3795,18 +3788,23 @@
           title: Détection de mouvement
           message: Détection de mouvement sur les caméras !
       while:
-      - condition: or
+      - condition: and
         conditions:
-        - condition: device
-          device_id: 48644d42db870bad9e0b916400abc8b2
-          domain: alarm_control_panel
-          entity_id: 881fd20583ecdf23a9ecd81ba1ca3732
-          type: is_armed_away
-        - condition: device
-          device_id: 9b3bee1c6a0fa37faf4f513928c2e28a
-          domain: alarm_control_panel
-          entity_id: 693c7ad590f36f9694eb7443cab81826
-          type: is_armed_away
+        - condition: or
+          conditions:
+          - condition: device
+            device_id: aab5f37f0a93de31749a7333b931244f
+            domain: alarm_control_panel
+            entity_id: 239b258830c43f2639f97bd411235b17
+            type: is_armed_home
+          - condition: device
+            device_id: 1322209f97873efa2a5eac11cbf5990b
+            domain: alarm_control_panel
+            entity_id: f89926d6fd73142433881df57c7347aa
+            type: is_armed_away
+        - condition: state
+          entity_id: input_boolean.mode_alarme
+          state: 'on'
   mode: single
 - id: '1735164173198'
   alias: MAJ Données énergie
@@ -3815,13 +3813,13 @@
   - trigger: state
     entity_id:
     - sensor.maj_linky
-  conditions: []
+  conditions:
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: sensor.maj_linky
+      state: unavailable
   actions:
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 5
-      milliseconds: 0
   - if:
     - condition: template
       value_template: '{{ states(''sensor.maj_linky'')!=states(''input_datetime.maj_linky'')

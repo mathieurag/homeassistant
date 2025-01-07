@@ -19,21 +19,21 @@ template:
         device_class: power
         state_class: measurement
         unit_of_measurement: "W"
-        state: "{% if (float(states('sensor.double_clamp_meter_power_b'),0) - float(states('sensor.prise_lave_linge_local_puissance'),0)) <= 0 -%} 15.0 {%- else -%}  {{ (float(states('sensor.double_clamp_meter_power_b'),0) - float(states('sensor.prise_lave_linge_local_puissance'),0)) | round(1) }} {%- endif %}"
+        state: "{% if (float(states('sensor.mesureur_n1_local_puissance_b'),0) - float(states('sensor.prise_lave_linge_local_puissance'),0)) <= 0 -%} 25.0 {%- else -%}  {{ (float(states('sensor.mesureur_n1_local_puissance_b'),0) - float(states('sensor.prise_lave_linge_local_puissance'),0)) | round(1) }} {%- endif %}"
 
       - name: "mesureur_n1_puissance_a" #Entité gardée pour historique
         unique_id: "mesureur_n1_puissance_a"
         device_class: power
         state_class: measurement
         unit_of_measurement: "W"
-        state: "{% if float(states('sensor.double_clamp_meter_power_a'),0) | round(1)==0 %} 22.0 {%- else -%} {{ (float(states('sensor.double_clamp_meter_power_a'),0))| round(1) }} {%- endif %}"
+        state: "{% if float(states('sensor.mesureur_n1_local_puissance_a'),0) | round(1)==0 %} 22.0 {%- else -%} {{ (float(states('sensor.mesureur_n1_local_puissance_a'),0))| round(1) }} {%- endif %}"
 
       - name: "Puissance socle"
         unique_id: "puissance_socle"
         device_class: power
         state_class: measurement
         unit_of_measurement: "W"
-        state: "{{ (float(states('sensor.double_clamp_meter_power_a'),0) + float(states('sensor.mesureur_n1_puissance_b'),0) + float(states('sensor.shelly_em0_power'),0) + float(states('sensor.em06_a1_power'),0) + float(states('sensor.prises_entree'),0) + float(states('sensor.prises_rdc'),0)) | round(1) }}"
+        state: "{{ (float(states('sensor.mesureur_n1_local_puissance_a'),0) + float(states('sensor.mesureur_n1_puissance_b'),0) + float(states('sensor.shelly_em0_power'),0) + float(states('sensor.em06_a1_power'),0) + float(states('sensor.prises_entree'),0) + float(states('sensor.prises_rdc'),0)) | round(1) }}"
 
       - name: "Consommation non suivie"
         unique_id: "consommation_non_suivie"
@@ -72,7 +72,7 @@ template:
         device_class: power # Exemples de valeurs possibles
         state_class: measurement
         unit_of_measurement: "W"
-        state: "{% if float(states('sensor.em06_b1_power'),0) < 85 -%} 100 {%- else -%} {{float(states('sensor.em06_b1_power'),0)}} {%- endif %}"
+        state: "{% if float(states('sensor.em06_b1_power'),0) > 85 -%} {{float(states('sensor.em06_b1_power'),0)}} {%- endif %}"
 
       - name: "Consommation réseau Absolue"
         unique_id: "consommation_reseau_abs"
