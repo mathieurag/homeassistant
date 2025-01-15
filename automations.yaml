@@ -2095,12 +2095,12 @@
         entity_id: climate.clim_leo
     - device_id: d2910ca682aff1ab63ccc59776862bbf
       domain: climate
-      entity_id: f134f6c77732ee45a8c2eb02f1419140
+      entity_id: climate.clim_leo
       type: set_preset_mode
       preset_mode: sleep
     - type: turn_on
       device_id: d2910ca682aff1ab63ccc59776862bbf
-      entity_id: ee3bb881fc9b96ab2c667277bcfff60b
+      entity_id: climate.clim_leo
       domain: switch
     - wait_template: '{{ is_state(''climate.clim_leo'', ''heat'')}}'
       continue_on_timeout: true
@@ -2601,12 +2601,12 @@
         entity_id: climate.clim_lisa
     - device_id: ca5a1d4d5c652e5a540deaaae09f9405
       domain: climate
-      entity_id: 75d43c2f5470d1d38b1db785215bfc05
+      entity_id: climate.clim_lisa
       type: set_preset_mode
       preset_mode: none
     - type: turn_on
       device_id: ca5a1d4d5c652e5a540deaaae09f9405
-      entity_id: d97a95ca27a4528361dd32707c0973b9
+      entity_id: climate.clim_lisa
       domain: switch
   - action: notify.mobile_app_iphone_de_mat_old
     metadata: {}
@@ -2791,7 +2791,7 @@
         entity_id: climate.clim_entree
     - device_id: 280904bd43829cf2b64d322cd3b67cd1
       domain: climate
-      entity_id: c8d050f513f09480235a70a8a490c65b
+      entity_id: climate.clim_entree
       type: set_preset_mode
       preset_mode: boost
     - delay:
@@ -2827,7 +2827,7 @@
     else:
     - device_id: 280904bd43829cf2b64d322cd3b67cd1
       domain: climate
-      entity_id: c8d050f513f09480235a70a8a490c65b
+      entity_id: climate.clim_entree
       type: set_hvac_mode
       hvac_mode: 'off'
   - action: notify.mobile_app_iphone_de_mat_old
@@ -3601,6 +3601,7 @@
       hours: 0
       minutes: 0
       seconds: 5
+    enabled: false
   - trigger: state
     entity_id:
     - climate.clim_parents
@@ -3838,4 +3839,37 @@
       metadata: {}
       data:
         message: MAJ données LINKY OK
+  mode: single
+- id: '1736458938405'
+  alias: Fermer Volets
+  description: ''
+  triggers: []
+  conditions: []
+  actions:
+  - action: cover.close_cover
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - cover.volets
+      - cover.fenetres
+      - cover.stores
+  mode: single
+- id: '1736622557524'
+  alias: Mode forcé
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - switch.shelly_plus_1pm_01_switch_0
+    to: 'on'
+  conditions:
+  - condition: state
+    state: 'off'
+    entity_id: switch.cumulus
+  actions:
+  - type: turn_on
+    device_id: 62be3297a0c0d75c708f1a2e49911819
+    entity_id: 84ede9c070c6abc84dbd5367e484c988
+    domain: switch
   mode: single

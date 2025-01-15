@@ -64,6 +64,8 @@ devices:
     optimistic: true
   '0xa4c138da3f8fc34f':
     friendly_name: Répéteur Zigbee 1
+  '0xa4c138077ed1f7b8':
+    friendly_name: Prise Zigbee 2
 availability:
   enabled: true
   active:

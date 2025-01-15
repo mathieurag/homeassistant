@@ -223,7 +223,7 @@ ENDPOINTS = {
         CONF_CUSTOMER_CODE: "391278",
         CONF_API_URL: "https://thermoflux.agua-iot.com",
     },
-    "Total Control (Extraflame)": {
+    "Total Control 3.0 (Extraflame)": {
         CONF_CUSTOMER_CODE: "195764",
         CONF_API_URL: "https://extraflame.agua-iot.com/",
     },
@@ -436,6 +436,13 @@ SENSORS = (
     AguaIOTSensorEntityDescription(
         key="temp_h2o_get",
         name="Water Temperature",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+    ),
+    AguaIOTSensorEntityDescription(
+        key="temp_legna_get",
+        name="Wood Temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
