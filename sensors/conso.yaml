@@ -21,6 +21,20 @@ template:
         unit_of_measurement: "W"
         state: "{% if (float(states('sensor.mesureur_n1_local_puissance_b'),0) - float(states('sensor.prise_lave_linge_local_puissance'),0)) <= 0 -%} 25.0 {%- else -%}  {{ (float(states('sensor.mesureur_n1_local_puissance_b'),0) - float(states('sensor.prise_lave_linge_local_puissance'),0)) | round(1) }} {%- endif %}"
 
+      - name: "disjoncteur_3" #Entité gardée pour historique
+        unique_id: "disjoncteur_3"
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: "{% if float(states('sensor.disjoncteur_3_energie'),0) | round(1)==0 %} {{ float(states('sensor.disjoncteur_3_energie'),0) }} {%- else -%} {{ float(states('sensor.disjoncteur_3_energie'),0) * 0.975 | round(2) }} {%- endif %}"
+
+      - name: "disjoncteur_4" #Entité gardée pour historique
+        unique_id: "disjoncteur_4"
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: "kWh"
+        state: "{% if float(states('sensor.disjoncteur_4_energie'),0) | round(1)==0 %} {{ float(states('sensor.disjoncteur_4_energie'),0) }} {%- else -%} {{ float(states('sensor.disjoncteur_4_energie'),0) * 0.95 | round(2) }} {%- endif %}"
+
       - name: "mesureur_n1_puissance_a" #Entité gardée pour historique
         unique_id: "mesureur_n1_puissance_a"
         device_class: power
@@ -86,4 +100,4 @@ template:
         unit_of_measurement: "%"
         device_class: power_factor # Exemples de valeurs possibles
         state_class: measurement # Exemples de valeurs possibles
-        state: "{{ (100*(float(states('sensor.sonde_temperature_owon_temperature'),0) - float(states('input_number.tmin_ecs'),0) )/ (float(states('input_number.tmax_ecs'),0)-float(states('input_number.tmin_ecs'),0) ) )| round(0) }}"
+        state: "{{ (100*(float(states('sensor.sonde_temperature_owon_temperature'),15) - float(states('input_number.tmin_ecs'),60) )/ (float(states('input_number.tmax_ecs'),60)-float(states('input_number.tmin_ecs'),15) ) )| round(0) }}"

@@ -12,8 +12,8 @@
     },
     "0x3c6a2cfffed4a7de": {
         "voltage": 2600,
-        "battery": 38,
-        "temperature": 23.9,
+        "battery": 38.5,
+        "temperature": 24.5,
         "linkquality": 200
     },
     "0xa4c138d9a41bd98f": {
@@ -22,16 +22,16 @@
         "linkquality": 172
     },
     "0xa4c138682a772531": {
-        "illuminance": 6005,
-        "illuminance_average_20min": 5840,
-        "illuminance_maximum_today": 6005,
+        "illuminance": 5386,
+        "illuminance_average_20min": 5432,
+        "illuminance_maximum_today": 6279,
         "cleaning_reminder": true,
-        "rain_intensity": 284,
+        "rain_intensity": 0,
         "linkquality": 164,
         "rain": false
     },
     "0xa4c138da3f8fc34f": {
-        "linkquality": 220
+        "linkquality": 200
     },
     "0xa4c138077ed1f7b8": {
         "voltage": 238,

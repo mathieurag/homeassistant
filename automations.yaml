@@ -97,7 +97,7 @@
   - action: notify.persistent_notification
     data:
       message: 'Utilisation de la mémoire > 50% :     {{states(''sensor.system_monitor_utilisation_de_la_memoire'')}}%'
-  - action: notify.mobile_app_iphone_de_mat_old
+  - action: notify.notify
     data:
       message: 'Utilisation de la mémoire > 50% :         {{states(''sensor.system_monitor_utilisation_de_la_memoire'')}}%'
   mode: single
@@ -114,7 +114,7 @@
   - metadata: {}
     data:
       message: 'Utilisation du CPU importante : {{states(''sensor.system_monitor_charge_5m'')}}'
-    action: notify.mobile_app_iphone_de_mat_old
+    action: notify.notify
   - metadata: {}
     data:
       message: 'Utilisation du CPU importante : {{states(''sensor.system_monitor_charge_5m'')}}'
@@ -914,9 +914,8 @@
       entity_id: '{{ trigger.entity_id }}'
   - delay:
       hours: 0
-      minutes: 1
+      minutes: 2
       seconds: 0
-      milliseconds: 0
   - if:
     - condition: template
       value_template: '{{is_state(trigger.entity_id,''unknown'') or is_state(trigger.entity_id,''unavailable'')}}'
@@ -927,7 +926,7 @@
         title: Tuya Local
         message: 'Pas de réponse de {{ trigger.to_state.name.split('' '')[0] }} {{
           trigger.to_state.name.split('' '')[1] }} : {{states(trigger.entity_id)}}'
-    - action: notify.mobile_app_iphone_de_mat_old
+    - action: notify.notify
       metadata: {}
       data:
         title: Tuya Local
@@ -1046,16 +1045,34 @@
     trigger: state
   conditions: []
   actions:
-  - data:
-      message: Pas de réponse de Tuya Cloud !
-    action: notify.notify
-  - action: notify.persistent_notification
-    data:
-      message: Pas de réponse de Tuya Cloud !
   - action: homeassistant.reload_config_entry
     target:
       label_id: tuya_cloud
     data: {}
+  - delay:
+      hours: 0
+      minutes: 2
+      seconds: 0
+  - if:
+    - condition: or
+      conditions:
+      - condition: state
+        entity_id: sensor.disjoncteur_cumulus_tension
+        state: unavailable
+      - condition: state
+        entity_id: sensor.disjoncteur_cumulus_tension
+        state: unknown
+    then:
+    - action: notify.persistent_notification
+      data:
+        message: Pas de réponse de Tuya Cloud !
+    - data:
+        message: Pas de réponse de Tuya Cloud !
+      action: notify.notify
+    - delay:
+        hours: 0
+        minutes: 5
+        seconds: 0
   mode: single
 - id: '1726659595098'
   alias: 'Alerte fonctionnement Frigo '
@@ -1291,7 +1308,7 @@
         | timestamp_custom("%Hh%M", True) }}. Météo : {{states(''sensor.talence_daily_original_condition'')}}
 
         '
-    action: notify.mobile_app_iphone_de_mat_old
+    action: notify.notify
   - data_template:
       title: 'Données Energie du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y",
         True) }}
@@ -1592,7 +1609,7 @@
         | timestamp_custom("%Hh%M", True) }}.
 
         '
-    action: notify.mobile_app_iphone_de_mat_old
+    action: notify.notify
     enabled: true
 - id: '1728387375442'
   alias: Alerte Garage absence
@@ -1616,7 +1633,7 @@
         entity_id: device_tracker.iphone_marine
         state: home
   actions:
-  - action: notify.mobile_app_iphone_de_mat_old
+  - action: notify.notify
     data:
       message: Alerte ouverture garage !
   - action: notify.persistent_notification
@@ -1891,7 +1908,7 @@
       message: Pas de réponse de {{ trigger.to_state.name | replace(' Linkquality','')
         }} !
     action: notify.persistent_notification
-  - action: notify.mobile_app_iphone_de_mat_old
+  - action: notify.notify
     metadata: {}
     data:
       message: Pas de réponse de {{ trigger.to_state.name | replace(' Linkquality','')
@@ -1932,14 +1949,18 @@
     entity_id:
     - sensor.estar_url
     to: token verify error.
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
   - trigger: state
     entity_id:
     - sensor.estar_centrale
     to: unavailable
     for:
       hours: 0
-      minutes: 0
-      seconds: 5
+      minutes: 5
+      seconds: 0
   conditions: []
   actions:
   - action: rest.reload
@@ -2104,7 +2125,7 @@
       domain: switch
     - wait_template: '{{ is_state(''climate.clim_leo'', ''heat'')}}'
       continue_on_timeout: true
-    - action: notify.mobile_app_iphone_de_mat_old
+    - action: notify.notify
       metadata: {}
       data:
         message: 'Activation de la climatisation de Léo : température de {{min(float(states(''sensor.meter_plus_16c6''),0),float(states(''sensor.chambre_leo_temperature''),0))|string
@@ -2121,7 +2142,7 @@
             minutes: 0
             seconds: 5
           id: Extinction Clim
-      - action: notify.mobile_app_iphone_de_mat_old
+      - action: notify.notify
         metadata: {}
         data:
           message: 'Fin Clim Léo ({{ (((now() | as_timestamp)- (state_attr(''automation.activation_clim_leo'',''last_triggered'')
@@ -2184,14 +2205,14 @@
             data: {}
             target:
               device_id: d2910ca682aff1ab63ccc59776862bbf
-          - action: notify.mobile_app_iphone_de_mat_old
+          - action: notify.notify
             metadata: {}
             data:
               message: 'Fin Clim Léo ({{ (((now() | as_timestamp)-(state_attr(''automation.activation_clim_leo'',''last_triggered'')
                 | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_16c6''),0),float(states(''sensor.chambre_leo_temperature''),0)))|string
                 }}º (Fin de chauffage).'
           else:
-          - action: notify.mobile_app_iphone_de_mat_old
+          - action: notify.notify
             metadata: {}
             data:
               message: 'Fin Clim Léo ({{ (((now() | as_timestamp)- (state_attr(''automation.activation_clim_leo'',''last_triggered'')
@@ -2250,14 +2271,14 @@
             data: {}
             target:
               device_id: d2910ca682aff1ab63ccc59776862bbf
-          - action: notify.mobile_app_iphone_de_mat_old
+          - action: notify.notify
             metadata: {}
             data:
               message: 'Fin Clim Léo ({{ (((now() | as_timestamp)-(state_attr(''automation.activation_clim_leo'',''last_triggered'')
                 | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_16c6'')),float(states(''sensor.chambre_leo_temperature''))))|string
                 }}º (seuil atteint).'
           else:
-          - action: notify.mobile_app_iphone_de_mat_old
+          - action: notify.notify
             metadata: {}
             data:
               message: 'Fin Clim Léo ({{ (((now() | as_timestamp)- (state_attr(''automation.activation_clim_leo'',''last_triggered'')
@@ -2316,14 +2337,14 @@
             data: {}
             target:
               device_id: d2910ca682aff1ab63ccc59776862bbf
-          - action: notify.mobile_app_iphone_de_mat_old
+          - action: notify.notify
             metadata: {}
             data:
               message: 'Fin Clim Léo ({{ (((now() | as_timestamp)-(state_attr(''automation.activation_clim_leo'',''last_triggered'')
                 | as_timestamp))/ 60 )| int(0)  }} min). Température : {{(max(float(states(''sensor.meter_plus_16c6'')),float(states(''sensor.chambre_leo_temperature''))))|string
                 }}º (seuil atteint).'
           else:
-          - action: notify.mobile_app_iphone_de_mat_old
+          - action: notify.notify
             metadata: {}
             data:
               message: 'Fin Clim Léo ({{ (((now() | as_timestamp)- (state_attr(''automation.activation_clim_leo'',''last_triggered'')
@@ -2333,7 +2354,7 @@
         metadata: {}
         data: {}
       - stop: Température atteinte
-  - action: notify.mobile_app_iphone_de_mat_old
+  - action: notify.notify
     metadata: {}
     data:
       message: Fin Automatisation Clim Léo.
@@ -2344,10 +2365,10 @@
   triggers:
   - trigger: numeric_state
     entity_id:
-    - sensor.em06_02_a1_power
+    - sensor.surplus_production
     for:
       hours: 0
-      minutes: 2
+      minutes: 1
       seconds: 0
     above: 0
   conditions:
@@ -2404,7 +2425,7 @@
       entity_id: input_number.energie_cumulus_jour
       value: '{{ states(''sensor.cumulus_kwh'') | float }}'
     action: input_number.set_value
-  - action: notify.mobile_app_iphone_de_mat_old
+  - action: notify.notify
     metadata: {}
     data:
       message: Activation du routeur solaire
@@ -2468,7 +2489,7 @@
     data: {}
     target:
       entity_id: input_boolean.ecs_chaud
-  - action: notify.mobile_app_iphone_de_mat_old
+  - action: notify.notify
     metadata: {}
     data:
       message: "Le ballon d'eau chaude est chaud ({{ (float(states('sensor.cumulus_kwh'))-float(states('input_number.energie_cumulus_jour')))
@@ -2608,7 +2629,7 @@
       device_id: ca5a1d4d5c652e5a540deaaae09f9405
       entity_id: climate.clim_lisa
       domain: switch
-  - action: notify.mobile_app_iphone_de_mat_old
+  - action: notify.notify
     metadata: {}
     data:
       message: 'Activation de la climatisation de Lisa : température de {{(min(float(states(''sensor.meter_plus_938f'')),float(states(''sensor.chambre_lisa_temperature''))))|string
@@ -2663,7 +2684,7 @@
         data: {}
         target:
           device_id: ca5a1d4d5c652e5a540deaaae09f9405
-      - action: notify.mobile_app_iphone_de_mat_old
+      - action: notify.notify
         metadata: {}
         data:
           message: 'Fin Clim Lisa ({{ (((now() | as_timestamp)-(state_attr(''automation.activation_clim_lisa'',''last_triggered'')
@@ -2672,7 +2693,7 @@
             or float(states(''sensor.meter_plus_938f''))>float(states(''input_number.seuil_temperature_chambres''))%}seuil
             atteint{% else %}Fin de chauffage{% endif %}).'
       else:
-      - action: notify.mobile_app_iphone_de_mat_old
+      - action: notify.notify
         metadata: {}
         data:
           message: 'Fin Clim Lisa ({{ (((now() | as_timestamp)- (state_attr(''automation.activation_clim_lisa'',''last_triggered'')
@@ -2799,7 +2820,7 @@
         minutes: 0
         seconds: 1
         milliseconds: 0
-  - action: notify.mobile_app_iphone_de_mat_old
+  - action: notify.notify
     metadata: {}
     data:
       message: 'Activation de la climatisation Entrée : température de {{(min(float(states(''sensor.meter_plus_6b44'')),float(states(''sensor.entree_temperature''))))|string}}º
@@ -2830,7 +2851,7 @@
       entity_id: climate.clim_entree
       type: set_hvac_mode
       hvac_mode: 'off'
-  - action: notify.mobile_app_iphone_de_mat_old
+  - action: notify.notify
     metadata: {}
     data:
       message: 'Fin Clim Entrée ({{ (((now() | as_timestamp)- (state_attr(''automation.clim_2'',''last_triggered'')
@@ -3169,7 +3190,7 @@
     data: {}
     target:
       entity_id: switch.disjoncteur_4_none
-  - action: notify.mobile_app_iphone_de_mat_old
+  - action: notify.notify
     metadata: {}
     data:
       message: Activation de la Clim Salon
@@ -3201,7 +3222,7 @@
       entity_id: sensor.disjoncteur_4_puissance_2
       above: 20
     then:
-    - action: notify.mobile_app_iphone_de_mat_old
+    - action: notify.notify
       metadata: {}
       data:
         message: 'Désactivation impossible de Clim Salon : en cours d''utilisation'
@@ -3221,7 +3242,7 @@
     data: {}
     target:
       entity_id: switch.disjoncteur_4_none
-  - action: notify.mobile_app_iphone_de_mat_old
+  - action: notify.notify
     metadata: {}
     data:
       message: Désactivation de Clim Salon
@@ -3331,6 +3352,9 @@
       - condition: state
         entity_id: switch.disjoncteur_3_none
         state: 'off'
+      - condition: state
+        entity_id: input_boolean.mode_chauffage
+        state: 'on'
       then:
       - action: switch.turn_on
         metadata: {}
@@ -3342,6 +3366,9 @@
       - condition: state
         entity_id: switch.disjoncteur_4_none
         state: 'off'
+      - condition: state
+        entity_id: input_boolean.mode_chauffage
+        state: 'on'
       then:
       - action: switch.turn_on
         metadata: {}
@@ -3520,16 +3547,8 @@
 - id: shellies_announce_gen2
   alias: Shellies Announce Gen2
   triggers:
-  - platform: homeassistant
-    event: start
-  variables:
-    get_config_payload: '{{ {''id'': 1, ''src'': ''shellies_discovery'', ''method'':
-      ''Shelly.GetConfig''} | to_json }}'
-    get_components_payload: '{{ {''id'': 1, ''src'': ''shellies_discovery'', ''method'':''Shelly.GetComponents'',
-      ''params'': {''include'': [''config'']}} | to_json }}'
-    device_ids:
-    - shellyplus2pm-485519a1ff8c
-    - custom-prefix/shelly-kitchen
+  - event: start
+    trigger: homeassistant
   actions:
   - repeat:
       for_each: '{{ device_ids }}'
@@ -3538,10 +3557,20 @@
         data:
           topic: '{{ repeat.item }}/rpc'
           payload: '{{ get_config_payload }}'
-      - service: mqtt.publish
+      - action: mqtt.publish
         data:
           topic: '{{ repeat.item }}/rpc'
-          payload: '{{ get_components_payload }}'
+          payload: '{{ get_config_payload }}'
+  variables:
+    get_config_payload: '{{ {''id'': 1, ''src'': ''shellies_discovery'', ''method'':
+      ''Shelly.GetConfig''} | to_json }}'
+    get_components_payload: '{{ {''id'': 1, ''src'': ''shellies_discovery'', ''method'':''Shelly.GetComponents'',
+      ''params'': {''include'': [''config'']}} | to_json }}'
+    device_ids:
+    - shellyproem50-08f9e0e69644
+    - shellyplus1pm-08b61f6b65e0
+    - shellyplus1pm-b0b21c0e9048
+    - shellyblugw-fcb4670003e0
 - id: shellies_discovery_gen2
   alias: Shellies Discovery Gen2
   triggers:
@@ -3649,7 +3678,7 @@
       }}'
     enabled: false
   actions:
-  - action: notify.mobile_app_iphone_de_mat_old
+  - action: notify.notify
     metadata: {}
     data:
       message: 'Erreur SQL : reboot dans 1 minute...'
@@ -3740,7 +3769,7 @@
       level: ERROR
   conditions: []
   actions:
-  - action: notify.mobile_app_iphone_de_mat_old
+  - action: notify.notify
     metadata: {}
     data_template:
       message: '{{ trigger.event.data.message }}
@@ -3783,7 +3812,7 @@
           entity_id:
           - binary_sensor.detection_mouvement
           to: 'on'
-      - action: notify.mobile_app_iphone_de_mat_old
+      - action: notify.notify
         metadata: {}
         data:
           title: Détection de mouvement
@@ -3835,7 +3864,7 @@
         datetime: '{{ states(''sensor.maj_linky'')}}'
       target:
         entity_id: input_datetime.maj_linky
-    - action: notify.mobile_app_iphone_de_mat_old
+    - action: notify.notify
       metadata: {}
       data:
         message: MAJ données LINKY OK
