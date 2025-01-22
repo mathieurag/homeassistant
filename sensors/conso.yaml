@@ -33,7 +33,7 @@ template:
         device_class: energy
         state_class: total_increasing
         unit_of_measurement: "kWh"
-        state: "{% if float(states('sensor.disjoncteur_4_energie'),0) | round(1)==0 %} {{ float(states('sensor.disjoncteur_4_energie'),0) }} {%- else -%} {{ float(states('sensor.disjoncteur_4_energie'),0) * 0.95 | round(2) }} {%- endif %}"
+        state: "{% if float(states('sensor.disjoncteur_4_energie'),0) | round(1)==0 %} {{ float(states('sensor.disjoncteur_4_energie'),0) }} {%- else -%} {{ float(states('sensor.disjoncteur_4_energie'),0) * 0.975 | round(2) }} {%- endif %}"
 
       - name: "mesureur_n1_puissance_a" #Entité gardée pour historique
         unique_id: "mesureur_n1_puissance_a"
@@ -86,7 +86,7 @@ template:
         device_class: power # Exemples de valeurs possibles
         state_class: measurement
         unit_of_measurement: "W"
-        state: "{% if float(states('sensor.em06_b1_power'),0) > 85 -%} {{float(states('sensor.em06_b1_power'),0)}} {%- endif %}"
+        state: "{% if float(states('sensor.em06_b1_power'),0) > 85 -%} {{float(states('sensor.em06_b1_power'),0)}} {%- else -%} 120.0 {%- endif %}"
 
       - name: "Consommation réseau Absolue"
         unique_id: "consommation_reseau_abs"

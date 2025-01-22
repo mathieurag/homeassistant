@@ -387,6 +387,14 @@
       - sensor.bbox*
       - sensor.*vu_pour_la_derniere_fois
     action: recorder.purge_entities
+  - data:
+      keep_days: 3
+      entity_globs:
+      - sensor.mesureur_*
+      - sensor.em06*power
+      - sensor.disjoncteur*
+      - sensor.bidirectional_energy_meter*
+    action: recorder.purge_entities
   mode: single
 - id: '1724796582689'
   alias: Alerte conso minimum
@@ -397,10 +405,10 @@
   conditions:
   - condition: numeric_state
     entity_id: sensor.conso_tr_mini_last_24h
-    above: 99
+    above: 150
   actions:
   - data:
-      message: 'Conso mini du jour > 100W : {{states(''sensor.conso_tr_mini_last_24h'')}}'
+      message: 'Conso mini du jour > 150W : {{states(''sensor.conso_tr_mini_last_24h'')}}'
     action: notify.notify
   mode: single
 - id: '1725127161330'
@@ -871,12 +879,13 @@
     trigger: state
     enabled: true
   - entity_id:
-    - sensor.mesureur_n2_local
+    - sensor.mesureur_n2_local_tension
     for:
       hours: 0
       minutes: 5
       seconds: 0
     trigger: state
+    enabled: true
   - entity_id:
     - sensor.prise_frigo_local_tension
     for:
@@ -987,28 +996,6 @@
       device_id:
       - 551a4cec52ce5ec5f96436a57efb7e39
       - 70241aa2125233db1ee21cb73c58a47a
-  mode: single
-- id: '1726580260450'
-  alias: Alerte Disjoncteur 3
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - sensor.disjoncteur_3_tension_2
-    for:
-      hours: 0
-      minutes: 30
-      seconds: 0
-  condition: []
-  action:
-  - data:
-      message: Pas de réponse de Tuya Local sur Disjoncteur 3
-    action: notify.notify
-  - delay:
-      hours: 0
-      minutes: 5
-      seconds: 0
-      milliseconds: 0
   mode: single
 - id: '1726580281298'
   alias: Alerte Disjoncteur 4
@@ -1919,28 +1906,6 @@
       seconds: 0
       milliseconds: 0
   mode: single
-- id: '1730993292082'
-  alias: Alerte Backup
-  description: ''
-  triggers: []
-  conditions: []
-  actions:
-  - action: homeassistant.reload_config_entry
-    metadata: {}
-    data: {}
-    target:
-      device_id:
-      - 2d47492dd060ebca9ceae763f61252e4
-  - action: notify.persistent_notification
-    metadata: {}
-    data:
-      message: Problème de backup Google Drive
-  - delay:
-      hours: 0
-      minutes: 5
-      seconds: 0
-      milliseconds: 0
-  mode: single
 - id: '1731062182492'
   alias: Alerte Token Estar
   description: ''
@@ -2482,7 +2447,7 @@
   conditions:
   - condition: numeric_state
     entity_id: sensor.sonde_temperature_owon_temperature
-    above: 50
+    above: input_number.tmax_ecs
   actions:
   - action: input_boolean.turn_off
     metadata: {}
@@ -2504,7 +2469,7 @@
   - trigger: numeric_state
     entity_id:
     - sensor.sonde_temperature_owon_temperature
-    below: 30
+    below: 40
   conditions: []
   actions:
   - action: input_boolean.turn_on
@@ -3454,6 +3419,7 @@
         target:
           device_id:
           - 95cac785555a1625a4b133475bc2c04b
+      enabled: false
     - if:
       - condition: state
         entity_id: switch.prise_tv_local
@@ -3570,7 +3536,6 @@
     - shellyproem50-08f9e0e69644
     - shellyplus1pm-08b61f6b65e0
     - shellyplus1pm-b0b21c0e9048
-    - shellyblugw-fcb4670003e0
 - id: shellies_discovery_gen2
   alias: Shellies Discovery Gen2
   triggers:
@@ -3663,39 +3628,6 @@
           and (states(''climate.clim_lisa'')==''heat'' or states(''climate.clim_lisa'')==''off'')
           and (states(''climate.clim_parents'')==''heat'' or states(''climate.clim_parents'')==''off'')
           }} '
-  mode: single
-- id: '1734120553669'
-  alias: Reboot SQL Error
-  description: ''
-  triggers:
-  - event_type: system_log_event
-    event_data:
-      logger: homeassistant.components.recorder.core
-    trigger: event
-  conditions:
-  - condition: template
-    value_template: '{{ "SQLAlchemyError error processing task CommitTask()" in trigger.event.data.message[0]
-      }}'
-    enabled: false
-  actions:
-  - action: notify.notify
-    metadata: {}
-    data:
-      message: 'Erreur SQL : reboot dans 1 minute...'
-  - action: notify.persistent_notification
-    metadata: {}
-    data:
-      message: 'Erreur SQL : reboot dans 1 minute...'
-      title: SQLAlchemy
-  - delay:
-      hours: 0
-      minutes: 1
-      seconds: 0
-      milliseconds: 0
-  - action: hassio.host_reboot
-    metadata: {}
-    data: {}
-    enabled: false
   mode: single
 - id: shelly_mqtt_event_stream
   alias: Shelly BLE Event Stream
@@ -3901,4 +3833,63 @@
     device_id: 62be3297a0c0d75c708f1a2e49911819
     entity_id: 84ede9c070c6abc84dbd5367e484c988
     domain: switch
+  mode: single
+- id: '1737406944308'
+  alias: Impression
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.prise_zigbee_2_power
+    above: 10
+  conditions: []
+  actions:
+  - wait_for_trigger:
+    - trigger: numeric_state
+      entity_id:
+      - sensor.prise_zigbee_2_power
+      below: 29.9
+  - action: input_number.set_value
+    metadata: {}
+    data_template:
+      value:
+        '[object Object]':
+    target:
+      entity_id: input_number.bambulab_energie
+  - action: notify.notify
+    metadata: {}
+    data_template:
+      title: 'Impression terminée{% if states(''sensor.a1mini_0309da4b0803686_nom_de_la_tache'')==''unavailable''
+        %} ! {% else %} de {{states(''sensor.a1mini_0309da4b0803686_nom_de_la_tache'')}}
+        !{% endif %}
+
+        '
+      message: '{% set duree=as_timestamp(now())-as_timestamp(state_attr(''automation.impression'',''last_triggered''))%}
+
+        {% set filament=(30)*(duree-600)/3600%}
+
+        Consommation : {{((float(states(''sensor.prise_zigbee_2_energy''),0) - float(states(''input_number.bambulab_energie''),0))
+        * 1000) | round(0)}} Wh.
+
+        Durée : {{(duree//3660%60)| round(0)}}:{{(duree//60%60)| round(0) }}
+
+        Estimation de filament : {{ filament | round(0) }} / {{(float(states(''input_number.filament_restant''),0)-filament)
+        | round(0)}} g.
+
+        '
+  - action: input_number.set_value
+    metadata: {}
+    data_template:
+      value: '{% set duree=as_timestamp(now())-as_timestamp(state_attr(''automation.impression'',''last_triggered''))%}
+
+        {% set filament=(30)*(duree-600)/3600%}
+
+        {% set filament_restant=(float(states(''input_number.filament_restant''),0)-filament)
+        | round(0)%}
+
+        {{filament_restant}}
+
+        '
+    target:
+      entity_id: input_number.filament_restant
   mode: single

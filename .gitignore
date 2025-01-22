@@ -11,6 +11,8 @@ known_devices.yaml
 !*.yaml
 !.gitignore
 !*.md
+!packages
+!packages/**
 !sensors
 !sensors/**
 !python_scripts
