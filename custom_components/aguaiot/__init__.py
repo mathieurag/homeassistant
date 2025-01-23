@@ -80,7 +80,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.error("Connection error to Agua IOT: %s", e)
         return False
     except AguaIOTError as e:
-        _LOGGER.error("Unknown Agua IOT error: %s", e)
+        _LOGGER.warning("Unknown Agua IOT error: %s", e)
         return False
 
     async def async_update_data():

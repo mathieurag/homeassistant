@@ -1,8 +1,8 @@
 multiscrape:
   - name: MacBook Auchan
-    log_response: true
+    log_response: false
     resource: "https://www.auchan.fr/apple-macbook-air-13-6-512go-ssd-16go-ram-puce-m3-starlight/pr-C1792765"
-    scan_interval: 3600
+    scan_interval: 600
     parser: html
     sensor:
       - unique_id: macbook_dispo2

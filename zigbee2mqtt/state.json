@@ -1,7 +1,7 @@
 {
     "0x70b3d52b6005f633": {
         "state": "ON",
-        "power": 1,
+        "power": 0,
         "current": 0.035,
         "voltage": 244,
         "energy": 0.05,
@@ -13,7 +13,7 @@
     "0x3c6a2cfffed4a7de": {
         "voltage": 2600,
         "battery": 38,
-        "temperature": 16.8,
+        "temperature": 26.9,
         "linkquality": 200
     },
     "0xa4c138d9a41bd98f": {
@@ -31,7 +31,7 @@
         "rain": false
     },
     "0xa4c138da3f8fc34f": {
-        "linkquality": 232
+        "linkquality": 220
     },
     "0xa4c138077ed1f7b8": {
         "voltage": 244,

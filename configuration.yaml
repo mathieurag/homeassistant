@@ -56,6 +56,7 @@ logger:
     root: warning
     aioesphomeapi.reconnect_logic: error
     custom_components.tuya_local.climate: error
+    custom_components.aguaiot: error
 
 shell_command:
   batch_py: python3 /config/python_scripts/script.py

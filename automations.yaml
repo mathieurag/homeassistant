@@ -335,15 +335,9 @@
       - sensor.taux_solar_heure
       - sensor.taux_solar_jour
       - sensor.conso_mini
-      - sensor.consommation_non_suivie_kwh
-      - sensor.consommation_non_suivie_2
       - sensor.cumulus_3
       - sensor.salon_jour
-      - switch.router_data_fetching
-      - button.reboot
       - sensor.shelly_em_temperature
-      - sensor.gs108e_192_168_1_44_switch_traffic_sent
-      - sensor.gs108e_192_168_1_44_port_2_traffic_received
     action: recorder.purge_entities
   - data:
       keep_days: 1
@@ -394,6 +388,9 @@
       - sensor.em06*power
       - sensor.disjoncteur*
       - sensor.bidirectional_energy_meter*
+      - sensor.shelly_*_power
+      - sensor.puissance*
+      - sensor.consommation*
     action: recorder.purge_entities
   mode: single
 - id: '1724796582689'
