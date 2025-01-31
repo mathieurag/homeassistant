@@ -59,7 +59,7 @@ web_server:
 sensor:
   - platform: adc
     pin: GPIO32
-    name: "Test Tension ESP32"
+    name: "Test Tension ESP32 32"
     update_interval: 60s
 
   - platform: adc

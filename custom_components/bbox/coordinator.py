@@ -4,14 +4,13 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
-from typing import Any
+from typing import Any, Callable
 
-from bboxpy import AuthorizationError, Bbox
+from bboxpy import AuthorizationError, Bbox, BboxException
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_VERIFY_SSL
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
-from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import CONF_REFRESH_RATE, CONF_USE_TLS, DEFAULT_REFRESH_RATE, DOMAIN
@@ -44,7 +43,6 @@ class BboxDataUpdateCoordinator(DataUpdateCoordinator):
             self.bbox = Bbox(
                 password=self.entry.data[CONF_PASSWORD],
                 hostname=self.entry.data[CONF_HOST],
-                session=async_create_clientsession(self.hass),
                 use_tls=self.entry.data.get(CONF_USE_TLS, False),
                 verify_ssl=self.entry.data.get(CONF_VERIFY_SSL, False),
             )
@@ -66,20 +64,30 @@ class BboxDataUpdateCoordinator(DataUpdateCoordinator):
         """Fetch data."""
         try:
             bbox_info = self.check_list(await self.bbox.device.async_get_bbox_info())
-            devices = await self.bbox.lan.async_get_connected_devices()
-            wan_ip_stats = self.check_list(await self.bbox.wan.async_get_wan_ip_stats())
-            parentalcontrol = self.check_list(
-                await self.bbox.parentalcontrol.async_get_parental_control_service_state()
+            memory = self.check_list(
+                await self._call(self.bbox.device.async_get_bbox_mem)
             )
-            wps = self.check_list(await self.bbox.wifi.async_get_wps())
-            wifi = self.check_list(await self.bbox.wifi.async_get_wireless())
-            wan_ip = self.check_list(await self.bbox.wan.async_get_wan_ip())
-        except Exception as error:
+            led = self.check_list(await self._call(self.bbox.device.async_get_bbox_led))
+            devices = await self._call(self.bbox.lan.async_get_connected_devices)
+            wan_ip_stats = self.check_list(
+                await self._call(self.bbox.wan.async_get_wan_ip_stats)
+            )
+            parentalcontrol = self.check_list(
+                await self._call(
+                    self.bbox.parentalcontrol.async_get_parental_control_service_state
+                )
+            )
+            wps = self.check_list(await self._call(self.bbox.wifi.async_get_wps))
+            wifi = self.check_list(await self._call(self.bbox.wifi.async_get_wireless))
+            wan_ip = self.check_list(await self._call(self.bbox.wan.async_get_wan_ip))
+        except BboxException as error:
             _LOGGER.error(error)
             raise UpdateFailed from error
 
         return {
             "info": bbox_info,
+            "memory": memory,
+            "led": led,
             "devices": self.merge_objects(devices),
             "wan_ip_stats": wan_ip_stats,
             "parentalcontrol": parentalcontrol,
@@ -131,3 +139,11 @@ class BboxDataUpdateCoordinator(DataUpdateCoordinator):
                 f"The call contains more than one element ({len(obj)}): {obj}"
             )
         return obj[0]
+
+    async def _call(self, func: Callable[..., Any], *args: Any) -> dict[str, Any]:
+        """Execute request."""
+        try:
+            return await func(*args)
+        except BboxException as error:
+            _LOGGER.warning("Error while execute: %s (%s)", func.__name__, error)
+        return {}

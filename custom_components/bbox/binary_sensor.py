@@ -33,6 +33,36 @@ BINARIES_SENSORS: tuple[BboxBinarySensorDescription, ...] = (
         device_class=BinarySensorDeviceClass.CONNECTIVITY,
         value_fn=lambda x: x == 1,
     ),
+    BboxBinarySensorDescription(
+        key="led.ethernetPort.0.state",
+        name="Ethernet port 1",
+        value_fn=lambda x: x.lower() == "up",
+        entity_registry_enabled_default=False,
+    ),
+    BboxBinarySensorDescription(
+        key="led.ethernetPort.1.state",
+        name="Ethernet port 2",
+        value_fn=lambda x: x.lower() == "up",
+        entity_registry_enabled_default=False,
+    ),
+    BboxBinarySensorDescription(
+        key="led.ethernetPort.2.state",
+        name="Ethernet port 3",
+        value_fn=lambda x: x.lower() == "up",
+        entity_registry_enabled_default=False,
+    ),
+    BboxBinarySensorDescription(
+        key="led.ethernetPort.3.state",
+        name="Ethernet port 4",
+        value_fn=lambda x: x.lower() == "up",
+        entity_registry_enabled_default=False,
+    ),
+    BboxBinarySensorDescription(
+        key="led.ethernetPort.4.state",
+        name="Ethernet port 5",
+        value_fn=lambda x: x.lower() == "up",
+        entity_registry_enabled_default=False,
+    ),
 )
 
 
