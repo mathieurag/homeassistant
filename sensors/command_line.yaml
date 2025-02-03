@@ -1,0 +1,14 @@
+command_line:
+  #RECUPERATION AUTHCODE BRONPI UNE FOIS PAR JOUR POUR ALIMENTER RESTFUL
+  - sensor:
+      command: >-
+        curl -X POST 
+        --header 'Content-Type: application/json' 
+        --header 'Accept: application/json' 
+        -d '{"customer_code": "164873", "id_brand": 0, "email": "matrag@gmail.com", "password": "Celipomat14%*"}' 
+        'https://bronpi.agua-iot.com/configuration/auth/authcode'
+      value_template: "{{ value_json.authCode }}"
+      name: "Bronpi authCode"
+      unique_id: bronpi_authcode
+      icon: mdi:cookie
+      scan_interval: 80000

@@ -50,6 +50,12 @@ multiscrape:
         select: ".offer-selector__marketplace-label"
         value_template: "{{ value }}"
 rest:
+  ##########################
+  #ESTAR
+  ##########################
+
+  #TOKEN
+
   - authentication: basic
     username: !secret login_estar
     password: !secret password_estar
@@ -68,6 +74,8 @@ rest:
         icon: mdi:cookie
         json_attributes:
           - "token"
+
+  #DATA DCU ET MO
 
   - authentication: basic
     username: !secret login_estar
@@ -179,6 +187,8 @@ rest:
         device_class: connectivity
         value_template: "{{ value_json.data[0].children[3].warn_data.connect}}"
 
+  #URL DONNEES DU JOUR
+
   - authentication: basic
     username: !secret login_estar
     password: !secret password_estar
@@ -202,6 +212,8 @@ rest:
           - "url"
           - "method"
 
+  #DATA DONNEES DU JOUR
+
   - scan_interval: 3600
     method: POST
     payload_template: >
@@ -216,6 +228,8 @@ rest:
         unique_id: "estar_data"
         icon: mdi:file-chart-outline
         value_template: "success"
+
+  #DONNEES CENTRALE
 
   - scan_interval: 60
     method: POST
@@ -268,3 +282,87 @@ rest:
           - "today_eq"
           - "month_eq"
           - "year_eq"
+
+  ##########################
+  #BRONPI
+  ##########################
+
+  #ACCESS TOKEN ==> OK
+
+  - scan_interval: 80000
+    payload_template: >
+      {{ {'grant_type': 'authorization_code', 'code': states('sensor.bronpi_authcode')} | to_json }}
+    method: POST
+    resource: "https://bronpi.agua-iot.com/configuration/auth/token"
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+    sensor:
+      - name: "Bronpi access token"
+        unique_id: "bronpi_access_token"
+        value_template: "{{ value_json.token_type}}"
+        icon: mdi:cookie
+        json_attributes:
+          - "access_token"
+          - "refresh_token"
+          - "expires_in"
+          - "token_type"
+
+  #GETINFO ==> OK
+  - scan_interval: 60
+    payload: !secret poele_payload_getinfo #OK
+    method: POST
+    resource: "https://bronpi.agua-iot.com/deviceRequestReading"
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+      customer_code: !secret poele_customer_code
+      authorization: "{{state_attr('sensor.bronpi_access_token','access_token') }}"
+      local: false
+    sensor:
+      - name: "Bronpi request reading"
+        unique_id: "bronpi_request_reading"
+        value_template: "{{ value_json.Success}}"
+        icon: mdi:database-search-outline
+        json_attributes:
+          - "Text"
+          - "idRequest"
+          - "Success"
+
+  #GETREQUEST ==> OK
+  - scan_interval: 61
+    method: GET
+    resource_template: |-
+      {% set idRequest = states('input_text.bronpi_request') %}
+      https://bronpi.agua-iot.com/deviceJobStatus/{{idRequest}}
+    headers:
+      customer_code: !secret poele_customer_code
+      accept: application/json
+      local: false
+      authorization: "{{state_attr('sensor.bronpi_access_token','access_token') }}"
+      content-type: application/json
+      id_brand: 1
+    sensor:
+      - name: "Bronpi Result"
+        unique_id: "bronpi_result"
+        value_template: "{{value_json.jobRequestStatus}}"
+        icon: mdi:auto-mode
+        json_attributes:
+          - "Success"
+          - "Text"
+          - "jobRequestStatus"
+          - "jobAnswerStatus"
+      - name: "Bronpi Mode"
+        unique_id: "bronpi_mode"
+        value_template: "{%if value_json.jobAnswerData.Values==[0]%}{{'AUTO'}}{% elif value_json.jobAnswerData.Values==[2]%}{{'NUIT'}}{% else %}{{'ERREUR'}}{% endif %}"
+        icon: mdi:auto-mode
+        json_attributes_path: "$.jobAnswerData"
+        json_attributes:
+          - "Values"
+          - "BitData"
+          - "Endianess"
+          - "Freq"
+          - "Items"
+          - "Masks"
+          - "Protocol"
+          - "cmd"

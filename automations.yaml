@@ -3890,3 +3890,239 @@
     target:
       entity_id: input_number.filament_restant
   mode: single
+- id: '1738445050889'
+  alias: Activation Poêle
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - schedule.calendrier_chauffage_poele
+    from: 'off'
+    to: 'on'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.automatisation
+    state: 'on'
+  - condition: state
+    entity_id: input_boolean.mode_chauffage
+    state: 'on'
+  - condition: numeric_state
+    entity_id: sensor.poele_talence_air_temperature
+    below: 16.3
+  - condition: device
+    device_id: 4bead898b9b54fc49d86653276a54edb
+    domain: climate
+    entity_id: 35deb8dae9d42e1a1b7d379c4db33296
+    type: is_hvac_mode
+    hvac_mode: 'off'
+  actions:
+  - action: climate.set_hvac_mode
+    metadata: {}
+    data:
+      hvac_mode: heat
+    target:
+      entity_id: climate.poele_talence
+  - action: climate.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: climate.poele_talence
+    enabled: false
+  - device_id: 4bead898b9b54fc49d86653276a54edb
+    domain: number
+    entity_id: 70d168bdfe6cbd5030911309cb78b3e9
+    type: set_value
+    value: 3
+  - action: climate.set_temperature
+    metadata: {}
+    data:
+      temperature: 18
+    target:
+      entity_id: climate.poele_talence
+  - action: climate.set_fan_mode
+    metadata: {}
+    data:
+      fan_mode: '2'
+    target:
+      entity_id: climate.poele_talence_canalization_1
+  mode: single
+- id: '1738445840591'
+  alias: Désactivation poêle
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - schedule.calendrier_chauffage_poele
+    from: 'on'
+    to: 'off'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.automatisation
+    state: 'on'
+  actions:
+  - device_id: 4bead898b9b54fc49d86653276a54edb
+    domain: climate
+    entity_id: 35deb8dae9d42e1a1b7d379c4db33296
+    type: set_hvac_mode
+    hvac_mode: 'off'
+  mode: single
+- id: '1738445941571'
+  alias: Régulation poêle
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.meter_plus_e778
+    above: 18.5
+  conditions:
+  - condition: device
+    device_id: 4bead898b9b54fc49d86653276a54edb
+    domain: climate
+    entity_id: 35deb8dae9d42e1a1b7d379c4db33296
+    type: is_hvac_mode
+    hvac_mode: heat
+  - condition: state
+    entity_id: input_boolean.automatisation
+    state: 'on'
+  actions:
+  - device_id: 4bead898b9b54fc49d86653276a54edb
+    domain: number
+    entity_id: 70d168bdfe6cbd5030911309cb78b3e9
+    type: set_value
+    value: 1
+  - action: climate.set_fan_mode
+    metadata: {}
+    data:
+      fan_mode: '1'
+    target:
+      entity_id: climate.poele_talence
+  - action: climate.set_fan_mode
+    metadata: {}
+    data:
+      fan_mode: '1'
+    target:
+      entity_id: climate.poele_talence_canalization_1
+  mode: single
+- id: '1738527061193'
+  alias: Mise à jour de BRONPI REQUEST
+  triggers:
+  - event_type: state_changed
+    event_data:
+      entity_id: sensor.bronpi_request_reading
+    trigger: event
+  actions:
+  - data:
+      message: 'Ancien idRequest: {{ trigger.event.data.old_state.attributes.idRequest
+        if trigger.event.data.old_state else ''None'' }}, Nouveau idRequest: {{ trigger.event.data.new_state.attributes.idRequest
+        if trigger.event.data.new_state else ''None'' }}'
+      level: info
+    action: system_log.write
+  - condition: template
+    value_template: "{{ trigger.event.data.old_state and trigger.event.data.new_state
+      and\n   trigger.event.data.new_state.attributes.idRequest not in [none, 'unavailable',
+      'unknown'] and\n   trigger.event.data.new_state.attributes.idRequest != trigger.event.data.old_state.attributes.idRequest
+      }}\n"
+  - data:
+      entity_id: input_text.bronpi_request
+      value: '{{ trigger.event.data.new_state.attributes.idRequest | default('''',
+        true) }}'
+    action: input_text.set_value
+  mode: single
+- id: '1738531180463'
+  alias: Mise à jour de BRONPI authorization_code
+  description: ''
+  triggers:
+  - entity_id: sensor.bronpi_authcode
+    trigger: state
+  conditions:
+  - condition: template
+    value_template: '{{ states(''sensor.bronpi_authcode'') not in [''none'', ''unavailable'',
+      ''unknown''] }}
+
+      '
+  actions:
+  - data:
+      entity_id: input_text.bronpi_authorization_code
+      value: '{{ states(''sensor.bronpi_authcode'') }}'
+    action: input_text.set_value
+  mode: single
+- id: '1738535515762'
+  alias: Alarme Poêle
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.poele_talence_status
+    to: ALARM MEM.
+  conditions: []
+  actions:
+  - action: notify.notify
+    metadata: {}
+    data:
+      message: Plus de pellets dans le poêle !
+      title: Poêle
+  mode: single
+- id: '1738573964721'
+  alias: Alerte Monoxyde
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.detecteur_co_fumee_monoxyde_de_carbone
+    above: 0
+  - trigger: state
+    entity_id:
+    - binary_sensor.detecteur_co_fumee_alarm_status
+    to: 'on'
+  conditions: []
+  actions:
+  - action: notify.mobile_app_iphone_de_mat_13
+    metadata: {}
+    data:
+      message: Alerte présence de Monoxyde de carbone !!
+      title: Alerte
+      data:
+        push:
+          interruption-level: critical
+  mode: single
+- id: '1738586395567'
+  alias: Bronpi mode
+  description: ''
+  triggers: []
+  conditions: []
+  actions:
+  - if:
+    - condition: template
+      value_template: '{{state_attr(''sensor.bronpi_mode'',''Values'')==[0]}}'
+    then:
+    - action: shell_command.bronpi_nuit
+      data:
+        customer_code: 164873
+        authorization: '{{state_attr(''sensor.bronpi_access_token'',''access_token'')}}'
+        values: 2
+    else:
+    - action: shell_command.bronpi_auto
+      data:
+        customer_code: 164873
+        authorization: '{{state_attr(''sensor.bronpi_access_token'',''access_token'')}}'
+        values: 0
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 2
+  - action: homeassistant.update_entity
+    metadata: {}
+    data:
+      entity_id:
+      - sensor.bronpi_request_reading
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 2
+  - action: homeassistant.update_entity
+    metadata: {}
+    data:
+      entity_id:
+      - sensor.bronpi_result
+      - sensor.bronpi_mode
+  mode: single

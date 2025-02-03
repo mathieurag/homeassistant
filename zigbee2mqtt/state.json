@@ -1,10 +1,10 @@
 {
     "0x70b3d52b6005f633": {
-        "state": "ON",
-        "power": 1,
-        "current": 0.035,
-        "voltage": 242,
-        "energy": 0,
+        "state": "OFF",
+        "power": 0,
+        "current": 0,
+        "voltage": 244,
+        "energy": 0.01,
         "power_outage_memory": "restore",
         "child_lock": "UNLOCK",
         "linkquality": 144,
@@ -13,7 +13,7 @@
     "0x3c6a2cfffed4a7de": {
         "voltage": 2600,
         "battery": 37,
-        "temperature": 27.9,
+        "temperature": 60.5,
         "linkquality": 164
     },
     "0xa4c138d9a41bd98f": {
@@ -34,7 +34,7 @@
         "linkquality": 220
     },
     "0xa4c138077ed1f7b8": {
-        "voltage": 247,
+        "voltage": 244,
         "linkquality": 176,
         "power_outage_memory": "restore",
         "state": "OFF",
