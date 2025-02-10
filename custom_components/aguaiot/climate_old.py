@@ -169,16 +169,6 @@ class AguaIOTAirDevice(AguaIOTClimateDevice):
 
     @property
     def supported_features(self):
-        features = (
-            ClimateEntityFeature.TURN_ON
-            | ClimateEntityFeature.TURN_OFF
-            | ClimateEntityFeature.TARGET_TEMPERATURE
-            | ClimateEntityFeature.FAN_MODE
-        )
-        # Ne pas inclure PRESET_MODE si l'entité est une canalisation
-        if "canalization" not in self._device.id_device.lower():
-            features |= ClimateEntityFeature.PRESET_MODE
-        return features
         """Return the list of supported features."""
         features = (
             ClimateEntityFeature.TURN_ON
@@ -263,25 +253,13 @@ class AguaIOTAirDevice(AguaIOTClimateDevice):
 
     @property
     def preset_modes(self):
-        return ["AUTO", "NIGHT"]
         return [self.hybrid_mode]
 
     @property
     def preset_mode(self):
-        mode_mapping = {0: "AUTO", 2: "NIGHT"}
-        if "fan_mode_set" in self._device.registers:
-            mode_value = self._device.get_register_value("fan_mode_set")
-            return mode_mapping.get(mode_value, "AUTO")  # Toujours renvoyer AUTO ou NIGHT
-        return "AUTO"
         return self.hybrid_mode
 
     async def async_set_preset_mode(self, preset_mode):
-        mode_mapping = {"AUTO": 0, "NIGHT": 2}
-        if "fan_mode_set" in self._device.registers and preset_mode in mode_mapping:
-            await self._device.set_register_value("fan_mode_set", mode_mapping[preset_mode])
-            await self.coordinator.async_request_refresh()  # Force la mise à jour après modification
-        else:
-            _LOGGER.warning("Invalid preset mode selected: %s", preset_mode)
         # The stove will pick the correct mode.
         pass
 
@@ -419,16 +397,6 @@ class AguaIOTWaterDevice(AguaIOTClimateDevice):
 
     @property
     def supported_features(self):
-        features = (
-            ClimateEntityFeature.TURN_ON
-            | ClimateEntityFeature.TURN_OFF
-            | ClimateEntityFeature.TARGET_TEMPERATURE
-            | ClimateEntityFeature.FAN_MODE
-        )
-        # Ne pas inclure PRESET_MODE si l'entité est une canalisation
-        if "canalization" not in self._device.id_device.lower():
-            features |= ClimateEntityFeature.PRESET_MODE
-        return features
         """Return the list of supported features."""
         features = (
             ClimateEntityFeature.TURN_ON
@@ -544,13 +512,19 @@ class AguaIOTCanalizationDevice(AguaIOTClimateDevice):
 
     @property
     def supported_features(self):
-        features = (
-            ClimateEntityFeature.TURN_ON
-            | ClimateEntityFeature.TURN_OFF
-            | ClimateEntityFeature.TARGET_TEMPERATURE
-            | ClimateEntityFeature.FAN_MODE
-        )
         features = ClimateEntityFeature.FAN_MODE
+        if (
+            self.entity_description.key_temp_set
+            and self.entity_description.key_temp_set in self._device.registers
+            and self._device.get_register_enabled(self.entity_description.key_temp_set)
+        ):
+            features |= ClimateEntityFeature.TARGET_TEMPERATURE
+        if (
+            self.entity_description.key_vent_set
+            and self.entity_description.key_vent_set in self._device.registers
+        ):
+            features |= ClimateEntityFeature.PRESET_MODE
+
         return features
 
     @property
@@ -587,7 +561,6 @@ class AguaIOTCanalizationDevice(AguaIOTClimateDevice):
 
     @property
     def preset_modes(self):
-        return ["AUTO", "NIGHT"]
         return list(
             self._device.get_register_value_options(
                 self.entity_description.key
@@ -596,20 +569,9 @@ class AguaIOTCanalizationDevice(AguaIOTClimateDevice):
 
     @property
     def preset_mode(self):
-        mode_mapping = {0: "AUTO", 2: "NIGHT"}
-        if "fan_mode_set" in self._device.registers:
-            mode_value = self._device.get_register_value("fan_mode_set")
-            return mode_mapping.get(mode_value, "AUTO")  # Toujours renvoyer AUTO ou NIGHT
-        return "AUTO"
         return self._device.get_register_value_description(self.entity_description.key)
 
     async def async_set_preset_mode(self, preset_mode):
-        mode_mapping = {"AUTO": 0, "NIGHT": 2}
-        if "fan_mode_set" in self._device.registers and preset_mode in mode_mapping:
-            await self._device.set_register_value("fan_mode_set", mode_mapping[preset_mode])
-            await self.coordinator.async_request_refresh()  # Force la mise à jour après modification
-        else:
-            _LOGGER.warning("Invalid preset mode selected: %s", preset_mode)
         """Set new target preset mode."""
         try:
             await self._device.set_register_value_description(

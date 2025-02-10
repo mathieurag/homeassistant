@@ -3,9 +3,9 @@ from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
 )
-from homeassistant.components.number import NumberEntity
+from homeassistant.components.select import SelectEntity
 from homeassistant.helpers.entity import DeviceInfo
-from .const import NUMBERS, DOMAIN
+from .const import SELECTS, DOMAIN
 from .aguaiot import AguaIOTError
 
 _LOGGER = logging.getLogger(__name__)
@@ -17,26 +17,18 @@ async def async_setup_entry(hass, entry, async_add_entities):
     ]
     agua = hass.data[DOMAIN][entry.entry_id]["agua"]
 
-    numbers = []
+    selects = []
     for device in agua.devices:
-        hybrid = "power_wood_set" in device.registers
-
-        for number in NUMBERS:
-            if (
-                number.key in device.registers
-                and (number.force_enabled or device.get_register_enabled(number.key))
-                and (
-                    (number.hybrid_only and hybrid)
-                    or (number.hybrid_exclude and not hybrid)
-                    or (not number.hybrid_only and not number.hybrid_exclude)
-                )
+        for select in SELECTS:
+            if select.key in device.registers and device.get_register_enabled(
+                select.key
             ):
-                numbers.append(AguaIOTHeatingNumber(coordinator, device, number))
+                selects.append(AguaIOTHeatingSelect(coordinator, device, select))
 
-    async_add_entities(numbers, True)
+    async_add_entities(selects, True)
 
 
-class AguaIOTHeatingNumber(CoordinatorEntity, NumberEntity):
+class AguaIOTHeatingSelect(CoordinatorEntity, SelectEntity):
     def __init__(self, coordinator, device, description):
         """Initialize the thermostat."""
         CoordinatorEntity.__init__(self, coordinator)
@@ -64,22 +56,22 @@ class AguaIOTHeatingNumber(CoordinatorEntity, NumberEntity):
         )
 
     @property
-    def native_value(self):
-        """Return the state of the sensor, filtering out invalid values."""
-        value = self._device.get_register_value(self.entity_description.key)
-        return None if value == 32768 else value
+    def current_option(self):
+        return self._device.get_register_value_description(self.entity_description.key)
 
     @property
-    def native_min_value(self):
-        return self._device.get_register_value_min(self.entity_description.key)
+    def options(self):
+        return list(
+            self._device.get_register_value_options(
+                self.entity_description.key
+            ).values()
+        )
 
-    @property
-    def native_max_value(self):
-        return self._device.get_register_value_max(self.entity_description.key)
-
-    async def async_set_native_value(self, value):
+    async def async_select_option(self, option):
         try:
-            await self._device.set_register_value(self.entity_description.key, value)
+            await self._device.set_register_value_description(
+                self.entity_description.key, option
+            )
             await self.coordinator.async_request_refresh()
         except (ValueError, AguaIOTError) as err:
             _LOGGER.error("Failed to set value, error: %s", err)

@@ -47,7 +47,7 @@ devices:
     icon: device_icons/221b4637010e8943e2d5dd911079b5d8.png
   '0x70b3d52b6005f633':
     friendly_name: Prise Zigbee 1
-    measurement_poll_interval: 30
+    measurement_poll_interval: 10
     power_precision: 1
     current_precision: 3
     voltage_precision: 1
@@ -66,6 +66,12 @@ devices:
     friendly_name: Répéteur Zigbee 1
   '0xa4c138077ed1f7b8':
     friendly_name: Prise Zigbee 2
+  '0x70b3d52b60103b94':
+    friendly_name: Prise Zigbee 3
+    measurement_poll_interval: 10
+    state_action: true
+    power_precision: 3
+    energy_precision: 3
 availability:
   enabled: true
   active:

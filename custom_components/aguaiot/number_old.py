@@ -65,9 +65,8 @@ class AguaIOTHeatingNumber(CoordinatorEntity, NumberEntity):
 
     @property
     def native_value(self):
-        """Return the state of the sensor, filtering out invalid values."""
-        value = self._device.get_register_value(self.entity_description.key)
-        return None if value == 32768 else value
+        """Return the state of the sensor."""
+        return self._device.get_register_value(self.entity_description.key)
 
     @property
     def native_min_value(self):

@@ -28,6 +28,11 @@ logbook:
       - sensor.*last_restart
       - binary_sensor.*motion_sensor
       - binary_sensor.estar*
+      - binary_sensor.detection*
+      - input_text.bronpi*
+      - sensor.bronpi*
+      - automation.*bronpi*
+      - sensor.*vu_pour_la_derniere_fois
 # Purge de la base
 recorder:
   purge_keep_days: 10

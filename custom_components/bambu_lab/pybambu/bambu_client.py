@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import ftplib
+import functools
 import json
 import math
 import os
@@ -43,7 +44,6 @@ class WatchdogThread(threading.Thread):
         self._last_received_data = time.time()
         super().__init__()
         self.daemon = True
-        self.setName(f"{self._client._device.info.device_type}-Watchdog-{threading.get_native_id()}")
 
     def stop(self):
         self._stop_event.set()
@@ -52,7 +52,9 @@ class WatchdogThread(threading.Thread):
         self._last_received_data = time.time()
 
     def run(self):
-        LOGGER.info("Watchdog thread started.")
+        self.setName(f"{self._client._device.info.device_type}-Watchdog-{threading.get_native_id()}")
+        LOGGER.debug("Watchdog thread started.")
+
         WATCHDOG_TIMER = 30
         while True:
             # Wait out the remainder of the watchdog delay or 1s, whichever is higher.
@@ -78,12 +80,12 @@ class ChamberImageThread(threading.Thread):
         self._stop_event = threading.Event()
         super().__init__()
         self.daemon = True
-        self.setName(f"{self._client._device.info.device_type}-Chamber-{threading.get_native_id()}")
 
     def stop(self):
         self._stop_event.set()
 
     def run(self):
+        self.setName(f"{self._client._device.info.device_type}-Chamber-{threading.get_native_id()}")
         LOGGER.debug("Chamber image thread started.")
 
         auth_data = bytearray()
@@ -108,9 +110,7 @@ class ChamberImageThread(threading.Thread):
         for i in range(0, 32 - len(access_code)):
             auth_data += struct.pack("<x")
 
-        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
+        ctx = create_local_ssl_context()
 
         jpeg_start = bytearray([0xff, 0xd8, 0xff, 0xe0])
         jpeg_end = bytearray([0xff, 0xd9])
@@ -232,13 +232,14 @@ class MqttThread(threading.Thread):
         self._stop_event = threading.Event()
         super().__init__()
         self.daemon = True
-        self.setName(f"{self._client._device.info.device_type}-Mqtt-{threading.get_native_id()}")
 
     def stop(self):
         self._stop_event.set()
 
     def run(self):
-        LOGGER.info("MQTT listener thread started.")
+        self.setName(f"{self._client._device.info.device_type}-Mqtt-{threading.get_native_id()}")
+        LOGGER.debug("MQTT listener thread started.")
+
         exceptionSeen = ""
         while True:
             try:
@@ -324,21 +325,24 @@ class BambuClient:
     _watchdog = None
     _camera = None
     _usage_hours: float
+    _test_mode = bool
 
     def __init__(self, config):
         self.host = config['host']
         self._callback = None
+        self._test_mode = False
 
         self._access_code = config.get('access_code', '')
         self._auth_token = config.get('auth_token', '')
         self._device_type = config.get('device_type', 'unknown').upper()
         self._local_mqtt = config.get('local_mqtt', False)
-        self._manual_refresh_mode = config.get('manual_refresh_mode', False)
+        self._manual_refresh_mode = False #config.get('manual_refresh_mode', False)
         self._serial = config.get('serial', '')
         self._usage_hours = config.get('usage_hours', 0)
         self._username = config.get('username', '')
         self._enable_camera = config.get('enable_camera', True)
         self._enable_ftp = config.get('enable_ftp', self._local_mqtt)
+        self._enable_timelapse = config.get('enable_timelapse', False)
 
         self._connected = False
         self._port = 1883
@@ -381,7 +385,7 @@ class BambuClient:
             self.disconnect()
         else:
             # Reconnect normally
-            self.connect(self._callback)
+            await self.connect(self._callback)
 
     @property
     def camera_enabled(self):
@@ -400,25 +404,23 @@ class BambuClient:
 
     @property
     def ftp_enabled(self):
-        return self._enable_ftp
+        return self._device.supports_feature(Features.FTP) and self._enable_ftp
 
     def set_ftp_enabled(self, enable):
         self._enable_ftp = enable
 
+    @property
+    def timelapse_enabled(self):
+        return self._device.supports_feature(Features.TIMELAPSE) and self._enable_timelapse
+
+    def set_timelapse_enabled(self, enable):
+        self._enable_timelapse = enable
+
     def setup_tls(self):
-        # Some people got this error with this change so disabled for now:
-        # Exception. Type: <class 'ssl.SSLCertVerificationError'> Args: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: CA cert does not include key usage extension (_ssl.c:1020)
-        #
-        # script_path = os.path.abspath(__file__)
-        # directory_path = os.path.dirname(script_path)
-        # certfile = directory_path + "/bambu.cert"
-        # context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
-        # context.verify_mode = ssl.CERT_REQUIRED
-        # context.load_verify_locations(cafile=certfile)
-        # context.check_hostname = not self._local_mqtt
-        # self.client.tls_set_context(context)
-        self.client.tls_set(tls_version=ssl.PROTOCOL_TLS, cert_reqs=ssl.CERT_NONE)
-        self.client.tls_insecure_set(True)
+        if self._local_mqtt:
+            self.client.tls_set_context(create_local_ssl_context())
+        else:
+            self.client.tls_set()
 
     async def connect(self, callback):
         """Connect to the MQTT Broker"""
@@ -444,9 +446,6 @@ class BambuClient:
         self._mqtt = MqttThread(self)
         self._mqtt.start()
 
-        # Start camera if enabled
-        self.start_camera()
-
     def subscribe_and_request_info(self):
         LOGGER.debug("Now subscribing...")
         self.subscribe()
@@ -462,14 +461,14 @@ class BambuClient:
                    result_code: int,
                    properties: mqtt.Properties | None = None, ):
         """Handle connection"""
-        LOGGER.info("On Connect: Connected to printer")
+        LOGGER.debug("On Connect: Connected to printer")
         self._on_connect()
 
     def start_camera(self):
         if not self._device.supports_feature(Features.CAMERA_RTSP):
             if self._device.supports_feature(Features.CAMERA_IMAGE):
-                if self._enable_camera:
-                    if self._access_code != "":
+                if self._enable_camera and not self._test_mode:
+                    if self._device.info.ip_address != "" and self._access_code != "":
                         LOGGER.debug("Starting Chamber Image thread")
                         self._camera = ChamberImageThread(self)
                         self._camera.start()
@@ -490,6 +489,9 @@ class BambuClient:
         LOGGER.debug("Starting watchdog thread")
         self._watchdog = WatchdogThread(self)
         self._watchdog.start()
+
+        # Start camera if enabled
+        self.start_camera()
 
     def try_on_connect(self,
                        client_: mqtt.Client,
@@ -513,7 +515,10 @@ class BambuClient:
                       userdata: None,
                       result_code: int):
         """Called when MQTT Disconnects"""
-        LOGGER.warn(f"On Disconnect: Printer disconnected with error code: {result_code}")
+        if (result_code == 0):
+            LOGGER.debug(f"On Disconnect: Printer disconnected with error code: {result_code}")
+        else:
+            LOGGER.warning(f"On Disconnect: Printer disconnected with error code: {result_code}")
         self._on_disconnect()
     
     def _on_disconnect(self):
@@ -543,9 +548,13 @@ class BambuClient:
                 self._loaded_slicer_settings = True
                 self.slicer_settings.update()
 
-            # X1 mqtt payload is inconsistent. Adjust it for consistent logging.
-            clean_msg = re.sub(r"\\n *", "", str(message.payload))
             if self._refreshed:
+                # X1 mqtt payload is inconsistent. Adjust it for consistent logging.
+                clean_msg = re.sub(r"\\n *", "", str(message.payload))
+                # And adjust all payload to be meet proper json syntax instead of being pythonized so I can feed it directly into an online json prettifier
+                clean_msg = re.sub(r"\'", "\"", str(clean_msg))
+                clean_msg = re.sub(r"True", "true", str(clean_msg))
+                clean_msg = re.sub(r"False", "false", str(clean_msg))
                 LOGGER.debug(f"Received data: {clean_msg}")
 
             json_data = json.loads(message.payload)
@@ -597,7 +606,7 @@ class BambuClient:
         """Force refresh data"""
 
         if self._manual_refresh_mode:
-            self.connect(self._callback)
+            await self.connect(self._callback)
         else:
             LOGGER.debug("Force Refresh: Getting Version Info")
             self._refreshed = True
@@ -612,19 +621,18 @@ class BambuClient:
 
     def disconnect(self):
         """Disconnect the Bambu Client from server"""
-        LOGGER.debug(" Disconnect: Client Disconnecting")
+        LOGGER.debug("Disconnect: Client Disconnecting")
         if self.client is not None:
             self.client.disconnect()
             self.client = None
 
 
-    def ftp_connection(self) -> ImplicitFTP_TLS | None:
-        if self.ftp_enabled:
-            ftp = ImplicitFTP_TLS()
-            ftp.connect(host=self._device.info.ip_address, port=990, timeout=5)
-            ftp.login(user='bblp', passwd=self._access_code)
-            ftp.prot_p()
-            return ftp
+    def ftp_connection(self) -> ImplicitFTP_TLS:
+        ftp = ImplicitFTP_TLS(context=create_local_ssl_context())
+        ftp.connect(host=self._device.info.ip_address, port=990, timeout=5)
+        ftp.login(user='bblp', passwd=self._access_code)
+        ftp.prot_p()
+        return ftp
 
     async def try_connection(self):
         """Test if we can connect to an MQTT broker."""
@@ -634,14 +642,22 @@ class BambuClient:
 
         def on_message(client, userdata, message):
             json_data = json.loads(message.payload)
-            LOGGER.debug(f"Try Connection: Got '{json_data}'")
+            # X1 mqtt payload is inconsistent. Adjust it for consistent logging.
+            clean_msg = re.sub(r"\\n *", "", str(message.payload))
+            # And adjust all payload to be meet proper json syntax instead of being pythonized so I can feed it directly into an online json prettifier
+            clean_msg = re.sub(r"\'", "\"", str(clean_msg))
+            clean_msg = re.sub(r"True", "true", str(clean_msg))
+            clean_msg = re.sub(r"False", "false", str(clean_msg))
+
+            LOGGER.debug(f"Try Connection: Got '{clean_msg}'")
             if json_data.get("info") and json_data.get("info").get("command") == "get_version":
                 LOGGER.debug("Got Version Command Data")
                 self._device.info_update(data=json_data.get("info"))
-            if json_data.get("print") and json_data.get("print").get("net"):
+            if (json_data.get('print', {}).get('command', '') == 'push_status') and (json_data.get('print', {}).get('msg', 0) == 0):
                 self._device.print_update(data=json_data.get("print"))
                 result.put(True)
 
+        self._test_mode = True
         self.client = mqtt.Client()
         self.client.on_connect = self.try_on_connect
         self.client.on_disconnect = self.on_disconnect
@@ -663,10 +679,13 @@ class BambuClient:
             self.client.connect(host, self._port)
             self.client.loop_start()
             if result.get(timeout=10):
+                LOGGER.debug("Connection test was successful")
                 return True
         except OSError as e:
+            LOGGER.error(f"Connection test failed with exception {type(e)} Args: {e}")
             return False
         except queue.Empty:
+            LOGGER.error(f"Connection test failed with timeout")
             return False
         finally:
             self.disconnect()
@@ -684,3 +703,19 @@ class BambuClient:
             _exc_info: Exec type.
         """
         self.disconnect()
+
+@functools.lru_cache(maxsize=1)
+def create_local_ssl_context():
+    """
+    This context validates the certificate for TLS connections to local printers.
+    """
+    script_path = os.path.abspath(__file__)
+    directory_path = os.path.dirname(script_path)
+    certfile = directory_path + "/bambu.cert"
+    context = ssl.create_default_context(cafile=certfile)
+    # Ignore "CA cert does not include key usage extension" error since python 3.13
+    # See note in https://docs.python.org/3/library/ssl.html#ssl.create_default_context
+    context.verify_flags &= ~ssl.VERIFY_X509_STRICT
+    # Workaround because some users get this error despite SNI: "certificate verify failed: IP address mismatch"
+    context.check_hostname = False
+    return context

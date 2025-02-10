@@ -59,7 +59,7 @@ sensor:
 #DS18B20
   - platform: dallas_temp
     name: "Testtemp"
-    update_interval: 60s # 60s ist default
+    update_interval: 30s # 60s ist default
     accuracy_decimals: 1
     filters:
       - round: 1 # will round to 2 decimal place
@@ -69,7 +69,9 @@ sensor:
     trigger_pin: 2
     echo_pin: 15
     name: "Ultrasonic Sensor"
-    update_interval: 60s # 60s ist default
-    accuracy_decimals: 2
+    update_interval: 30s # 60s ist default
+    accuracy_decimals: 1
+    unit_of_measurement: cm
     filters:
-      - round: 2 # will round to 2 decimal place
+      - multiply : 100
+      - round: 1 # will round to 2 decimal place

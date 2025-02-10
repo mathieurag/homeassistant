@@ -12,7 +12,7 @@ template:
         device_class: power
         state_class: measurement
         unit_of_measurement: "W"
-        state: "{{ (float(states('sensor.em06_c1_power'),0) - float(states('sensor.lampe_salon'),0) - float(states('sensor.prise_tv_puissance'),0) - float(states('sensor.prise_lave_vaiselle_local_puissance'),0) - float(states('sensor.prise_5_local_puissance'),0)) | round(1) }}"
+        state: "{{ (float(states('sensor.em06_c1_power'),0) - float(states('sensor.lampe_salon'),0) - float(states('sensor.prise_tv_puissance'),0) - float(states('sensor.prise_lave_vaiselle_local_puissance'),0) - float(states('sensor.prise_5_local_puissance'),0)- float(states('sensor.prise_zigbee_3_power'),0)) | round(1) }}"
 
       - name: "mesureur_n1_puissance_b" #Entité gardée pour historique
         unique_id: "mesureur_n1_puissance_b"

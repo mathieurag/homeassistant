@@ -337,7 +337,8 @@
       - sensor.conso_mini
       - sensor.cumulus_3
       - sensor.salon_jour
-      - sensor.shelly_em_temperature
+      - sensor.energie_reseau_absolue
+      - sensor.em06_02_b1
     action: recorder.purge_entities
   - data:
       keep_days: 1
@@ -361,7 +362,7 @@
       - sensor.m5*
       - sensor.*power_factor*
       - sensor.em06*_this_month_energy
-      - sensor.*_temps_daller_retour_m*
+      - sensor.*_temps_daller_retour_*
       - sensor.energie_solar*
       - sensor.conso_mini*
       - sensor.*linkquality
@@ -377,9 +378,10 @@
       - sensor.gs108e*
       - sensor.qemu*
       - sensor.*host_001*
-      - sensor.shelly_pro_em_power_*
+      - sensor.shelly*temperature
       - sensor.bbox*
       - sensor.*vu_pour_la_derniere_fois
+      - binary_sensor.*_motion_sensor
     action: recorder.purge_entities
   - data:
       keep_days: 3
@@ -2416,10 +2418,15 @@
     data: {}
     target:
       device_id: a7f1d9334e2a44ce460f2a4965813ab7
-  - type: turn_off
-    device_id: 62be3297a0c0d75c708f1a2e49911819
-    entity_id: 84ede9c070c6abc84dbd5367e484c988
-    domain: switch
+  - if:
+    - condition: state
+      entity_id: switch.shelly_plus_1pm_01_relay_0
+      state: 'off'
+    then:
+    - type: turn_off
+      device_id: 62be3297a0c0d75c708f1a2e49911819
+      entity_id: 84ede9c070c6abc84dbd5367e484c988
+      domain: switch
   mode: single
 - id: '1731688869372'
   alias: Fin chauffage ECS
@@ -2442,10 +2449,19 @@
       seconds: 0
     below: 5
   conditions:
-  - condition: numeric_state
-    entity_id: sensor.sonde_temperature_owon_temperature
-    above: input_number.tmax_ecs
+  - condition: template
+    value_template: '{{float(states(''sensor.sonde_temperature_owon_temperature''),0)>float(states(''input_number.tmax_ecs''),0)-1
+      }}'
   actions:
+  - if:
+    - condition: state
+      entity_id: switch.shelly_plus_1pm_01_switch_0
+      state: 'on'
+    then:
+    - type: turn_off
+      device_id: 8e3d37afc5f245b797dfafd4bb1f45f7
+      entity_id: da17360430fe8b896d3d4b9979d02b99
+      domain: switch
   - action: input_boolean.turn_off
     metadata: {}
     data: {}
@@ -3922,12 +3938,6 @@
       hvac_mode: heat
     target:
       entity_id: climate.poele_talence
-  - action: climate.turn_on
-    metadata: {}
-    data: {}
-    target:
-      entity_id: climate.poele_talence
-    enabled: false
   - device_id: 4bead898b9b54fc49d86653276a54edb
     domain: number
     entity_id: 70d168bdfe6cbd5030911309cb78b3e9
@@ -3944,7 +3954,13 @@
     data:
       fan_mode: '2'
     target:
-      entity_id: climate.poele_talence_canalization_1
+      entity_id: climate.poele_talence_canalisation_1
+  - action: select.select_option
+    metadata: {}
+    data:
+      option: AUTO
+    target:
+      entity_id: select.poele_talence_fan_mode
   mode: single
 - id: '1738445840591'
   alias: Désactivation poêle
@@ -3985,66 +4001,16 @@
     entity_id: input_boolean.automatisation
     state: 'on'
   actions:
-  - device_id: 4bead898b9b54fc49d86653276a54edb
-    domain: number
-    entity_id: 70d168bdfe6cbd5030911309cb78b3e9
-    type: set_value
-    value: 1
-  - action: climate.set_fan_mode
+  - action: select.select_option
     metadata: {}
     data:
-      fan_mode: '1'
+      option: NIGHT
     target:
-      entity_id: climate.poele_talence
-  - action: climate.set_fan_mode
+      entity_id: select.poele_talence_fan_mode
+  - action: notify.notify
     metadata: {}
     data:
-      fan_mode: '1'
-    target:
-      entity_id: climate.poele_talence_canalization_1
-  mode: single
-- id: '1738527061193'
-  alias: Mise à jour de BRONPI REQUEST
-  triggers:
-  - event_type: state_changed
-    event_data:
-      entity_id: sensor.bronpi_request_reading
-    trigger: event
-  actions:
-  - data:
-      message: 'Ancien idRequest: {{ trigger.event.data.old_state.attributes.idRequest
-        if trigger.event.data.old_state else ''None'' }}, Nouveau idRequest: {{ trigger.event.data.new_state.attributes.idRequest
-        if trigger.event.data.new_state else ''None'' }}'
-      level: info
-    action: system_log.write
-  - condition: template
-    value_template: "{{ trigger.event.data.old_state and trigger.event.data.new_state
-      and\n   trigger.event.data.new_state.attributes.idRequest not in [none, 'unavailable',
-      'unknown'] and\n   trigger.event.data.new_state.attributes.idRequest != trigger.event.data.old_state.attributes.idRequest
-      }}\n"
-  - data:
-      entity_id: input_text.bronpi_request
-      value: '{{ trigger.event.data.new_state.attributes.idRequest | default('''',
-        true) }}'
-    action: input_text.set_value
-  mode: single
-- id: '1738531180463'
-  alias: Mise à jour de BRONPI authorization_code
-  description: ''
-  triggers:
-  - entity_id: sensor.bronpi_authcode
-    trigger: state
-  conditions:
-  - condition: template
-    value_template: '{{ states(''sensor.bronpi_authcode'') not in [''none'', ''unavailable'',
-      ''unknown''] }}
-
-      '
-  actions:
-  - data:
-      entity_id: input_text.bronpi_authorization_code
-      value: '{{ states(''sensor.bronpi_authcode'') }}'
-    action: input_text.set_value
+      message: 'Régulation du poêle : passage en mode nuit'
   mode: single
 - id: '1738535515762'
   alias: Alarme Poêle
@@ -4085,44 +4051,144 @@
         push:
           interruption-level: critical
   mode: single
-- id: '1738586395567'
-  alias: Bronpi mode
+- id: '1739054724188'
+  alias: Sac pellets
   description: ''
-  triggers: []
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.hauteur_pellets
+    for:
+      hours: 0
+      minutes: 15
+      seconds: 0
+    below: 10
+  conditions:
+  - condition: template
+    value_template: '{{ (now() - state_attr(''automation.sac_pellets'', ''last_triggered'')).total_seconds()
+      > 14400 }}'
+  actions:
+  - action: counter.increment
+    metadata: {}
+    data: {}
+    target:
+      entity_id: counter.sac_pellets
+  mode: single
+- id: '1739055175332'
+  alias: Allumages poêle
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.prise_zigbee_3_power
+    above: 450
   conditions: []
   actions:
-  - if:
-    - condition: template
-      value_template: '{{state_attr(''sensor.bronpi_mode'',''Values'')==[0]}}'
-    then:
-    - action: shell_command.bronpi_nuit
-      data:
-        customer_code: 164873
-        authorization: '{{state_attr(''sensor.bronpi_access_token'',''access_token'')}}'
-        values: 2
-    else:
-    - action: shell_command.bronpi_auto
-      data:
-        customer_code: 164873
-        authorization: '{{state_attr(''sensor.bronpi_access_token'',''access_token'')}}'
-        values: 0
-  - delay:
+  - action: counter.increment
+    metadata: {}
+    data: {}
+    target:
+      entity_id: counter.allumages_poele
+  mode: single
+- id: '1739134784355'
+  alias: Modulation Poêle
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.poele_talence_smoke_temperature
+    for:
       hours: 0
-      minutes: 0
-      seconds: 2
-  - action: homeassistant.update_entity
+      minutes: 5
+      seconds: 0
+    above: 130
+  conditions: []
+  actions:
+  - wait_template: "{{ float(states('sensor.poele_talence_smoke_temperature'),0) <
+      125}}\n        "
+    continue_on_timeout: true
+  - action: input_select.select_option
     metadata: {}
     data:
-      entity_id:
-      - sensor.bronpi_request_reading
-  - delay:
+      option: MODULATION
+    target:
+      entity_id: input_select.modulation_poele
+  mode: single
+- id: '1739135282160'
+  alias: Démodulation poêle
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.poele_talence_status
+    from: WORK
+    to: STAND-BY
+  - trigger: state
+    entity_id:
+    - sensor.poele_talence_status
+    from: WORK
+    to: CLEANING FINAL
+  - trigger: numeric_state
+    entity_id:
+    - sensor.smoke_temperature
+    above: 125
+  conditions:
+  - condition: state
+    entity_id: input_select.modulation_poele
+    state: MODULATION
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: sensor.poele_talence_status
+        state: WORK
+      sequence:
+      - action: input_select.select_option
+        metadata: {}
+        data:
+          option: WORK
+        target:
+          entity_id: input_select.modulation_poele
+    - conditions:
+      - condition: state
+        entity_id: sensor.poele_talence_status
+        state: CLEANING FINAL
+      sequence:
+      - action: input_select.select_option
+        metadata: {}
+        data:
+          option: 'OFF'
+        target:
+          entity_id: input_select.modulation_poele
+    - conditions:
+      - condition: state
+        entity_id: sensor.poele_talence_status
+        state: STAND-BY
+      sequence:
+      - action: input_select.select_option
+        metadata: {}
+        data:
+          option: STAND-BY
+        target:
+          entity_id: input_select.modulation_poele
+  mode: single
+- id: '1739193171990'
+  alias: Relance intégration poêle
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - climate.poele_talence
+    to: unavailable
+    for:
       hours: 0
-      minutes: 0
-      seconds: 2
-  - action: homeassistant.update_entity
+      minutes: 1
+      seconds: 0
+  conditions: []
+  actions:
+  - action: homeassistant.reload_config_entry
     metadata: {}
-    data:
-      entity_id:
-      - sensor.bronpi_result
-      - sensor.bronpi_mode
+    data: {}
+    target:
+      entity_id: climate.poele_talence
   mode: single

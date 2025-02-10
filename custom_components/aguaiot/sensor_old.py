@@ -64,21 +64,7 @@ class AguaIOTHeatingSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def native_value(self):
-        from homeassistant.const import STATE_UNAVAILABLE
-        INVALID_SENSOR_VALUES = {
-            "status_get": 32768,
-            "alarms_get": 32768,
-            "power_get": 32768,
-            "temp_gas_flue_get": 32798,
-            "temp_air_get": 16384,
-            "temp_air2_get": 16384,
-            "real_power_get": 8193,
-        }
         """Return the state of the sensor."""
-        raw_value = self._device.get_register_value(self.entity_description.key)
-        if self.entity_description.key in INVALID_SENSOR_VALUES:
-            if raw_value == INVALID_SENSOR_VALUES[self.entity_description.key]:
-                return STATE_UNAVAILABLE
         if self.entity_description.raw_value:
             return self._device.get_register_value(self.entity_description.key)
         else:

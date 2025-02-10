@@ -17,3 +17,10 @@ template:
         unit_of_measurement: "s"
         device_class: duration # Exemples de valeurs possibles
         state_class: measurement # Exemples de valeurs possibles
+
+      #PELLETS
+      - name: "Taux de remplissage pellets"
+        state: "{{ max(min((40 - 4 - float(states('sensor.hauteur_pellets'),0) + 4)/(( 40 - 4) / 100),100),0)| round(0)}}"
+        unique_id: "taux_remplissage_pellets"
+        unit_of_measurement: "%"
+        device_class: battery # Exemples de valeurs possibles

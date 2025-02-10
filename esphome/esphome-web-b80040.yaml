@@ -76,19 +76,45 @@ spi:
 
 display:
   - platform: ssd1306_spi
+    id: mydisplay
     model: "SSD1306 128x64"
     cs_pin: GPIO05
     dc_pin: GPIO16
     reset_pin: GPIO17
-    lambda: |-
-      it.print(0, 0, id(unbuntu_16), "Hello World RED");
-      it.print(0, 14, id(unbuntu), "Hello World GREEN");
-      it.print(0, 24, id(unbuntu), "Hello World MIXTE");
-      it.print(0, 34, id(unbuntu), "Hello World YELLOW");
-      it.print(0, 44, id(unbuntu), "Hello World YELLOW");
-      it.print(0, 54, id(unbuntu), "Hello World YELLOW");
-    rotation: 0
-    
+    pages:
+      - id: page1
+        lambda: |-
+          it.print(it.get_width() / 2, 8, id(unbuntu_16), TextAlign::CENTER, "ESP32-3");
+
+          // Mémoire libre
+          it.printf(0, 14, id(unbuntu), "Free Mem:");
+          it.printf(it.get_width() - 5, 14, id(unbuntu), TextAlign::RIGHT, "%d / %d KB", int(id(esp32_3_memory).state),int(id(esp32_3_totalmemory).state));
+
+          // Uptime
+          it.printf(0, 24, id(unbuntu), "UP:");
+          it.printf(it.get_width() - 5, 24, id(unbuntu), TextAlign::RIGHT, "%.0f min", id(esp32_3_uptime).state / 60.0);
+
+          // Signal WiFi
+          it.printf(0, 34, id(unbuntu), "Wifi:");
+          it.printf(it.get_width() - 5, 34, id(unbuntu), TextAlign::RIGHT, "%.0f dB", id(esp32_3_wifi_signal_db).state);
+
+          // Température interne
+          it.printf(0, 44, id(unbuntu), "Temp:");
+          it.printf(it.get_width() - 5, 44, id(unbuntu), TextAlign::RIGHT, "%.1f°C", id(esp32_3_internal_temperature).state);
+
+          // Adresse IP
+          it.printf(0, 54, id(unbuntu), "IP:");
+          it.printf(it.get_width() - 5, 54, id(unbuntu), TextAlign::RIGHT, "%s", id(esp32_3_ipaddress).state.c_str());
+      - id: page2
+        lambda: |-
+          it.print(it.get_width() / 2, 8, id(unbuntu_16), TextAlign::CENTER, "PAGE 2");
+
+interval:
+  - interval: 10s
+    then:
+      - display.page.show_next: mydisplay
+      - component.update: mydisplay
+
 font:
   - file: "fonts/montserrat/Montserrat-Medium.otf"
     id: montserrat
@@ -106,7 +132,6 @@ output:
     pin: GPIO33
     id: led
 
-
 light:
   - platform: monochromatic
     output: led
@@ -119,7 +144,7 @@ sensor:
     name: "Test Tension secteur"
     update_interval: 10s
     accuracy_decimals: 2
-    attenuation: 12dB
+    attenuation: auto
 
   - platform: custom
     lambda: |-
@@ -127,7 +152,8 @@ sensor:
       App.register_component(my_sensor);
       return {my_sensor};
     sensors:
-      name: "Test Tension secteur2"
+      name: "Test Tension secteur ZMPT101B"
+      id: tension_secteur_zmpt101b
       unit_of_measurement: V
       accuracy_decimals: 1
       state_class: "measurement"
@@ -135,9 +161,66 @@ sensor:
 
   - platform: adc
     pin: GPIO35
-    name: "Test Tension secteur3"
+    id: tension_secteur_long
+    name: "Test Tension secteur Long"
     update_interval: 10s
     accuracy_decimals: 0
-    attenuation: 12dB
+    attenuation: auto
     filters:
-      - multiply: 80
+      - calibrate_polynomial:
+          degree: 1
+          datapoints:
+            # Map 0.0 (from sensor) to 0.0 (true value)
+            - 3.14 -> 0.0
+            - 0.08 -> 240.0
+    on_value:
+      then:
+        - lambda: |-
+            ESP_LOGD("DEBUG", "Valeur brute: %.2f V", id(tension_secteur_long).raw_state);
+            ESP_LOGD("DEBUG", "Valeur corrigée: %.2f V", id(tension_secteur_long).state);
+
+
+  - platform: template
+    id: esp32_3_memory
+    icon: mdi:memory
+    name: "Free Memory"
+    lambda: return heap_caps_get_free_size(MALLOC_CAP_INTERNAL) / 1024;
+    unit_of_measurement: 'kB'
+    state_class: measurement
+    entity_category: "diagnostic"
+    update_interval: 30s
+    internal: true
+  - platform: template
+    id: esp32_3_totalmemory
+    icon: mdi:memory
+    name: "Memory"
+    lambda: return heap_caps_get_total_size(MALLOC_CAP_INTERNAL) / 1024;
+    unit_of_measurement: 'kB'
+    state_class: measurement
+    entity_category: "diagnostic"
+    update_interval: 30s
+    internal: true
+  - platform: uptime
+    name: Uptime
+    id: esp32_3_uptime
+    update_interval: 60s
+    internal: true
+  - platform: wifi_signal 
+    name: RSSI
+    id: esp32_3_wifi_signal_db
+    entity_category: "diagnostic"
+    update_interval: 30s
+    internal: true
+  - platform: internal_temperature
+    id: esp32_3_internal_temperature
+    name: "Internal Temperature"
+    update_interval: 30s
+    internal: true
+    
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: IP Address
+      id: esp32_3_ipaddress
+      update_interval: 30s
+      internal: true
