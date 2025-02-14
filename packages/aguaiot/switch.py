@@ -3,9 +3,9 @@ from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
 )
-from homeassistant.components.number import NumberEntity
+from homeassistant.components.switch import SwitchEntity
 from homeassistant.helpers.entity import DeviceInfo
-from .const import NUMBERS, DOMAIN
+from .const import SWITCHES, DOMAIN
 from .aguaiot import AguaIOTError
 
 _LOGGER = logging.getLogger(__name__)
@@ -17,26 +17,18 @@ async def async_setup_entry(hass, entry, async_add_entities):
     ]
     agua = hass.data[DOMAIN][entry.entry_id]["agua"]
 
-    numbers = []
+    switches = []
     for device in agua.devices:
-        hybrid = "power_wood_set" in device.registers
-
-        for number in NUMBERS:
-            if (
-                number.key in device.registers
-                and (number.force_enabled or device.get_register_enabled(number.key))
-                and (
-                    (number.hybrid_only and hybrid)
-                    or (number.hybrid_exclude and not hybrid)
-                    or (not number.hybrid_only and not number.hybrid_exclude)
-                )
+        for switch in SWITCHES:
+            if switch.key in device.registers and device.get_register_enabled(
+                switch.key
             ):
-                numbers.append(AguaIOTHeatingNumber(coordinator, device, number))
+                switches.append(AguaIOTHeatingSwitch(coordinator, device, switch))
 
-    async_add_entities(numbers, True)
+    async_add_entities(switches, True)
 
 
-class AguaIOTHeatingNumber(CoordinatorEntity, NumberEntity):
+class AguaIOTHeatingSwitch(CoordinatorEntity, SwitchEntity):
     def __init__(self, coordinator, device, description):
         """Initialize the thermostat."""
         CoordinatorEntity.__init__(self, coordinator)
@@ -64,21 +56,30 @@ class AguaIOTHeatingNumber(CoordinatorEntity, NumberEntity):
         )
 
     @property
-    def native_value(self):
+    def is_on(self):
         """Return the state of the sensor."""
-        return self._device.get_register_value(self.entity_description.key)
+        return bool(self._device.get_register_value(self.entity_description.key))
 
-    @property
-    def native_min_value(self):
-        return self._device.get_register_value_min(self.entity_description.key)
-
-    @property
-    def native_max_value(self):
-        return self._device.get_register_value_max(self.entity_description.key)
-
-    async def async_set_native_value(self, value):
+    async def async_turn_off(self):
+        """Turn device off."""
         try:
-            await self._device.set_register_value(self.entity_description.key, value)
+            await self._device.set_register_value(self.entity_description.key, 0)
             await self.coordinator.async_request_refresh()
-        except (ValueError, AguaIOTError) as err:
-            _LOGGER.error("Failed to set value, error: %s", err)
+        except AguaIOTError as err:
+            _LOGGER.error(
+                "Failed to turn off '%s', error: %s",
+                f"{self._device.name} {self.entity_description.name}",
+                err,
+            )
+
+    async def async_turn_on(self):
+        """Turn device on."""
+        try:
+            await self._device.set_register_value(self.entity_description.key, 1)
+            await self.coordinator.async_request_refresh()
+        except AguaIOTError as err:
+            _LOGGER.error(
+                "Failed to turn on '%s', error: %s",
+                f"{self._device.name} {self.entity_description.name}",
+                err,
+            )

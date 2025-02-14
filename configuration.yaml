@@ -60,11 +60,13 @@ logger:
     pyhap.hap_protocol: warning
     root: warning
     aioesphomeapi.reconnect_logic: error
-    custom_components.tuya_local.climate: error
-    custom_components.aguaiot: error
+    custom_components.tuya_local.climate: info
+    custom_components.aguaiot: info
     py.warnings: error
     homeassistant.components.websocket_api.http.connection: error
     aioesphomeapi.connection: error
+    homeassistant.loader: error
+    homeassistant.helpers.frame: error
 
 shell_command:
   batch_py: python3 /config/python_scripts/script.py

@@ -276,7 +276,6 @@ rest:
         icon: mdi:flash
         json_attributes_path: "$.data"
         value_template: "{{ value_json.data.today_eq}}"
-        device_class: energy
         unit_of_measurement: Wh
         json_attributes:
           - "today_eq"

@@ -3857,18 +3857,17 @@
     above: 10
   conditions: []
   actions:
+  - action: input_number.set_value
+    metadata: {}
+    data_template:
+      value: '{{float(states(''sensor.prise_zigbee_2_energy''),0) | round(0)}}'
+    target:
+      entity_id: input_number.bambulab_energie
   - wait_for_trigger:
     - trigger: numeric_state
       entity_id:
       - sensor.prise_zigbee_2_power
       below: 29.9
-  - action: input_number.set_value
-    metadata: {}
-    data_template:
-      value:
-        '[object Object]':
-    target:
-      entity_id: input_number.bambulab_energie
   - action: notify.notify
     metadata: {}
     data_template:
@@ -3924,7 +3923,7 @@
     state: 'on'
   - condition: numeric_state
     entity_id: sensor.poele_talence_air_temperature
-    below: 16.3
+    below: 16.6
   - condition: device
     device_id: 4bead898b9b54fc49d86653276a54edb
     domain: climate
@@ -3932,6 +3931,26 @@
     type: is_hvac_mode
     hvac_mode: 'off'
   actions:
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.poele_talence_air_temperature
+      above: 15.9
+    then:
+    - delay:
+        hours: 0
+        minutes: 30
+        seconds: 0
+        milliseconds: 0
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.poele_talence_air_temperature
+      above: 15.4
+    then:
+    - delay:
+        hours: 0
+        minutes: 30
+        seconds: 0
+        milliseconds: 0
   - action: climate.set_hvac_mode
     metadata: {}
     data:
@@ -4066,7 +4085,7 @@
   conditions:
   - condition: template
     value_template: '{{ (now() - state_attr(''automation.sac_pellets'', ''last_triggered'')).total_seconds()
-      > 14400 }}'
+      > 30000 }}'
   actions:
   - action: counter.increment
     metadata: {}
@@ -4101,7 +4120,7 @@
       hours: 0
       minutes: 5
       seconds: 0
-    above: 130
+    above: 125
   conditions: []
   actions:
   - wait_template: "{{ float(states('sensor.poele_talence_smoke_temperature'),0) <

@@ -5,7 +5,6 @@ from homeassistant.const import (
     UnitOfTemperature,
     UnitOfPressure,
     REVOLUTIONS_PER_MINUTE,
-    STATE_UNAVAILABLE,
 )
 from homeassistant.components.climate.const import HVACAction
 from homeassistant.components.binary_sensor import (
@@ -527,7 +526,7 @@ CLIMATE_CANALIZATIONS = (
         icon="mdi:fan",
     ),
     AguaIOTCanalizationEntityDescription(
-        name="Canalisation {id}",
+        name="Canalization {id}",
         key=r"canalization_(?P<id>[a-zA-Z0-9]+)_set",
         key_enable="canalization_{id}_enable",
         key2_enable="canalization_2{id}_enable",
