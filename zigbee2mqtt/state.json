@@ -13,7 +13,7 @@
     "0x3c6a2cfffed4a7de": {
         "voltage": 2600,
         "battery": 33.5,
-        "temperature": 52.5,
+        "temperature": 51.5,
         "linkquality": 116
     },
     "0xa4c138d9a41bd98f": {
@@ -22,8 +22,8 @@
         "linkquality": 192
     },
     "0xa4c138682a772531": {
-        "illuminance": 5879,
-        "illuminance_average_20min": 5897,
+        "illuminance": 5917,
+        "illuminance_average_20min": 5907,
         "illuminance_maximum_today": 6083,
         "cleaning_reminder": true,
         "rain_intensity": 0,
@@ -48,7 +48,7 @@
     "0x70b3d52b60103b94": {
         "power": 4,
         "current": 0.07,
-        "voltage": 251,
+        "voltage": 250,
         "energy": 18.7,
         "linkquality": 180,
         "state": "ON",
