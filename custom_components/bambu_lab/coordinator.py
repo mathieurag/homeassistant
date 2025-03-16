@@ -7,13 +7,21 @@ from .const import (
     LOGGERFORHA,
     Options,
     OPTION_NAME,
+    SERVICE_CALL_EVENT,
+    FILAMENT_DATA,
 )
 import asyncio
+import re
+import time
+
 from typing import Any
 
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers import device_registry
+from homeassistant.helpers import (
+    device_registry,
+    entity_registry
+)
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.core import Event, HomeAssistant, callback
@@ -21,18 +29,19 @@ from homeassistant.const import (
     EVENT_HOMEASSISTANT_STOP,
     Platform
 )
+from homeassistant.helpers import issue_registry
 
 from .pybambu import BambuClient
-from .pybambu.const import (
-    Features,
-    PRINT_PROJECT_FILE_BUS_EVENT,
-    SEND_GCODE_BUS_EVENT,
-    SKIP_OBJECTS_BUS_EVENT,
-)
+from .pybambu.const import Features
 from .pybambu.commands import (
     PRINT_PROJECT_FILE_TEMPLATE,
     SEND_GCODE_TEMPLATE,
     SKIP_OBJECTS_TEMPLATE,
+    MOVE_AXIS_GCODE,
+    HOME_GCODE,
+    EXTRUDER_GCODE,
+    SWITCH_AMS_TEMPLATE,
+    AMS_FILAMENT_SETTING_TEMPLATE,
 )
 
 class BambuDataUpdateCoordinator(DataUpdateCoordinator):
@@ -52,6 +61,7 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         self.client = BambuClient(config)
             
         self._updatedDevice = False
+        self._shutdown = False
         self.data = self.get_model()
         self._eventloop = asyncio.get_running_loop()
         # Pass LOGGERFORHA logger into HA as otherwise it generates a debug output line every single time we tell it we have an update
@@ -63,9 +73,7 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         )
 
         self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self._async_shutdown)
-        self.hass.bus.async_listen(PRINT_PROJECT_FILE_BUS_EVENT, self._service_call_print_project_file)
-        self.hass.bus.async_listen(SEND_GCODE_BUS_EVENT, self._service_call_send_gcode)
-        self.hass.bus.async_listen(SKIP_OBJECTS_BUS_EVENT, self._service_call_skip_objects)
+        self.hass.bus.async_listen(SERVICE_CALL_EVENT, self._handle_service_call_event)
 
     @callback
     def _async_shutdown(self, event: Event) -> None:
@@ -74,12 +82,20 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         self.shutdown()
 
     def event_handler(self, event: str):
+        if self._shutdown:
+            # Handle race conditions when the integration is being deleted by re-registering and existing device.
+            return
+        
         # The callback comes in on the MQTT thread. Need to jump to the HA main thread to guarantee thread safety.
         self._eventloop.call_soon_threadsafe(self.event_handler_internal, event)
 
     def event_handler_internal(self, event: str):
-        # if event != "event_printer_chamber_image_update":
-        #     LOGGER.debug(f"EVENT: {event}")
+        if self._shutdown:
+            # Handle race conditions when the integration is being deleted by re-registering and existing device.
+            return
+        
+        if event == "event_printer_bambu_authentication_failed":
+            self._report_authentication_issue();
 
         if event == "event_printer_info_update":
             self._update_device_info()
@@ -141,48 +157,321 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
 
     def shutdown(self) -> None:
         """ Halt the MQTT listener thread """
+        self._shutdown = True
         self.client.disconnect()
 
     async def _publish(self, msg):
         return self.client.publish(msg)
 
-    def _service_call_is_for_me(self, data: dict):
+    def _is_service_call_for_me(self, data: dict):
         dev_reg = device_registry.async_get(self._hass)
         hadevice = dev_reg.async_get_device(identifiers={(DOMAIN, self.get_model().info.serial)})
+
+        # First test if a device_id is specified and if so, check if it matches
         device_id = data.get('device_id', [])
-        if len(device_id) != 1:
-            LOGGER.error("Invalid skip objects data payload: {data}")
-            return False
+        if len(device_id) == 1:
+            return (device_id[0] == hadevice.id)
 
-        return (device_id[0] == hadevice.id)
+        # Next test if an entity_id is specified and if so, get it's device_id, check if it matches
+        entity_id = data.get('entity_id', [])
+        if len(entity_id) == 1:
+            entity_device = self._get_device_from_entity(entity_id[0])
+            if entity_device is None:
+                LOGGER.error("Unable to find device from entity")
+                return False
+            if entity_device.id == hadevice.id:
+                return True
+            
+            # Next test if a via_device_id is specified and if so, check if it matches
+            via_device_id = entity_device.via_device_id
+            if via_device_id == hadevice.id:
+                return True
+        else:
+            LOGGER.error(f"Invalid data payload: {data}")
 
-    def _service_call_skip_objects(self, event: Event):
+        return False
+
+    def _get_device_from_entity(self, entity_id):
+        """Get the device associated with a given entity_id."""
+        er = entity_registry.async_get(self._hass)
+        entity_entry = er.async_get(entity_id)
+
+        if not entity_entry or not entity_entry.device_id:
+            return None  # No associated device
+
+        dr = device_registry.async_get(self._hass)
+        device_entry = dr.async_get(entity_entry.device_id)
+
+        return device_entry  # Returns a DeviceEntry object or None
+
+    def _handle_service_call_event(self, event: Event):
         data = event.data
-        if not self._service_call_is_for_me(data):
+
+        if not self._is_service_call_for_me(data):
+            # Call is not for this instance.
+            return
+
+        future = self._hass.data[DOMAIN]['service_call_future']
+        if future is None:
+            LOGGER.error("Future is None")
+            future.set_result(False)
             return
         
-        LOGGER.debug(f"_service_call_skip_objects: {data}")
+        result = None
+        match data['service']:
+            case "skip_objects":
+                result = self._service_call_skip_objects(data)
+            case "move_axis":
+                result = self._service_call_move_axis(data)
+            case "extrude_retract":
+                result = self._service_call_extrude_retract(data)
+            case "load_filament":
+                result = self._service_call_load_filament(data)
+            case "unload_filament":
+                result = self._service_call_unload_filament(data)
+            case "set_filament":
+                result = self._service_call_set_filament(data)
+            case "get_filament_data":
+                result = self._service_call_get_filament_data(data)
+            case "print_project_file":
+                result = self._service_call_print_project_file(data)
+            case _:
+                LOGGER.error(f"Unknown service call: {data}")
+
+        if result is None:
+            result = False
+
+        future.set_result(result)
+        
+    def _service_call_skip_objects(self, data: dict):
         command = SKIP_OBJECTS_TEMPLATE
         object_ids = data.get("objects")
         command["print"]["obj_list"] = [int(x) for x in object_ids.split(',')]
         self.client.publish(command)
 
-    def _service_call_send_gcode(self, event: Event):
-        data = event.data
-        if not self._service_call_is_for_me(data):
-            return
-        
-        LOGGER.debug(f"_service_call_send_gcode: {data}")
+    def _service_call_send_gcode(self, data: dict):
         command = SEND_GCODE_TEMPLATE
         command['print']['param'] = f"{data.get('command')}\n"
         self.client.publish(command)
 
-    def _service_call_print_project_file(self, event: Event):
-        data = event.data
-        if not self._service_call_is_for_me(data):
+    def _service_call_move_axis(self, data: dict):
+        axis = data.get('axis').upper()
+        distance = int(data.get('distance') or 10)
+
+        if axis not in ['X', 'Y', 'Z', 'HOME'] or abs(distance) > 100:
+            LOGGER.error(f"Invalid axis '{axis}' or distance out of range '{distance}'")
+            return False
+        
+        command = SEND_GCODE_TEMPLATE
+        gcode = HOME_GCODE if axis == 'HOME' else MOVE_AXIS_GCODE
+        speed = 900 if axis == 'Z' else 3000
+        if axis != 'HOME':
+            if axis in ['Y', 'Z'] and not self.get_model().is_core_xy:
+                LOGGER.debug(f"Non-core XY, reversing '{axis}' axis distance")
+                distance = -1 * distance
+            gcode = gcode.format(axis=axis, distance=distance, speed=speed)
+        
+        command['print']['param'] = gcode
+        self.client.publish(command)
+
+    def _service_call_extrude_retract(self, data: dict):
+        move = data.get('type').upper()
+        force = data.get('force')
+
+        if move not in ['EXTRUDE', 'RETRACT']:
+            LOGGER.error(f"Invalid extrusion move '{move}'")
+            return False
+
+        nozzle_temp = self.get_model().temperature.nozzle_temp
+        if force is not True and nozzle_temp < 170:
+            LOGGER.error(f"Nozzle temperature too low to perform extrusion: {nozzle_temp}ºC")
+            return False
+
+        command = SEND_GCODE_TEMPLATE
+        gcode = EXTRUDER_GCODE
+        distance = (1 if move == 'EXTRUDE' else -1) * 10
+
+        gcode = gcode.format(distance=distance)
+
+        command['print']['param'] = gcode
+        self.client.publish(command)
+
+    def _get_ams_and_tray_index_from_entity_entry(self, ams_device, entity_entry):
+        match = re.search(r"tray_([1-4])$", entity_entry.unique_id)
+        # Zero-index the tray ID and find the AMS index
+        tray = int(match.group(1)) - 1
+        # identifiers is a set of tuples. We only have one tuple in the set - DOMAIN + serial.
+        ams_serial = next(iter(ams_device.identifiers))[1]
+        ams_index = None
+        for index in range(0,4):
+            ams = self.get_model().ams.data[index]
+            if ams is not None:
+                if ams.serial == ams_serial:
+                    # We found the right AMS.
+                    ams_index = index
+                    break
+
+        full_tray = tray + ams_index * 4
+        LOGGER.debug(f"FINAL TRAY VALUE: {full_tray + 1}/16 = Tray {tray + 1}/4 on AMS {ams_index+1}/4")
+
+        return ams_index, tray
+
+    def _service_call_set_filament(self, data: dict):
+        device_id = data.get('device_id', [])
+        if len(device_id) != 0:
+            LOGGER.error("Invalid entity data payload: {data}")
+            return False
+        entity_id = data.get('entity_id', [])
+        if len(entity_id) != 1:
+            LOGGER.error("Invalid entity data payload: {data}")
+            return False
+        entity_id = entity_id[0]
+
+        # Get the AMS device
+        ams_device = self._get_device_from_entity(entity_id)
+        if ams_device is None:
+            LOGGER.error("Unable to find AMS or external spool from entity")
+            return None
+
+        # Get the device the AMS is connected to.
+        ams_parent_device_id = ams_device.via_device_id
+
+        # Get my device id
+        dr = device_registry.async_get(self._hass)
+        hadevice = dr.async_get_device(identifiers={(DOMAIN, self.get_model().info.serial)})
+
+        if ams_parent_device_id != hadevice.id:
             return
         
-        LOGGER.debug(f"_service_call_print_project_file: {data}")
+        # This call is for us.
+        # Get the entity details.
+        er = entity_registry.async_get(self._hass)
+        entity_entry = er.async_get(entity_id)
+        entity_unique_id = entity_entry.unique_id
+        # entity_entry.unique_id is of the form:
+        #   X1C_<PRINTERSERIAL>_AMS_<AMSSERIAL>_tray_1
+        # or
+        #   X1C_<PRINTERSERIAL>_ExternalSpool_external_spool
+
+        if entity_unique_id.endswith('_external_spool'):
+            tray = 254
+        elif not self.get_model().supports_feature(Features.AMS):
+            LOGGER.error(f"AMS not available")
+            return False
+        elif re.search(r"tray_([1-4])$", entity_unique_id):
+            ams_index, tray = self._get_ams_and_tray_index_from_entity_entry(ams_device, entity_entry)
+            if ams_index is None:
+                LOGGER.error("Unable to locate AMS.")
+                return
+            ams_tray = self.get_model().ams.data[ams_index].tray[tray]
+            if ams_tray.empty:
+                LOGGER.error(f"AMS {ams_index + 1} tray {tray + 1} is empty")
+                return
+        else:
+            LOGGER.error(f"An AMS tray or external spool is required")
+            return False
+        
+        command = AMS_FILAMENT_SETTING_TEMPLATE
+        command['print']['ams_id'] = ams_index
+        command['print']['tray_info_idx'] = data.get('tray_info_idx', '')
+        command['print']['tray_id'] = tray
+        command['print']['tray_color'] = data.get('tray_color', '')
+        command['print']['tray_type'] = data.get('tray_type', '')
+        command['print']['nozzle_temp_min'] = data.get('nozzle_temp_min', '200')
+        command['print']['nozzle_temp_max'] = data.get('nozzle_temp_max', '240')
+
+        self.client.publish(command)
+
+    def _service_call_get_filament_data(self, data: dict):
+        return FILAMENT_DATA | self.client.slicer_settings.filaments
+
+    def _service_call_load_filament(self, data: dict):
+        device_id = data.get('device_id', [])
+        if len(device_id) != 0:
+            LOGGER.error("Invalid entity data payload: {data}")
+            return False
+        entity_id = data.get('entity_id', [])
+        if len(entity_id) != 1:
+            LOGGER.error("Invalid entity data payload: {data}")
+            return False
+        entity_id = entity_id[0]
+
+        # Get the AMS device
+        ams_device = self._get_device_from_entity(entity_id)
+        if ams_device is None:
+            LOGGER.error("Unable to find AMS or external spool from entity")
+            return None
+
+        # Get the device the AMS is connected to.
+        ams_parent_device_id = ams_device.via_device_id
+
+        # Get my device id
+        dr = device_registry.async_get(self._hass)
+        hadevice = dr.async_get_device(identifiers={(DOMAIN, self.get_model().info.serial)})
+
+        # This call is for us.
+
+        # Printers with older firmware require a different method to change
+        # filament. For now, only support newer firmware.
+        if not self.get_model().supports_feature(Features.AMS_SWITCH_COMMAND):
+            LOGGER.error(f"Loading filament is not available for this printer's firmware version, please update it")
+            return False
+
+        # Get the entity details.
+        er = entity_registry.async_get(self._hass)
+        entity_entry = er.async_get(entity_id)
+        entity_unique_id = entity_entry.unique_id
+        # entity_entry.unique_id is of the form:
+        #   X1C_<PRINTERSERIAL>_AMS_<AMSSERIAL>_tray_1
+        # or
+        #   X1C_<PRINTERSERIAL>_ExternalSpool_external_spool
+
+        temperature = int(data.get('temperature', 0))
+
+        if entity_unique_id.endswith('_external_spool'):
+            tray = 254
+            # Unless a target temperature override is set, try and find the
+            # midway temperature of the filament set in the ext spool
+            ext_spool = self.get_model().external_spool
+            if data.get('temperature') is None and not ext_spool.empty:
+                temperature = (int(ext_spool.nozzle_temp_min) + int(ext_spool.nozzle_temp_max)) / 2
+        elif not self.get_model().supports_feature(Features.AMS):
+            LOGGER.error(f"AMS not available")
+            return False
+        elif re.search(r"tray_([1-4])$", entity_unique_id):
+            ams_index, tray = self._get_ams_and_tray_index_from_entity_entry(ams_device, entity_entry)
+            if ams_index is None:
+                LOGGER.error("Unable to locate AMS.")
+                return
+
+            ams_tray = self.get_model().ams.data[ams_index].tray[tray]
+            if ams_tray.empty:
+                LOGGER.error(f"AMS {ams_index + 1} tray {tray + 1} is empty")
+                return
+
+            # Unless a target temperature override is set, try and find the
+            # midway temperature of the filament set in the ext spool
+            if data.get('temperature') is None:
+                temperature = (int(ams_tray.nozzle_temp_min) + int(ams_tray.nozzle_temp_max)) // 2
+        else:
+            LOGGER.error(f"An AMS tray or external spool is required")
+            return False
+
+        command = SWITCH_AMS_TEMPLATE
+        command['print']['target'] = tray
+        command['print']['tar_temp'] = temperature
+        self.client.publish(command)
+
+    def _service_call_unload_filament(self, data: dict):
+        if not self.get_model().supports_feature(Features.AMS_SWITCH_COMMAND):
+            LOGGER.error(f"Loading filament is not available for this printer's firmware version, please update it")
+            return
+        
+        command = SWITCH_AMS_TEMPLATE
+        command['print']['target'] = 255
+        self.client.publish(command)
+
+    def _service_call_print_project_file(self, data: dict):
         command = PRINT_PROJECT_FILE_TEMPLATE
         file = data.get("filepath")
         plate = data.get("plate")
@@ -204,7 +493,7 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         command["print"]["use_ams"] = use_ams
         command["print"]["ams_mapping"] = [int(x) for x in ams_mapping.split(',')]
 
-        coordinator.client.publish(command)
+        self.client.publish(command)
 
     async def _async_update_data(self):
         LOGGER.debug(f"_async_update_data() called")
@@ -307,7 +596,7 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         for device in dev_reg.devices.values():
             if config_entry_id in device.config_entries:
                 # This device is associated with this printer.
-                if device.model == 'AMS':
+                if device.model == 'AMS' or device.model == 'AMS Lite':
                     # And it's an AMS device
                     ams_serial = list(device.identifiers)[0][1]
                     if ams_serial not in existing_ams_devices:
@@ -365,14 +654,15 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
     def get_ams_device(self, index):
         printer_serial = self.config_entry.data["serial"]
         device_type = self.config_entry.data["device_type"]
-        device_name=f"{device_type}_{printer_serial}_AMS_{index+1}"
+        device_name = f"{device_type}_{printer_serial}_AMS_{index+1}"
         ams_serial = self.get_model().ams.data[index].serial
+        model = self.get_model().ams.model
 
         return DeviceInfo(
             identifiers={(DOMAIN, ams_serial)},
             via_device=(DOMAIN, printer_serial),
             name=device_name,
-            model="AMS",
+            model=model,
             manufacturer=BRAND,
             hw_version=self.get_model().ams.data[index].hw_version,
             sw_version=self.get_model().ams.data[index].sw_version
@@ -408,6 +698,14 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
     async def set_option_enabled(self, option: Options, enable: bool):
         LOGGER.debug(f"Setting {OPTION_NAME[option]} to {enable}")
         options = dict(self.config_entry.options)
+        
+        if option == Options.DOWNLOAD_GCODE_FILE:
+            if enable:
+                enable = self.get_option_enabled(Options.FTP)
+        if option == Options.FTP:
+            if not enable:
+                options[OPTION_NAME[Options.DOWNLOAD_GCODE_FILE]] = enable
+                
         options[OPTION_NAME[option]] = enable
         self._hass.config_entries.async_update_entry(
             entry=self.config_entry,
@@ -432,3 +730,72 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         if force_reload:
             # Force reload of sensors.
             return await self.hass.config_entries.async_reload(self._entry.entry_id)
+
+    def _report_authentication_issue(self):
+        # issue_id's are permanent - once ignore they will never show again so we need a unique id 
+        # per occurrence per integration instance. That does mean we'll fire a new issue every single
+        # print attempt since that's when we'll typically encounter the authentication failure as we
+        # attempt to get slicer settings.
+        timestamp = int(time.time())
+        issue_id = f"authentication_failed_{self.get_model().info.serial}_{timestamp}"
+
+        # Report the issue
+        LOGGER.debug("Creating issue for authentication failure")
+        issue_registry.async_create_issue(
+            hass=self._hass,
+            domain=DOMAIN,
+            issue_id=issue_id,
+            is_fixable=False,
+            severity=issue_registry.IssueSeverity.ERROR,
+            translation_key="authentication_failed",
+            translation_placeholders = {"device": self.config_entry.options.get('name', '')},
+        )
+
+
+    def check_service_call_payload_for_device(call: ServiceCall):
+        LOGGER.debug(call)
+
+        area_ids = call.data.get("area_id", [])
+        device_ids = call.data.get("device_id", [])
+        entity_ids = call.data.get("entity_id", [])
+        label_ids = call.data.get("label_ids", [])
+
+        # Ensure only one device ID is passed
+        if not isinstance(area_ids, list) or len(area_ids) != 0:
+            LOGGER.error("A single device id must be specified as the target.")
+            return False
+        if not isinstance(device_ids, list) or len(device_ids) != 1:
+            LOGGER.error("A single device id must be specified as the target.")
+            return False
+        if not isinstance(entity_ids, list) or len(entity_ids) != 0:
+            LOGGER.error("A single device id must be specified as the target.")
+            return False
+        if not isinstance(label_ids, list) or len(label_ids) != 0:
+            LOGGER.error("A single device id must be specified as the target.")
+            return False
+        
+        return True
+
+    def check_service_call_payload_for_entity(call: ServiceCall):
+        LOGGER.debug(call)
+
+        area_ids = call.data.get("area_id", [])
+        device_ids = call.data.get("device_id", [])
+        entity_ids = call.data.get("entity_id", [])
+        label_ids = call.data.get("label_ids", [])
+
+        # Ensure only one entity ID is passed
+        if not isinstance(area_ids, list) or len(area_ids) != 0:
+            LOGGER.error("A single entity id must be specified as the target.")
+            return False
+        if not isinstance(device_ids, list) or len(device_ids) != 0:
+            LOGGER.error("A single entity id must be specified as the target.")
+            return False
+        if not isinstance(entity_ids, list) or len(entity_ids) != 1:
+            LOGGER.error("A single entity id must be specified as the target.")
+            return False
+        if not isinstance(label_ids, list) or len(label_ids) != 0:
+            LOGGER.error("A single entity id must be specified as the target.")
+            return False
+        
+        return True

@@ -48,9 +48,9 @@ devices:
   '0x70b3d52b6005f633':
     friendly_name: Prise Zigbee 1
     measurement_poll_interval: 20
-    power_precision: 1
+    power_precision: 3
     current_precision: 3
-    voltage_precision: 1
+    voltage_precision: 3
     energy_precision: 3
     icon: device_icons/08a9016bbc0657cf5f581ae9c19c31a5.png
   '0x3c6a2cfffed4a7de':
@@ -66,6 +66,10 @@ devices:
     friendly_name: Répéteur Zigbee 1
   '0xa4c138077ed1f7b8':
     friendly_name: Prise Zigbee 2
+    current_precision: 2
+    voltage_precision: 2
+    power_precision: 2
+    energy_precision: 2
   '0x70b3d52b60103b94':
     friendly_name: Prise Zigbee 3
     measurement_poll_interval: 20

@@ -228,7 +228,7 @@ delta_hc_total=0
 
 query=""
 if error==0:
-    for i in range(0, 24):
+    for i in range(0, 19):
         energy_linky_hc_total=energy_linky_hc_total+energy_linky_hc[i]
         energy_linky_hp_total=energy_linky_hp_total+energy_linky_hp[i]
         energy_hc_total=energy_hc_total+energy_hc[i]

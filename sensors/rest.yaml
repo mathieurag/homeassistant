@@ -1,54 +1,5 @@
 multiscrape:
-  - name: MacBook Auchan
-    log_response: false
-    resource: "https://www.auchan.fr/apple-macbook-air-13-6-512go-ssd-16go-ram-puce-m3-starlight/pr-C1792765"
-    scan_interval: 600
-    parser: html
-    sensor:
-      - unique_id: macbook_dispo2
-        name: Disponibilité Macbook
-        select: ".product-unavailable__message--large"
-        value_template: "{{ value }}"
-        attributes:
-          - name: Produit
-            select: ".product-unavailable__message--large"
-            attribute: data-product-name
 
-          - name: Prix
-            select: ".offer-selector__add2cart-wrapper > section > div > meta:nth-child(3)"
-            attribute: content
-
-        icon: >-
-          {% if value=="Bientôt dispo !" %}
-            mdi:lock-off
-          {% else %}
-            mdi:lock-open-variant-outline
-          {% endif %}
-      - unique_id: macbook_price2
-        name: Prix Macbook
-        select: ".text-dark-color"
-        value_template: "{{ value }}"
-        icon: mdi:currency-eur
-
-      - unique_id: macbook_itemprop
-        name: ItemProp Macbook
-        select: ".product-price"
-        value_template: "{{ value }}"
-
-      - unique_id: macbook_itemprop4
-        name: ItemProp Macbook2
-        select: ".offer-selector__add2cart-wrapper > section > div > meta:nth-child(3)"
-        attribute: content
-
-      - unique_id: macbook_dispo
-        name: Disponibilité
-        select: ".offer-selector__add2cart-wrapper > section > div > meta:nth-child(6)"
-        attribute: content
-
-      - unique_id: macbook_itemprop3
-        name: Vendeur
-        select: ".offer-selector__marketplace-label"
-        value_template: "{{ value }}"
 rest:
   ##########################
   #ESTAR

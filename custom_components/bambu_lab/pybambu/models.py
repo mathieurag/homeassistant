@@ -4,9 +4,11 @@ import math
 import os
 import re
 import threading
+import shutil
+import time
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from dateutil import parser, tz
 from packaging import version
 from zipfile import ZipFile
@@ -27,6 +29,7 @@ from .utils import (
     get_speed_name,
     get_hw_version,
     get_sw_version,
+    compare_version,
     get_start_time,
     get_end_time,
     get_HMS_error_text,
@@ -34,6 +37,8 @@ from .utils import (
     get_HMS_severity,
     get_HMS_module,
     set_temperature_to_gcode,
+    get_upgrade_url,
+    upgrade_template,
 )
 from .const import (
     LOGGER,
@@ -60,6 +65,7 @@ class Device:
         self.temperature = Temperature(client = client)
         self.lights = Lights(client = client)
         self.info = Info(client = client)
+        self.upgrade = Upgrade(client = client)
         self.print_job = PrintJob(client = client)
         self.fans = Fans(client = client)
         self.speed = Speed(client = client)
@@ -76,11 +82,11 @@ class Device:
             self.chamber_image = ChamberImage(client = client)
         self.cover_image = CoverImage(client = client)
         self.pick_image = PickImage(client = client)
-        self.ftp_cache = {}
 
     def print_update(self, data) -> bool:
         send_event = False
         send_event = send_event | self.info.print_update(data = data)
+        send_event = send_event | self.upgrade.print_update(data = data)
         send_event = send_event | self.print_job.print_update(data = data)
         send_event = send_event | self.temperature.print_update(data = data)
         send_event = send_event | self.lights.print_update(data = data)
@@ -122,7 +128,7 @@ class Device:
         elif feature == Features.CHAMBER_LIGHT:
             return True
         elif feature == Features.CHAMBER_FAN:
-            return self.info.device_type == "X1" or self.info.device_type == "X1C" or self.info.device_type == "X1E" or self.info.device_type == "P1P" or self.info.device_type == "P1S"
+            return self.info.device_type != "A1" and self.info.device_type != "A1MINI"
         elif feature == Features.CHAMBER_TEMPERATURE:
             return self.info.device_type == "X1" or self.info.device_type == "X1C" or self.info.device_type == "X1E"
         elif feature == Features.CURRENT_STAGE:
@@ -160,9 +166,22 @@ class Device:
             return True
         elif feature == Features.TIMELAPSE:
             return False
+        elif feature == Features.AMS_SWITCH_COMMAND:
+            if self.info.device_type == "A1" or self.info.device_type == "A1MINI" or self.info.device_type == "X1E":
+                return True
+            elif (self.info.device_type == "P1S" or self.info.device_type == "P1P") and self.supports_sw_version("01.02.99.10"):
+                return True
+            elif (self.info.device_type == "X1" or self.info.device_type == "X1C") and self.supports_sw_version("01.05.06.01"):
+                return True
+            return False
+        elif feature == Features.DOWNLOAD_GCODE_FILE:
+            return True
 
         return False
     
+    def supports_sw_version(self, version: str) -> bool:
+        return compare_version(self.info.sw_ver, version) >= 0
+
     def get_active_tray(self):
         if self.supports_feature(Features.AMS):
             if self.ams.tray_now == 255:
@@ -184,6 +203,9 @@ class Device:
             return True
         return False
 
+    @property
+    def is_core_xy(self) -> bool:
+        return self.info.device_type != "A1" and self.info.device_type != "A1MINI"
 
 @dataclass
 class Lights:
@@ -419,6 +441,161 @@ class Fans:
         elif fan == FansEnum.HEATBREAK:
             return self._heatbreak_fan_speed_percentage
 
+
+@dataclass
+class Upgrade:
+    """ Upgrade class """
+    printer_name: str
+    upgrade_progress: int
+    new_version_state: int
+    new_ver_list: list
+    cur_version: str
+    new_version: str
+
+    def __init__(self, client):
+        self._client = client
+        self.printer_name = None
+        self.upgrade_progress = 0
+        self.new_version_state = 0
+        self.new_ver_list = []
+        self.cur_version = None
+        self.new_version = None
+    
+    def release_url(self) -> str:
+        """Return the release url"""
+        device_mapping = {
+            "P1P": "p1",
+            "P1S": "p1",
+            "A1MINI": "a1-mini",
+            "A1": "a1",
+            "X1C": "x1",
+            "X1E": "x1e"
+        }
+        self.printer_name = device_mapping.get(self._client._device.info.device_type)
+        if self.printer_name is None:
+            return None
+        return f"https://bambulab.com/en/support/firmware-download/{self.printer_name}"
+    
+    def install(self):
+        """Install the update"""
+        if self.printer_name is None:
+            LOGGER.error("Printer name not found for firmware update.")
+            return
+
+        url = get_upgrade_url(self.printer_name)
+        if url is not None:
+            template = upgrade_template(url)
+            if template is not None:
+                LOGGER.debug(template)
+                self._client.publish(template)
+                self._client.callback("event_printer_data_update")
+                
+    def print_update(self, data) -> bool:
+        """Update the upgrade state"""
+        old_data = f"{self.__dict__}"
+        
+        # Example payload for P1 printer
+        # "upgrade_state": {
+        #   "sequence_id": 0,
+        #   "progress": "100",
+        #   "status": "UPGRADE_SUCCESS",
+        #   "consistency_request": false,
+        #   "dis_state": 1,
+        #   "err_code": 0,
+        #   "force_upgrade": false,
+        #   "message": "0%, 0B/s",
+        #   "module": "ota",
+        #   "new_version_state": 1,
+        #   "cur_state_code": 0,
+        #   "new_ver_list": [
+        #     {
+        #       "name": "ota",
+        #       "cur_ver": "01.06.01.02",
+        #       "new_ver": "01.07.00.00",
+        #       "cur_release_type": 3,
+        #       "new_release_type": 3
+        #     }
+        #   ]
+        # },
+        #
+        # Example payload for P1 printer with outstanding AMS firmware update:
+        # "upgrade_state": {
+        #   "sequence_id": 0,
+        #   "progress": "100",
+        #   "status": "UPGRADE_SUCCESS",
+        #   "consistency_request": false,
+        #   "dis_state": 1,
+        #   "err_code": 0,
+        #   "force_upgrade": false,
+        #   "message": "0%, 0B/s",
+        #   "module": "ota",
+        #   "new_version_state": 1,
+        #   "cur_state_code": 0,
+        #   "idx2": 2118490042,
+        #   "new_ver_list": [
+        #     {
+        #       "name": "ams/0",
+        #       "cur_ver": "00.00.06.44",
+        #       "new_ver": "00.00.06.49",
+        #       "cur_release_type": 0,
+        #       "new_release_type": 1
+        #      }
+        #   ]
+        # },
+        #
+        # Example payload for X1 printer
+        # "upgrade_state": {
+        #   "ahb_new_version_number": "",
+        #   "ams_new_version_number": "",
+        #   "consistency_request": false,
+        #   "dis_state": 3,
+        #   "err_code": 0,
+        #   "ext_new_version_number": "",
+        #   "force_upgrade": false,
+        #   "idx": 4,
+        #   "idx1": 3,
+        #   "message": "RK1126 start write flash success",
+        #   "module": "",
+        #   "new_version_state": 1,
+        #   "ota_new_version_number": "01.08.02.00",
+        #   "progress": "100",
+        #   "sequence_id": 0,
+        #   "sn": "**REDACTED**",
+        #   "status": "UPGRADE_SUCCESS"
+        # },
+        
+        # Cross-validation on the remaining series is required. 
+        # Data values ​​for the upgrade_state dictionary
+        state = data.get("upgrade_state", {})
+        try:
+            self.upgrade_progress = int(state.get("progress", self.upgrade_progress))
+        except ValueError:
+            # Prevents unexpected "" strings from being empty.
+            self.upgrade_progress = 0
+        self.new_version_state = state.get("new_version_state", self.new_version_state)
+        self.cur_version = self._client._device.info.sw_ver
+        self.new_version = self._client._device.info.sw_ver
+        self.new_ver_list = state.get("new_ver_list", self.new_ver_list)
+        if self.new_version_state == 1:
+            if len(self.new_ver_list) > 0:
+                ota_info = next(filter(
+                    lambda x: x["name"] == "ota", self.new_ver_list
+                ), {})
+                if ota_info:
+                    self.cur_version = ota_info["cur_ver"]
+                    self.new_version = ota_info["new_ver"]
+                if self.upgrade_progress == 100 and state.get("message") == "0%, 0B/s":
+                    self.upgrade_progress = 0
+            elif state.get("ota_new_version_number", None) != None:
+                self.new_version = state.get("ota_new_version_number")
+                if self.upgrade_progress == 100 and state.get("message") == "RK1126 start write flash success":
+                    self.upgrade_progress = 0
+            else:
+                LOGGER.error(f"Unable to interpret {state}")
+            
+        return (old_data != f"{self.__dict__}")
+
+
 @dataclass
 class PrintJob:
     """Return all information related content"""
@@ -427,6 +604,7 @@ class PrintJob:
     gcode_state: str
     file_type_icon: str
     gcode_file: str
+    gcode_file_downloaded: str
     subtask_name: str
     start_time: datetime
     end_time: datetime
@@ -442,6 +620,10 @@ class PrintJob:
     _ams_print_lengths: float
     _skipped_objects: list
     _printable_objects: dict
+    _gcode_file_prepare_percent: int
+    _loaded_model_data: bool
+    _ftpRunAgain: bool
+    _ftpThread: threading.Thread
 
     @property
     def get_printable_objects(self) -> json:
@@ -482,6 +664,7 @@ class PrintJob:
         self.print_percentage = 0
         self.gcode_state = "unknown"
         self.gcode_file = ""
+        self.gcode_file_downloaded = ""
         self.subtask_name = ""
         self.start_time = None
         self.end_time = None
@@ -491,14 +674,18 @@ class PrintJob:
         self.print_error = 0
         self.print_weight = 0
         self.ams_mapping = []
-        self._ams_print_weights = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        self._ams_print_lengths = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        self._ams_print_weights = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self._ams_print_lengths = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.print_length = 0
         self.print_bed_type = "unknown"
         self.file_type_icon = "mdi:file"
         self.print_type = ""
         self._printable_objects = {}
         self._skipped_objects = []
+        self._gcode_file_prepare_percent = -1
+        self._loaded_model_data = False
+        self._ftpRunAgain = False
+        self._ftpThread = None
 
     def print_update(self, data) -> bool:
         old_data = f"{self.__dict__}"
@@ -526,17 +713,24 @@ class PrintJob:
         previous_gcode_state = self.gcode_state
         self.gcode_state = data.get("gcode_state", self.gcode_state)
         if self.gcode_state.lower() not in GCODE_STATE_OPTIONS:
-            LOGGER.error(f"Unknown gcode_state. Please log an issue : '{self.gcode_state}'")
+            if self.gcode_state != '':
+                LOGGER.error(f"Unknown gcode_state. Please log an issue : '{self.gcode_state}'")
             self.gcode_state = "unknown"
         if previous_gcode_state != self.gcode_state:
             LOGGER.debug(f"GCODE_STATE: {previous_gcode_state} -> {self.gcode_state}")
+        old_gcode_file = self.gcode_file
         self.gcode_file = data.get("gcode_file", self.gcode_file)
+        if old_gcode_file != self.gcode_file:
+            LOGGER.debug(f"GCODE_FILE: {self.gcode_file}")
         self.print_type = data.get("print_type", self.print_type)
         if self.print_type.lower() not in PRINT_TYPE_OPTIONS:
             if self.print_type != "":
                 LOGGER.debug(f"Unknown print_type. Please log an issue : '{self.print_type}'")
             self.print_type = "unknown"
+        old_subtask_name = self.subtask_name
         self.subtask_name = data.get("subtask_name", self.subtask_name)
+        if old_subtask_name != self.subtask_name:
+            LOGGER.debug(f"SUBTASK_NAME: {self.subtask_name}")
         self.file_type_icon = "mdi:file" if self.print_type != "cloud" else "mdi:cloud-outline"
         self.current_layer = data.get("layer_num", self.current_layer)
         self.total_layers = data.get("total_layer_num", self.total_layers)
@@ -571,6 +765,13 @@ class PrintJob:
         if previously_idle and not currently_idle:
             self._client.callback("event_print_started")
 
+            # Sometimes the download completes so fast we go from a prior print's 100% to 100% for the new print in one update.
+            # Make sure we catch that case too. And Lan Mode never sets this - make sure we init it to 0.
+            self._gcode_file_prepare_percent = 0
+
+            # Clear existing cover & pick image data before attempting any fresh download.
+            self._clear_model_data();
+
             # Generate the start_time for P1P/S when printer moves from idle to another state. Original attempt with remaining time
             # becoming non-zero didn't work as it never bounced to zero in at least the scenario where a print was canceled.
             if self._client._device.supports_feature(Features.START_TIME_GENERATED):
@@ -580,8 +781,41 @@ class PrintJob:
                 self.end_time = None
                 LOGGER.debug(f"GENERATED START TIME: {self.start_time}")
 
-            # Update task data
-            self._update_task_data()
+            if not self._client.ftp_enabled:
+                # We can update task data from the cloud immediately. But ftp has to wait.
+                self._update_task_data()
+
+        old_gcode_file_prepare_percent = self._gcode_file_prepare_percent
+        self._gcode_file_prepare_percent = int(data.get("gcode_file_prepare_percent", str(self._gcode_file_prepare_percent)))
+        if self.gcode_state == "PREPARE":
+            LOGGER.debug(f"DOWNLOAD PERCENTAGE: {old_gcode_file_prepare_percent} -> {self._gcode_file_prepare_percent}")
+
+        # If we are FTP enabled and we haven't yet downloaded the model data, see if we can now.
+        if not self._loaded_model_data:
+
+            if self.gcode_state == "PREPARE" and \
+                old_gcode_file_prepare_percent > 0 and \
+                old_gcode_file_prepare_percent != self._gcode_file_prepare_percent and \
+                self._gcode_file_prepare_percent >= 99:
+
+                # X1C jumps straight from 0 to 100 so we can't use this to trigger the download.
+                # P1 sometimes only gets to 99% download and never reaches 100% so we treat 99% as complete.
+
+                # Now we can update the model data by ftp. By this point the model has been successfully loaded to the printer.
+                # and it's network stack is idle and shouldn't timeout or fail on us randomly.
+                LOGGER.debug(f"DOWNLOAD TO PRINTER IS COMPLETE")
+                self._update_task_data()
+
+            if self.gcode_state == "RUNNING" and (previously_idle or previous_gcode_state == "PREPARE"):
+                # We haven't yet downloaded model data off the printer. I've observed three scenarios where this happens:
+                # 1. This is a lan mode print where the gcode was pushed to the printer before the print ever started so
+                # 2. On the P1 I've observed a bug where the download completes but the gcode_file_prepare_percent never reaches 100.
+                # If we transition to the running gcode_state without observing 100% we assume the download did actually complete.
+                # 3. On the X1C for a local Bambu Studio slice sent via the cloud we see the download percentage immediately
+                # jump to 100% at the same time we see the PREPARE phase start but if we try and download then, the model file
+                # is not present.
+                LOGGER.debug("REACHED RUNNING WITHOUT DOWNLOADING MODEL")
+                self._update_task_data()
 
         # When a print is canceled by the user, this is the payload that's sent. A couple of seconds later
         # print_error will be reset to zero.
@@ -627,129 +861,124 @@ class PrintJob:
 
         return (old_data != f"{self.__dict__}")
 
-    # The task list is of the following form with a 'hits' array with typical 20 entries.
-    #
-    # "total": 531,
-    # "hits": [
-    #     {
-    #     "id": 35237965,
-    #     "designId": 0,
-    #     "designTitle": "",
-    #     "instanceId": 0,
-    #     "modelId": "REDACTED",
-    #     "title": "REDACTED",
-    #     "cover": "REDACTED",
-    #     "status": 4,
-    #     "feedbackStatus": 0,
-    #     "startTime": "2023-12-21T19:02:16Z",
-    #     "endTime": "2023-12-21T19:02:35Z",
-    #     "weight": 34.62,
-    #     "length": 1161,
-    #     "costTime": 10346,
-    #     "profileId": 35276233,
-    #     "plateIndex": 1,
-    #     "plateName": "",
-    #     "deviceId": "REDACTED",
-    #     "amsDetailMapping": [
-    #         {
-    #         "ams": 4,
-    #         "sourceColor": "F4D976FF",
-    #         "targetColor": "F4D976FF",
-    #         "filamentId": "GFL99",
-    #         "filamentType": "PLA",
-    #         "targetFilamentType": "",
-    #         "weight": 34.62
-    #         }
-    #     ],
-    #     "mode": "cloud_file",
-    #     "isPublicProfile": false,
-    #     "isPrintable": true,
-    #     "deviceModel": "P1P",
-    #     "deviceName": "Bambu P1P",
-    #     "bedType": "textured_plate"
-    #     },
-
-
-    ftp_search_paths = ['/', '/cache/']
-
-    def _cache_ftp_path(self, path: str, ftp):
-        try:
-            LOGGER.debug(f"Running FTP nlst for '{path}'")
-            self._client._device.ftp_cache[path] = ftp.nlst(path)
-        except Exception as e:
-            LOGGER.error(f"FTP nlst Exception. Type: {type(e)} Args: {e}")
-            pass
-
-    def _find_file_in_cache(self, filename: str) -> Union[str, None]:
-        # Attempt to find a file in one of many known directories
-        for search_path in self.ftp_search_paths:
-            cached_files = self._client._device.ftp_cache.get(search_path, [])
-
-            # X1 includes the path in the returned files for an NLST command
-            filepath = f"{search_path}{filename}"
-            if filepath in cached_files:
-                return filepath
-            
-            # P1 does not include the path in the returned files for an NLST command
-            if filename in cached_files:
-                return filepath
-            
-        return None
-
     # FTP implementation differences between P1 and X1 printers:
     # - X1 includes the path in the returned filenames for the NLST command
     # - P1 just returns the bare filename
     #
     # Known filepath configurations:
     # 
-    # X1C cloud print:
-    #   Bambu Studio 'print' of unsaved workspace
-    #     gcode_filename = data/metadata/plate_1.gcode (ramdisk - not accessible via ftp)
-    #     subtask_name = 3mf file without .3mf extensions - e.g FILENAME
-    #     FILE: /cache/FILENAME.3mf
+    # X1 lan mode print
+    #   Orca 2.2.0 'print' of 3mf file
+    #     "gcode_file": "/data/Metadata/plate_1.gcode",
+    #     "subtask_name": "Clamshell Parts Box",
+    #     FILE: /Clamshell Parts Box.gcode.3mf
     #
-    # P1S lan mode print:
+    # P1 lan mode print:
     #   Bambu Studio 'print' of 3mf file
     #     "gcode_file": "36mm.gcode.3mf",
     #     "subtask_name": "36mm",
-    #     FILE: ?
+    #     FILE: /36mm.gcode.3mf
+    #
+    # X1C cloud print:
+    #   Bambu Studio 'print' of unsaved workspace
+    #     gcode_filename = data/metadata/plate_1.gcode (ramdisk - not accessible via ftp)
+    #     subtask_name = FILENAME
+    #     FILE: /cache/FILENAME.3mf
+    #
+    # P1 cloud print:
+    #   Bambu Studio 'print' of unsaved workspace
+    #     gcode_filename = Cube + Cube + Cube + Cube + Cube.3mf
+    #     subtask_name = Cube + Cube + Cube + Cube + Cube
+    #     FILE: /cache/Cube + Cube + Cube + Cube + Cube.3mf
+    #
+    # X1 cloud print:
+    #   Makerworld print
+    #     gcode_filename = /data/metadata/plate_3.gcode
+    #     subtask_name = Lovers Valentine Day Shadowbox
+    #     FILE: /cache/Lovers Valentine Day Shadowbox.3mf
+    # 
+    # P1 cloud print:
+    #   Makerworld print
+    #     gcode_filename = Lovers Valentine Day Shadowbox.3mf
+    #     subtask_name = Lovers Valentine Day Shadowbox
+    #     FILE: /cache/Lovers Valentine Day Shadowbox.3mf
+    # 
 
-    def _find_model_path(self, ftp) -> Union[str, None]:
-        if self.gcode_file == '' and self.subtask_name == '':
-            # Fall back to find the latest file by timestamp
-            model_path = self._find_latest_file(ftp, '/cache', ['.3mf'])
-            if model_path is not None:
-                return model_path
+    ftp_search_paths = ['/', '/cache/']
+    def _attempt_ftp_download_of_file(self, ftp, file_path):
+        if 'Metadata' in file_path:
+            # This is a ram drive on the X1 and is not accessible via FTP
             return None
 
-        model_path = None
-        for attempt in range(2):
-            # If we fail to find it on the first pass, refresh the ftp file cache and try again
-            if attempt == 1:
-                for search_path in self.ftp_search_paths:
-                    self._cache_ftp_path(search_path, ftp)
+        file = tempfile.NamedTemporaryFile(delete=True)
+        try:
+            LOGGER.debug(f"Attempting download of '{file_path}'")
+            ftp.retrbinary(f"RETR {file_path}", file.write)
+            file.flush()
+            LOGGER.debug(f"Successfully downloaded '{file_path}'.")
+            return file
+        except ftplib.error_perm as e:
+             if '550' not in str(e.args): # 550 is unavailable.
+                 LOGGER.debug(f"Failed to download model at '{file_path}': {e}")
+        except Exception as e:
+            LOGGER.debug(f"Unexpected exception at '{file_path}': {type(e)} Args: {e}")
+            # Optionally add retry logic here
+            pass
+        file.close()
+        return None
 
-            # First test if the subtaskname exists as a 3mf
-            if self.subtask_name != '':
-                filename = self.subtask_name if self.subtask_name.endswith('.3mf') else f"{self.subtask_name}.3mf"
-                model_path = self._find_file_in_cache(filename=f"{self.subtask_name}.3mf")
-                if model_path is not None:
-                    break
+    def _attempt_ftp_download_of_file_from_search_path(self, ftp, filename):
+        for path in self.ftp_search_paths:
+            file_path = f"{path}{filename.lstrip('/')}"
+            file = self._attempt_ftp_download_of_file(ftp, file_path)
+            if file is not None:
+                return file
+        return None
 
-            # If we didn't find it then try the gcode file
-            if self.gcode_file != '':
-                filename = self.gcode_file if self.gcode_file.endswith('.3mf') else f"{self.gcode_file}.3mf"
-                model_path = self._find_file_in_cache(filename=filename)
-                if model_path is not None:
-                    break
+    def _attempt_ftp_download(self, ftp) -> Union[str, None]:
+        model_file = None
 
-        return model_path
+        # First test if the subtaskname exists as a 3mf
+        if self.subtask_name != '':
+            if self.subtask_name.endswith('.3mf'):
+                model_file = self._attempt_ftp_download_of_file_from_search_path(ftp, filename=self.subtask_name)
+                if model_file is not None:
+                    return model_file
+            else:
+                model_file = self._attempt_ftp_download_of_file_from_search_path(ftp, filename=f"{self.subtask_name}.3mf")
+                if model_file is not None:
+                    return model_file
+                model_file = self._attempt_ftp_download_of_file_from_search_path(ftp, filename=f"{self.subtask_name}.gcode.3mf")
+                if model_file is not None:
+                    return model_file
+
+        # If we didn't find it then try the gcode file
+        if (self.gcode_file != '') and (self.subtask_name != self.gcode_file):
+            if self.gcode_file.endswith('.3mf'):
+                model_file = self._attempt_ftp_download_of_file_from_search_path(ftp, filename=self.gcode_file)
+                if model_file is not None:
+                    return model_file
+            else:
+                model_file = self._attempt_ftp_download_of_file_from_search_path(ftp, filename=f"{self.gcode_file}.3mf")
+                if model_file is not None:
+                    return model_file
+                model_file = self._attempt_ftp_download_of_file_from_search_path(ftp, filename=f"{self.gcode_file}.gcode.3mf")
+                if model_file is not None:
+                    return model_file
+
+        if self.subtask_name == "":
+            # Fall back to find the latest file by timestamp but only if we don't have a subtask name set - printer must have been rebooted.
+            LOGGER.debug("Falling back to searching for latest 3mf file.")
+            model_path = self._find_latest_file(ftp, self.ftp_search_paths, ['.3mf'])
+            if model_path is not None:
+                model_file = self._attempt_ftp_download_of_file(ftp, model_path)
+
+        return model_file
     
-    def _find_latest_file(self, ftp, path, extensions: list):
+    def _find_latest_file(self, ftp, search_paths, extensions: list):
         # Look for the newest file with extension in directory.
-        LOGGER.debug(f"Looking for latest {extensions} file in {path}")
         file_list = []
-        def parse_line(line):
+        def parse_line(path: str, line: str):
             # Match the line format: '-rw-rw-rw- 1 user group 1234 Jan 01 12:34 filename'
             pattern_with_time_no_year      = r'^\S+\s+\d+\s+\S+\s+\S+\s+\d+\s+(\S+\s+\d+\s+\d+:\d+)\s+(.+)$'
             # Match the line format: '-rw-rw-rw- 1 user group 1234 Jan 01 2024 filename'
@@ -767,7 +996,7 @@ class PrintJob:
                     timestamp = timestamp.replace(year=utc_time_now.year)
                     if timestamp > utc_time_now:
                         timestamp = timestamp.replace(year=datetime.now().year - 1)
-                    return timestamp, filename
+                    return timestamp, f"{path}{filename}"
                 else:
                     return None
 
@@ -778,7 +1007,7 @@ class PrintJob:
                 if extension in extensions:
                     timestamp = datetime.strptime(timestamp_str, '%b %d %Y')
                     timestamp = timestamp.replace(tzinfo=timezone.utc)
-                    return timestamp, filename
+                    return timestamp, f"{path}{filename}"
                 else:
                     return None
             
@@ -786,14 +1015,22 @@ class PrintJob:
             return None
 
         # Attempt to find the model in one of many known directories
-        ftp.retrlines(f"LIST {path}", lambda line: file_list.append(file) if (file := parse_line(line)) is not None else None)
+        for path in search_paths:
+            try:
+                LOGGER.debug(f"Looking for latest {extensions} file in {path}")
+                ftp.retrlines(f"LIST {path}", lambda line: file_list.append(file) if (file := parse_line(path, line)) is not None else None)
+                LOGGER.debug(f"Completed FTP list for {path}")
+            except Exception as e:
+                LOGGER.error(f"FTP list Exception. Type: {type(e)} Args: {e}")
+                pass
+
         files = sorted(file_list, key=lambda file: file[0], reverse=True)
         for file in files:
-            _, extension = os.path.splitext(file[1])
-            if extension in extensions:
-                file_path = f"{path}/{file[1]}"
-                LOGGER.debug(f"Found latest file {file_path}")
-                return file_path
+            for extension in extensions:
+                if file[1].endswith(extension):
+                    if extension in extensions:
+                        LOGGER.debug(f"Found latest file {file[1]}")
+                        return file[1]
 
         return None
     
@@ -852,6 +1089,8 @@ class PrintJob:
         LOGGER.info(f"Done downloading timelapse by FTP. Elapsed time = {(end_time-start_time).seconds}s") 
 
     def _update_task_data(self):
+        self._loaded_model_data = True
+
         # If we are running in connection test mode, skip updating the last print task data.
         if self._client._test_mode:
             return
@@ -862,111 +1101,183 @@ class PrintJob:
             self._download_task_data_from_cloud()
 
     def _download_task_data_from_printer(self):
-        thread = threading.Thread(target=self._async_download_task_data_from_printer)
-        thread.start()
+        if self._ftpThread is None:
+            # Only start a new thread if there
+            LOGGER.debug("Starting FTP thread.")
+            self._ftpThread = threading.Thread(target=self._async_download_task_data_from_printer)
+            self._ftpThread.start()
+        else:
+            LOGGER.debug("FTP thread already running.")
+            self._ftpRunAgain = True
+
+    def _clear_model_data(self):
+        LOGGER.debug("Clearing model data")
+        self._loaded_model_data = False
+        self._client._device.cover_image.set_image(None)
+        self._clear_pick_data();
+
+    def _clear_pick_data(self):
+        LOGGER.debug("Clearing pick data")
+        self._client._device.pick_image.set_image(None)
+        self._printable_objects = {}
 
     def _async_download_task_data_from_printer(self):
         current_thread = threading.current_thread()
         current_thread.setName(f"{self._client._device.info.device_type}-FTP-{threading.get_native_id()}")
-        start_time = datetime.now()
-        LOGGER.info(f"Updating task data by FTP")
 
+        while True:
+            self._ftpRunAgain = False
+            start_time = datetime.now()
+            LOGGER.info(f"FTP thread starting.")
+            self._async_download_task_data_from_printer_worker()
+            end_time = datetime.now()
+            LOGGER.info(f"FTP thread exiting. Elapsed time = {(end_time-start_time).seconds}s")
+            if not self._ftpRunAgain:
+                break
+            LOGGER.debug("FTP thread re-running.")
+
+        self._ftpThread = None
+
+    def _async_download_task_data_from_printer_worker(self):
         # Open the FTP connection
         ftp = self._client.ftp_connection()
-        model_path = self._find_model_path(ftp)
 
-        if model_path is not None:
-            LOGGER.debug(f"Found model: '{model_path}'")
-        else:
+        for i in range(1,13):
+            model_file = self._attempt_ftp_download(ftp)
+            if model_file is not None:
+                break
+
+            if self._client._device.info.device_type == "X1" or self._client._device.info.device_type == "X1C" or self._client._device.info.device_type == "X1E":
+                # The X1 has a weird behavior where the downloaded file doesn't exist for several seconds into the RUNNING phase and even
+                # then it is still being downloaded in place so we might try to grab it mid-download and get a corrupt file. Try 13 times
+                # 5 seconds apart over 60s.
+                if i != 12:
+                    LOGGER.debug(f"Sleeping 5s for X1 retry")
+                    time.sleep(5)
+                    LOGGER.debug(f"Try #{i+1} for X1")
+            else:
+                break
+
+        ftp.quit()
+
+        if model_file is None:
             LOGGER.debug("No model file found.")
             return
 
-        # Create a temporary file we can download the 3mf into
-        with tempfile.NamedTemporaryFile(delete=True) as f:
-            try:
-                # Fetch the 3mf from FTP and close the connection
-                ftp.retrbinary(f"RETR {model_path}", f.write)
-                f.flush()
-                ftp.quit()
+        result = False
+        try:
+            LOGGER.debug(f"File size is {os.path.getsize(model_file.name)} bytes")
 
-                # Open the 3mf zip archive
-                with ZipFile(f) as archive:
-                    # Extract the slicer XML config and parse the plate tree
-                    plate = ElementTree.fromstring(archive.read('Metadata/slice_info.config')).find('plate')
-                    
-                    # Iterate through each config element and extract the data
-                    # Example contents:
-                    # {'key': 'index', 'value': '2'}
-                    # {'key': 'printer_model_id', 'value': 'C12'}
-                    # {'key': 'nozzle_diameters', 'value': '0.4'}
-                    # {'key': 'timelapse_type', 'value': '0'}
-                    # {'key': 'prediction', 'value': '5935'}
-                    # {'key': 'weight', 'value': '20.91'}
-                    # {'key': 'outside', 'value': 'false'}
-                    # {'key': 'support_used', 'value': 'false'}
-                    # {'key': 'label_object_enabled', 'value': 'true'}
-                    # {'identify_id': '123', 'name': 'ModelObjectOne.stl', 'skipped': 'false'}
-                    # {'identify_id': '394', 'name': 'ModelObjectTwo.stl', 'skipped': 'false'}
-                    # {'id': '1', 'tray_info_idx': 'GFA01', 'type': 'PLA', 'color': '#000000', 'used_m': '5.45', 'used_g': '17.32'}
-                    # {'id': '2', 'tray_info_idx': 'GFA01', 'type': 'PLA', 'color': '#8D8C8F', 'used_m': '0.84', 'used_g': '2.66'}
-                    # {'id': '3', 'tray_info_idx': 'GFA01', 'type': 'PLA', 'color': '#FFFFFF', 'used_m': '0.29', 'used_g': '0.93'}
-                    
-                    # Start a total print length count to be compiled from each filament
-                    print_length = 0
-                    plate_number = None
-                    _printable_objects = {}
-                    filament_count = len(self.ams_mapping)
-                    plate_filament_count = len(plate.findall('filament'))
-                    for metadata in plate:
-                        if (metadata.get('key') == 'index'):
-                            # Index is the plate number being printed
-                            plate_number = metadata.get('value')
-                            LOGGER.debug(f"Plate: {plate_number}")
-                            
-                            # Now we have the plate number, extract the cover image from the archive
-                            self._client._device.cover_image.set_jpeg(archive.read(f"Metadata/plate_{plate_number}.png"))
-                            LOGGER.debug(f"Cover image: Metadata/plate_{plate_number}.png")
-                        elif (metadata.get('key') == 'weight'):
-                            LOGGER.debug(f"Weight: {metadata.get('value')}")
-                            self.print_weight = metadata.get('value')
-                        elif (metadata.get('key') == 'prediction'):
-                            # Estimated print length in seconds
-                            LOGGER.debug(f"Print time: {metadata.get('value')}s")
-                        elif (metadata.tag == 'object'):
-                            # Get the list of printable objects present on the plate before slicing.
-                            # This includes hidden objects which need to be filtered out later.
-                            if metadata.get('skipped') == f"false":
-                                _printable_objects[metadata.get('identify_id')] = metadata.get('name')
-                        elif (metadata.tag == 'filament'):
-                            # Filament used for the current print job. The plate info contains filaments
-                            # identified in the order they appear in the slicer. These IDs must be
-                            # mapped to the AMS tray mappings provided by MQTT print.ams_mapping
+            # Open the 3mf zip archive
+            with ZipFile(model_file) as archive:
+                # Extract the slicer XML config and parse the plate tree
+                plate = ElementTree.fromstring(archive.read('Metadata/slice_info.config')).find('plate')
+                
+                # Iterate through each config element and extract the data
+                # Example contents:
+                # {'key': 'index', 'value': '2'}
+                # {'key': 'printer_model_id', 'value': 'C12'}
+                # {'key': 'nozzle_diameters', 'value': '0.4'}
+                # {'key': 'timelapse_type', 'value': '0'}
+                # {'key': 'prediction', 'value': '5935'}
+                # {'key': 'weight', 'value': '20.91'}
+                # {'key': 'outside', 'value': 'false'}
+                # {'key': 'support_used', 'value': 'false'}
+                # {'key': 'label_object_enabled', 'value': 'true'}
+                # {'identify_id': '123', 'name': 'ModelObjectOne.stl', 'skipped': 'false'}
+                # {'identify_id': '394', 'name': 'ModelObjectTwo.stl', 'skipped': 'false'}
+                # {'id': '1', 'tray_info_idx': 'GFA01', 'type': 'PLA', 'color': '#000000', 'used_m': '5.45', 'used_g': '17.32'}
+                # {'id': '2', 'tray_info_idx': 'GFA01', 'type': 'PLA', 'color': '#8D8C8F', 'used_m': '0.84', 'used_g': '2.66'}
+                # {'id': '3', 'tray_info_idx': 'GFA01', 'type': 'PLA', 'color': '#FFFFFF', 'used_m': '0.29', 'used_g': '0.93'}
+                
+                # Start a total print length count to be compiled from each filament
+                print_length = 0
+                plate_number = None
+                _printable_objects = {}
+                filament_count = len(self.ams_mapping)
+                plate_filament_count = len(plate.findall('filament'))
 
-                            # Zero-index the filament ID
-                            filament_index = int(metadata.get('id')) - 1
-                            log_label = f"External spool"
-                            
-                            # Filament count should be greater than the zero-indexed filament ID
-                            if filament_count > filament_index:
-                                ams_index = self.ams_mapping[filament_index]
-                                self._ams_print_weights[ams_index] = metadata.get('used_g')
-                                self._ams_print_lengths[ams_index] = metadata.get('used_m')
-                                log_label = f"AMS Tray {ams_index + 1}"
-                            elif plate_filament_count > 1:
-                                # Multi filament print but the AMS mapping is unknown
-                                # This can happen when loading an old print after restart
-                                log_label = f"AMS Tray unknown"
+                # Reset filament data
+                self._ams_print_weights = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+                self._ams_print_lengths = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-                            LOGGER.debug(f"{log_label}: {metadata.get('used_m')}m | {metadata.get('used_g')}g")
+                for metadata in plate:
+                    if (metadata.get('key') == 'index'):
+                        # Index is the plate number being printed
+                        plate_number = metadata.get('value')
+                        LOGGER.debug(f"Plate: {plate_number}")
+                        
+                        # Now we have the plate number, extract the cover image from the archive
+                        self._client._device.cover_image.set_image(archive.read(f"Metadata/plate_{plate_number}.png"))
+                        LOGGER.debug(f"Cover image: Metadata/plate_{plate_number}.png")
 
-                            # Increase the total print length
-                            print_length += float(metadata.get('used_m'))
-                    
-                    self.print_length = print_length
+                        #Extract gcode file from archive to HA www folder if download_gcode_file is enabled
+                        if self._client.download_gcode_file_enabled:
+                            try:
+                                local_gcode_dir = f"/config/www/media/ha-bambulab/{self._client._serial}/tmp_gcode"
+                                local_gcode_filename = f"{os.path.basename(os.path.realpath(model_file.name))}.gcode"
+                                if not os.path.exists(local_gcode_dir):
+                                    os.makedirs(local_gcode_dir)
+                                for name in os.listdir(local_gcode_dir):
+                                    path = os.path.join(local_gcode_dir, name)
+                                    if os.path.isfile(path):
+                                        os.remove(path)
+                                with archive.open(f"Metadata/plate_{plate_number}.gcode") as gcode_entry, open(os.path.join(local_gcode_dir, local_gcode_filename), "wb") as target_path:
+                                    shutil.copyfileobj(gcode_entry, target_path)
+                                    self.gcode_file_downloaded = local_gcode_filename
+                            except Exception as e:
+                                self.gcode_file_downloaded = "ERROR"
+                                LOGGER.error(f"Error while extracting gcode zip entry to target path. {repr(e)}")
+                        
+                        # And extract the plate type from the plate json.
+                        self.print_bed_type = json.loads(archive.read(f"Metadata/plate_{plate_number}.json")).get('bed_type')
+                    elif (metadata.get('key') == 'weight'):
+                        LOGGER.debug(f"Weight: {metadata.get('value')}")
+                        self.print_weight = metadata.get('value')
+                    elif (metadata.get('key') == 'prediction'):
+                        # Estimated print length in seconds
+                        LOGGER.debug(f"Print time: {metadata.get('value')}s")
+                    elif (metadata.tag == 'object'):
+                        # Get the list of printable objects present on the plate before slicing.
+                        # This includes hidden objects which need to be filtered out later.
+                        if metadata.get('skipped') == f"false":
+                            _printable_objects[metadata.get('identify_id')] = metadata.get('name')
+                    elif (metadata.tag == 'filament'):
+                        # Filament used for the current print job. The plate info contains filaments
+                        # identified in the order they appear in the slicer. These IDs must be
+                        # mapped to the AMS tray mappings provided by MQTT print.ams_mapping
 
-                    if plate_number is not None:
-                        self._client._device.pick_image.set_image(archive.read(f"Metadata/pick_{plate_number}.png"))
+                        # Zero-index the filament ID
+                        filament_index = int(metadata.get('id')) - 1
+                        log_label = f"External spool"
+                        
+                        # Filament count should be greater than the zero-indexed filament ID
+                        if filament_count > filament_index:
+                            ams_index = self.ams_mapping[filament_index]
+                            # We add the filament as you can map multiple slicer filaments to the same physical filament.
+                            self._ams_print_weights[ams_index] += float(metadata.get('used_g'))
+                            self._ams_print_lengths[ams_index] += float(metadata.get('used_m'))
+                            log_label = f"AMS Tray {ams_index + 1}"
+                        elif plate_filament_count > 0:
+                            # Multi filament print but the AMS mapping is unknown
+                            # The data is only sent in the mqtt payload once and isn't part of the 'full' data so the integration must be
+                            # live and listening to capture it.
+                            LOGGER.debug(f"filament_index: {filament_index}")
+                            log_label = f"AMS Tray unknown"
+                        else:
+                            LOGGER.debug(f"plate_filament_count: {plate_filament_count}")
 
+                        LOGGER.debug(f"{log_label}: {metadata.get('used_m')}m | {metadata.get('used_g')}g")
+
+                        # Increase the total print length
+                        print_length += float(metadata.get('used_m'))
+                
+                self.print_length = print_length
+
+                if plate_number is not None:
+                    try:
+                        image = archive.read(f"Metadata/pick_{plate_number}.png")
+                        self._client._device.pick_image.set_image(image)
                         # Process the pick image for objects
                         pick_image = Image.open(archive.open(f"Metadata/pick_{plate_number}.png"))
                         identify_ids = self._identify_objects_in_pick_image(image=pick_image)
@@ -974,20 +1285,61 @@ class PrintJob:
                         # Filter the printable objects from slice_info.config, removing
                         # any that weren't detected in the pick image
                         self._printable_objects = {k: _printable_objects[k] for k in identify_ids if k in _printable_objects}
+                    except:
+                        LOGGER.debug(f"Unable to load 'Metadata/pick_{plate_number}.png' from archive")
 
-                archive.close()
+            archive.close()
 
-                end_time = datetime.now()
-                LOGGER.info(f"Done updating task data by FTP. Elapsed time = {(end_time-start_time).seconds}s") 
-                self._client.callback("event_printer_data_update")
-                return True
-            except ftplib.error_perm as e:
-                LOGGER.warning(f"Failed to download model data: {e}. Model path: {model_path}")
-                # Optionally add retry logic here
-                return False
-            except Exception as e:
-                LOGGER.error(f"Unexpected error downloading model data: {e}")
-                return False
+            self._client.callback("event_printer_data_update")
+            result = True
+        except Exception as e:
+            LOGGER.error(f"Unexpected error parsing model data: {e}")
+        
+        # Close and delete temporary file
+        model_file.close();
+        return result
+
+    # The task list is of the following form with a 'hits' array with typical 20 entries.
+    #
+    # "total": 531,
+    # "hits": [
+    #     {
+    #     "id": 35237965,
+    #     "designId": 0,
+    #     "designTitle": "",
+    #     "instanceId": 0,
+    #     "modelId": "REDACTED",
+    #     "title": "REDACTED",
+    #     "cover": "REDACTED",
+    #     "status": 4,
+    #     "feedbackStatus": 0,
+    #     "startTime": "2023-12-21T19:02:16Z",
+    #     "endTime": "2023-12-21T19:02:35Z",
+    #     "weight": 34.62,
+    #     "length": 1161,
+    #     "costTime": 10346,
+    #     "profileId": 35276233,
+    #     "plateIndex": 1,
+    #     "plateName": "",
+    #     "deviceId": "REDACTED",
+    #     "amsDetailMapping": [
+    #         {
+    #         "ams": 4,
+    #         "sourceColor": "F4D976FF",
+    #         "targetColor": "F4D976FF",
+    #         "filamentId": "GFL99",
+    #         "filamentType": "PLA",
+    #         "targetFilamentType": "",
+    #         "weight": 34.62
+    #         }
+    #     ],
+    #     "mode": "cloud_file",
+    #     "isPublicProfile": false,
+    #     "isPrintable": true,
+    #     "deviceModel": "P1P",
+    #     "deviceName": "Bambu P1P",
+    #     "bedType": "textured_plate"
+    #     },
 
     def _download_task_data_from_cloud(self):
         # Must have an auth token for this to be possible
@@ -995,12 +1347,12 @@ class PrintJob:
             return
 
         self._task_data = self._client.bambu_cloud.get_latest_task_for_printer(self._client._serial)
+        self._ams_print_weights = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self._ams_print_lengths = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         if self._task_data is None:
             LOGGER.debug("No bambu cloud task data found for printer.")
-            self._client._device.cover_image.set_jpeg(None)
+            self._client._device.cover_image.set_image(None)
             self.print_weight = 0
-            self._ams_print_weights = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            self._ams_print_lengths = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             self.print_length = 0
             self.print_bed_type = "unknown"
             self.start_time = None
@@ -1010,14 +1362,12 @@ class PrintJob:
             url = self._task_data.get('cover', '')
             if url != "":
                 data = self._client.bambu_cloud.download(url)
-                self._client._device.cover_image.set_jpeg(data)
+                self._client._device.cover_image.set_image(data)
 
             self.print_length = self._task_data.get('length', self.print_length * 100) / 100
             self.print_bed_type = self._task_data.get('bedType', self.print_bed_type)
             self.print_weight = self._task_data.get('weight', self.print_weight)
             ams_print_data = self._task_data.get('amsDetailMapping', [])
-            self._ams_print_weights = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            self._ams_print_lengths = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             if self.print_weight != 0:
                 for ams_data in ams_print_data:
                     index = ams_data['ams']
@@ -1072,7 +1422,7 @@ class PrintJob:
                 r, g, b, a = current_color
 
                 # Skip this pixel if it's transparent or already identified
-                if r == 0 or current_color in seen_colors:
+                if a == 0 or current_color in seen_colors:
                     continue
 
                 # Convert the colour to the decimal representation of its hex value
@@ -1092,6 +1442,7 @@ class Info:
     serial: str
     device_type: str
     wifi_signal: int
+    wifi_sent: datetime
     device_type: str
     hw_ver: str
     sw_ver: str
@@ -1109,6 +1460,7 @@ class Info:
         self.serial = self._client._serial
         self.device_type = self._client._device_type
         self.wifi_signal = 0
+        self.wifi_sent = datetime.now()
         self.hw_ver = "unknown"
         self.sw_ver = "unknown"
         self.online = False
@@ -1174,8 +1526,6 @@ class Info:
         #         },
         #         "layer_num": 0,
         #         "total_layer_num": 0,
-
-        self.wifi_signal = int(data.get("wifi_signal", str(self.wifi_signal)).replace("dBm", ""))
 
         # "print": {
         #   "net": {
@@ -1261,9 +1611,23 @@ class Info:
         self.nozzle_diameter = float(data.get("nozzle_diameter", self.nozzle_diameter))
         self.nozzle_type = data.get("nozzle_type", self.nozzle_type)
 
-        #
+        # Compute if there's a delta before we check the wifi_signal value.
+        changed = (old_data != f"{self.__dict__}")
 
-        return (old_data != f"{self.__dict__}")
+        # Now test the wifi signal to minimize how frequently we sent data upates to home assistant. We want
+        # these changes to be done outside the delta test above so that we don't trigger an update every 2-3s
+        # due the noise in this value on A1/P1 printers.
+        old_wifi_signal = self.wifi_signal
+        self.wifi_signal = int(data.get("wifi_signal", str(self.wifi_signal)).replace("dBm", ""))
+        if (self.wifi_signal != old_wifi_signal) :
+            if (datetime.now() - self.wifi_sent) > timedelta(seconds=60):
+                # It's been long enough. We can send this one.
+                self.wifi_sent = datetime.now()
+                changed = True
+        
+        return changed
+
+
 
     @property
     def has_bambu_cloud_connection(self) -> bool:
@@ -1308,12 +1672,14 @@ class AMSList:
     """Return all AMS related info"""
     tray_now: int
     data: list[AMSInstance]
+    model: str
 
     def __init__(self, client):
         self._client = client
         self.tray_now = 0
         self.data = [None] * 4
         self._first_initialization_done = False
+        self.model = ""
 
     def info_update(self, data):
         old_data = f"{self.__dict__}"
@@ -1349,8 +1715,10 @@ class AMSList:
             name = module["name"]
             index = -1
             if name.startswith("ams/"):
+                self.model = "AMS"
                 index = int(name[4])
             elif name.startswith("ams_f1/"):
+                self.model = "AMS Lite"
                 index = int(name[7])
             
             if index != -1:
@@ -1475,11 +1843,11 @@ class AMSTray:
     color: str
     nozzle_temp_min: int
     nozzle_temp_max: int
-    remain: int
+    _remain: int
     k: float
     tag_uid: str
     tray_uuid: str
-
+    tray_weight: int
 
     def __init__(self, client):
         self._client = client
@@ -1491,10 +1859,19 @@ class AMSTray:
         self.color = "00000000"  # RRGGBBAA
         self.nozzle_temp_min = 0
         self.nozzle_temp_max = 0
-        self.remain = 0
+        self._remain = -1
         self.k = 0
         self.tag_uid = ""
         self.tray_uuid = ""
+        self.tray_weight = 0
+
+    @property
+    def remain(self) -> int:
+        return self._remain
+
+    @property
+    def remain_enabled(self) -> bool:
+        return self._client._device.supports_feature(Features.AMS_FILAMENT_REMAINING) and self._client._device.home_flag.ams_calibrate_remaining
 
     def print_update(self, data) -> bool:
         old_data = f"{self.__dict__}"
@@ -1509,10 +1886,11 @@ class AMSTray:
             self.color = "00000000"  # RRGGBBAA
             self.nozzle_temp_min = 0
             self.nozzle_temp_max = 0
-            self.remain = 0
+            self._remain = -1
             self.tag_uid = ""
             self.tray_uuid = ""
             self.k = 0
+            self.tray_weight = 0
         else:
             self.empty = False
             self.idx = data.get('tray_info_idx', self.idx)
@@ -1522,11 +1900,14 @@ class AMSTray:
             self.color = data.get('tray_color', self.color)
             self.nozzle_temp_min = data.get('nozzle_temp_min', self.nozzle_temp_min)
             self.nozzle_temp_max = data.get('nozzle_temp_max', self.nozzle_temp_max)
-            self.remain = data.get('remain', self.remain)
+            self._remain = data.get('remain', self._remain)
             self.tag_uid = data.get('tag_uid', self.tag_uid)
             self.tray_uuid = data.get('tray_uuid', self.tray_uuid)
             self.k = data.get('k', self.k)
-        
+            self.tray_weight = data.get('tray_weight', self.tray_weight)
+            if self.name == "unknown":
+                # Fallback to the type if the name is unknown
+                self.name = self.type
         return (old_data != f"{self.__dict__}")
 
 
@@ -1536,7 +1917,14 @@ class ExternalSpool(AMSTray):
 
     def __init__(self, client):
         super().__init__(client)
-        self._client = client
+
+    @property
+    def remain(self) -> int:
+        return -1
+
+    @property
+    def remain_enabled(self) -> bool:
+        return False
 
     def print_update(self, data) -> bool:
 
@@ -1722,8 +2110,11 @@ class PrintError:
                 code = code.upper()
                 errors = {}
                 errors[f"code"] = code
-                errors[f"error"] = get_print_error_text(code, self._client.user_language)
-                # LOGGER.warning(f"PRINT ERRORS: {errors}") # This will emit a message to home assistant log every 1 second if enabled
+                error_text = get_print_error_text(code, self._client.user_language)
+                errors[f"error"] = error_text
+                if error_text == 'unknown':
+                    # Suppress unknown errors as they get fired when there are no errors.
+                    errors = None
 
             if self._error != errors:
                 self._error = errors
@@ -1785,14 +2176,14 @@ class ChamberImage:
     def __init__(self, client):
         self._client = client
         self._bytes = bytearray()
-        self._image_last_updated = datetime.now()
+        self._image_last_updated = None
 
-    def set_jpeg(self, bytes):
+    def set_image(self, bytes):
         self._bytes = bytes
         self._image_last_updated = datetime.now()
         self._client.callback("event_printer_chamber_image_update")
 
-    def get_jpeg(self) -> bytearray:
+    def get_image(self) -> bytearray:
         return self._bytes.copy()
     
     def get_last_update_time(self) -> datetime:
@@ -1809,14 +2200,15 @@ class CoverImage:
     def __init__(self, client):
         self._client = client
         self._bytes = bytearray()
-        self._image_last_updated = datetime.now()
+        self._image_last_updated = None
         self._client.callback("event_printer_cover_image_update")
 
-    def set_jpeg(self, bytes):
+    def set_image(self, bytes):
         self._bytes = bytes
         self._image_last_updated = datetime.now()
+        self._client.callback("event_printer_cover_image_update")
     
-    def get_jpeg(self) -> bytearray:
+    def get_image(self) -> bytearray:
         return self._bytes
 
     def get_last_update_time(self) -> datetime:
@@ -1836,6 +2228,7 @@ class PickImage:
     def set_image(self, bytes):
         self._bytes = bytes
         self._image_last_updated = datetime.now()
+        self._client.callback("event_printer_pick_image_update")
     
     def get_image(self) -> bytearray:
         return self._bytes
@@ -1868,7 +2261,7 @@ class HomeFlag:
         return (old_data != f"{self.__dict__}")
 
     @property
-    def door_open(self) -> bool or None:
+    def door_open(self) -> bool | None:
         if not self.door_open_available:
             return None
 
@@ -1949,6 +2342,35 @@ class HomeFlag:
         return (self._value & Home_Flag_Values.INSTALLED_PLUS) !=  0
 
 
+@dataclass
+class FilamentInfo:
+    name: str;
+    filament_vendor: str;
+    filament_type: str;
+    filament_density: float;
+    nozzle_temperature: int;
+    nozzle_temperature_range_high: int;
+    nozzle_temperature_range_low: int;
+
+# Example custom filament;
+# {
+#   "setting_id": "PFUS9be9e18f81828a",
+#   "version": "1.9.0.2",
+#   "update_time": "2024-03-30 11:54:22",
+#   "name": "ELEGOO PLA Black @Bambu Lab X1 Carbon 0.6 nozzle",
+#   "nickname": null,
+#   "base_id": null,
+#   "filament_vendor": "ELEGOO",
+#   "filament_id": "P9816594",
+#   "filament_type": "PLA",
+#   "filament_is_support": false,
+#   "nozzle_temperature": [
+#     190,
+#     240
+#   ],
+#   "nozzle_hrc": 3
+# },
+      
 class SlicerSettings:
     custom_filaments: dict = field(default_factory=dict)
 
@@ -1956,20 +2378,35 @@ class SlicerSettings:
         self._client = client
         self.custom_filaments = {}
 
+    @property
+    def filaments(self):
+        return self.custom_filaments
+
     def _load_custom_filaments(self, slicer_settings: dict):
         if 'private' in slicer_settings["filament"]:
             for filament in slicer_settings['filament']['private']:
-                name = filament["name"]
-                if " @" in name:
-                    name = name[:name.index(" @")]
                 if filament.get("filament_id", "") != "":
-                    self.custom_filaments[filament["filament_id"]] = name
-            LOGGER.debug("Got custom filaments: %s", self.custom_filaments)
+                    name = filament["name"]
+                    if " @" in name:
+                        name = name[:name.index(" @")]
+                    id = filament["filament_id"]
+                    self.custom_filaments[id] = FilamentInfo(
+                        name=name,
+                        filament_vendor=filament["filament_vendor"],
+                        filament_type=filament["filament_type"],
+                        filament_density=0,
+                        nozzle_temperature=0,
+                        nozzle_temperature_range_high=filament["nozzle_temperature"][1],
+                        nozzle_temperature_range_low=filament["nozzle_temperature"][0]
+                    )
+            LOGGER.debug(f"Got {len(self.custom_filaments)} custom filaments.")
 
     def update(self):
         self.custom_filaments = {}
         if self._client.bambu_cloud.auth_token != "":
             LOGGER.debug("Loading slicer settings")
             slicer_settings = self._client.bambu_cloud.get_slicer_settings()
-            if slicer_settings is not None:
+            if slicer_settings is None:
+                self._client.callback("event_printer_bambu_authentication_failed")
+            else:
                 self._load_custom_filaments(slicer_settings)

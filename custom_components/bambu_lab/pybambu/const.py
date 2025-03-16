@@ -8,10 +8,6 @@ from enum import (
 
 LOGGER = logging.getLogger(__package__)
 
-PRINT_PROJECT_FILE_BUS_EVENT = 'bambu_lab_project_file'
-SEND_GCODE_BUS_EVENT = 'bambu_lab_send_gcode'
-SKIP_OBJECTS_BUS_EVENT = 'bambu_lab_skip_objects'
-
 class Features(IntEnum):
     AUX_FAN = 1,
     CHAMBER_LIGHT = 2,
@@ -19,7 +15,7 @@ class Features(IntEnum):
     CHAMBER_TEMPERATURE = 4,
     CURRENT_STAGE = 5,
     PRINT_LAYERS = 6,
-    AMS = 7,
+    AMS = 7, # Supports either AMS or AMS Lite
     EXTERNAL_SPOOL = 8,
     K_VALUE = 9,
     START_TIME = 10,
@@ -33,7 +29,9 @@ class Features(IntEnum):
     SET_TEMPERATURE = 19,
     PROMPT_SOUND = 20,
     FTP = 21,
-    TIMELAPSE = 22
+    TIMELAPSE = 22,
+    AMS_SWITCH_COMMAND = 23,
+    DOWNLOAD_GCODE_FILE = 24
 
 
 class FansEnum(IntEnum):

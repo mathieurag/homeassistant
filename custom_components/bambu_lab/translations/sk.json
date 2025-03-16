@@ -63,6 +63,16 @@
           "host": "Lokálna IP adresa tlačiarne:",
           "access_code": "Prístupový kód:",
           "usage_hours": "Aktuálne hodiny používania (voliteľné):"
+        },
+        "sections": {
+          "advanced": {
+            "name": "Pokročilé možnosti",
+            "description": "Tieto možnosti sú potrebné iba vtedy, ak máte neštandardné nastavenie.",
+            "data": {
+              "disable_ssl_verify": "Zakázať overenie SSL",
+              "enable_firmware_update": "Povoľte podporu aktualizácie firmvéru"
+            }
+          }
         }
       },
       "Lan": {
@@ -73,6 +83,16 @@
           "host": "Lokálna IP adresa tlačiarne:",
           "access_code": "Prístupový kód:",
           "usage_hours": "Aktuálne hodiny používania (voliteľné):"
+        },
+        "sections": {
+          "advanced": {
+            "name": "Pokročilé možnosti",
+            "description": "Tieto možnosti sú potrebné iba vtedy, ak máte neštandardné nastavenie.",
+            "data": {
+              "disable_ssl_verify": "Zakázať overenie SSL",
+              "enable_firmware_update": "Povoľte podporu aktualizácie firmvéru"
+            }
+          }
         }
       }
     }
@@ -123,6 +143,16 @@
           "access_code": "Prístupový kód:",
           "local_mqtt": "Pripojte sa priamo k tlačiarni namiesto cloudu Bambu Lab:",
           "usage_hours": "Aktuálne hodiny používania (voliteľné):"
+        },
+        "sections": {
+          "advanced": {
+            "name": "Pokročilé možnosti",
+            "description": "Tieto pokročilé možnosti sú včasnou alebo riskantnou funkciou. Prečítajte si dokumentáciu a použite ich na svoje vlastné riziko.",
+            "data": {
+              "disable_ssl_verify": "Zakázať overenie SSL",
+              "enable_firmware_update": "Povoľte podporu aktualizácie firmvéru"
+            }
+          }
         }
       },
       "Lan": {
@@ -132,6 +162,16 @@
           "host": "Lokálna IP adresa tlačiarne:",
           "access_code": "Prístupový kód:",
           "usage_hours": "Aktuálne hodiny používania (voliteľné):"
+        },
+        "sections": {
+          "advanced": {
+            "name": "Pokročilé možnosti",
+            "description": "Tieto pokročilé možnosti sú včasnou alebo riskantnou funkciou. Prečítajte si dokumentáciu a použite ich na svoje vlastné riziko.",
+            "data": {
+              "disable_ssl_verify": "Zakázať overenie SSL",
+              "enable_firmware_update": "Povoľte podporu aktualizácie firmvéru"
+            }
+          }
         }
       }
     }
@@ -432,6 +472,21 @@
           },
           "type": {
             "name": "Typ"
+          },
+          "remain": {
+            "name": "Zostávajúce vlákno"
+          },
+          "remain_enabled": {
+            "name": "Zostávajúci odhad vlákna povolený"
+          },
+          "tag_uid": {
+            "name": "Sériové číslo cievky"
+          },
+          "filament_id": {
+            "name": "ID vlákna"
+          },
+          "tray_weight": {
+            "name": "Maximálna hmotnosť vlákna"
           }
         }
       },
@@ -467,6 +522,15 @@
           },
           "type": {
             "name": "Typ"
+          },
+          "remain_enabled": {
+            "name": "Zostávajúci odhad vlákna povolený"
+          },
+          "filament_id": {
+            "name": "ID vlákna"
+          },
+          "tray_weight": {
+            "name": "Maximálna hmotnosť vlákna"
           }
         }
       },
@@ -502,6 +566,15 @@
           },
           "type": {
             "name": "Typ"
+          },
+          "filament_id": {
+            "name": "ID vlákna"
+          },
+          "tray_weight": {
+            "name": "Maximálna hmotnosť vlákna"
+          },
+          "remain_enabled": {
+            "name": "Zostávajúci odhad vlákna povolený"
           }
         }
       },
@@ -537,6 +610,15 @@
           },
           "type": {
             "name": "Typ"
+          },
+          "filament_id": {
+            "name": "ID vlákna"
+          },
+          "tray_weight": {
+            "name": "Maximálna hmotnosť vlákna"
+          },
+          "remain_enabled": {
+            "name": "Zostávajúci odhad vlákna povolený"
           }
         }
       },
@@ -572,6 +654,15 @@
           },
           "type": {
             "name": "Typ"
+          },
+          "filament_id": {
+            "name": "ID vlákna"
+          },
+          "tray_weight": {
+            "name": "Maximálna hmotnosť vlákna"
+          },
+          "remain_enabled": {
+            "name": "Zostávajúci odhad vlákna povolený"
           }
         }
       },
@@ -583,6 +674,9 @@
       },
       "skipped_objects": {
         "name": "Preskočené predmety"
+      },
+      "gcode_file_downloaded": {
+        "name": "Stiahnutý súbor GCode"
       }
     },
     "camera": {
@@ -608,6 +702,14 @@
       },
       "timelapse": {
         "name": "Načítať najnovší časový čas z tlačiarne"
+      },
+      "download_gcode_file": {
+        "name": "Uložte súbor GCode v HA"
+      }
+    },
+    "update": {
+      "firmware_update": {
+        "name": "Aktualizácia firmvéru"
       }
     }
   },
@@ -617,6 +719,12 @@
         "bambu": "Bambu Lab cloud",
         "lan": "Režim LAN"
       }
+    }
+  },
+  "issues": {
+    "authentication_failed": {
+      "title": "Autentifikácia zlyhala pre {zariadenia}",
+      "description": "Pokus o pripojenie k laboratória Bambu zlyhal. Prekonfigurujte integráciu a poskytnite nové poverenia."
     }
   }
 }

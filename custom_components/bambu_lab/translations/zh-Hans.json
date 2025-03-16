@@ -63,6 +63,16 @@
           "host": "本地打印机 IP 地址：",
           "access_code": "访问码",
           "usage_hours": "当前使用时间（可选）："
+        },
+        "sections": {
+          "advanced": {
+            "name": "高级选项",
+            "description": "仅当您具有非标准设置时，才需要这些选项。",
+            "data": {
+              "disable_ssl_verify": "禁用SSL验证",
+              "enable_firmware_update": "启用固件更新支持"
+            }
+          }
         }
       },
       "Lan": {
@@ -73,6 +83,16 @@
           "host": "本地打印机 IP 地址：",
           "access_code": "访问码",
           "usage_hours": "当前使用时间（可选）："
+        },
+        "sections": {
+          "advanced": {
+            "name": "高级选项",
+            "description": "仅当您具有非标准设置时，才需要这些选项。",
+            "data": {
+              "disable_ssl_verify": "禁用SSL验证",
+              "enable_firmware_update": "启用固件更新支持"
+            }
+          }
         }
       }
     }
@@ -123,6 +143,16 @@
           "access_code": "访问码",
           "local_mqtt": "直接连接到打印机，而不是通过 Bambu Lab 云：",
           "usage_hours": "当前使用时间（可选）："
+        },
+        "sections": {
+          "advanced": {
+            "name": "高级选项",
+            "description": "这些高级选项是早期或风险的功能。阅读文档并自行使用它们。",
+            "data": {
+              "disable_ssl_verify": "禁用SSL验证",
+              "enable_firmware_update": "启用固件更新支持"
+            }
+          }
         }
       },
       "Lan": {
@@ -132,6 +162,16 @@
           "host": "本地打印机 IP 地址：",
           "access_code": "访问码",
           "usage_hours": "当前使用时间（可选）："
+        },
+        "sections": {
+          "advanced": {
+            "name": "高级选项",
+            "description": "这些高级选项是早期或风险的功能。阅读文档并自行使用它们。",
+            "data": {
+              "disable_ssl_verify": "禁用SSL验证",
+              "enable_firmware_update": "启用固件更新支持"
+            }
+          }
         }
       }
     }
@@ -432,6 +472,21 @@
           },
           "type": {
             "name": "类型"
+          },
+          "remain": {
+            "name": "剩余的细丝"
+          },
+          "remain_enabled": {
+            "name": "启用了剩余的细丝估计"
+          },
+          "tag_uid": {
+            "name": "线轴序列号"
+          },
+          "filament_id": {
+            "name": "细丝ID"
+          },
+          "tray_weight": {
+            "name": "丝的最大重量"
           }
         }
       },
@@ -467,6 +522,15 @@
           },
           "type": {
             "name": "类型"
+          },
+          "remain_enabled": {
+            "name": "启用了剩余的细丝估计"
+          },
+          "filament_id": {
+            "name": "细丝ID"
+          },
+          "tray_weight": {
+            "name": "丝的最大重量"
           }
         }
       },
@@ -502,6 +566,15 @@
           },
           "type": {
             "name": "类型"
+          },
+          "filament_id": {
+            "name": "细丝ID"
+          },
+          "tray_weight": {
+            "name": "丝的最大重量"
+          },
+          "remain_enabled": {
+            "name": "启用了剩余的细丝估计"
           }
         }
       },
@@ -537,6 +610,15 @@
           },
           "type": {
             "name": "类型"
+          },
+          "filament_id": {
+            "name": "细丝ID"
+          },
+          "tray_weight": {
+            "name": "丝的最大重量"
+          },
+          "remain_enabled": {
+            "name": "启用了剩余的细丝估计"
           }
         }
       },
@@ -572,6 +654,15 @@
           },
           "type": {
             "name": "类型"
+          },
+          "filament_id": {
+            "name": "细丝ID"
+          },
+          "tray_weight": {
+            "name": "丝的最大重量"
+          },
+          "remain_enabled": {
+            "name": "启用了剩余的细丝估计"
           }
         }
       },
@@ -583,6 +674,9 @@
       },
       "skipped_objects": {
         "name": "跳过对象"
+      },
+      "gcode_file_downloaded": {
+        "name": "GCODE文件下载"
       }
     },
     "camera": {
@@ -608,6 +702,14 @@
       },
       "timelapse": {
         "name": "从打印机加载最新的时间段"
+      },
+      "download_gcode_file": {
+        "name": "将GCODE文件保存在HA中"
+      }
+    },
+    "update": {
+      "firmware_update": {
+        "name": "固件更新"
       }
     }
   },
@@ -617,6 +719,12 @@
         "bambu": "Bambu实验室云",
         "lan": "局域网模式"
       }
+    }
+  },
+  "issues": {
+    "authentication_failed": {
+      "title": "{设备}的身份验证失败",
+      "description": "试图连接到BAMBU实验室失败。请重新配置集成并提供新的凭据。"
     }
   }
 }

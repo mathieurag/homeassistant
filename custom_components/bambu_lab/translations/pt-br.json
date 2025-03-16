@@ -63,6 +63,16 @@
           "host": "Endereço IP Local da Impressora:",
           "access_code": "Código de Acesso:",
           "usage_hours": "Horas de utilização atuais (opcional):"
+        },
+        "sections": {
+          "advanced": {
+            "name": "Opções avançadas",
+            "description": "Essas opções são necessárias apenas se você tiver uma configuração fora do padrão.",
+            "data": {
+              "disable_ssl_verify": "Desative a verificação SSL",
+              "enable_firmware_update": "Ativar suporte de atualização de firmware"
+            }
+          }
         }
       },
       "Lan": {
@@ -73,6 +83,16 @@
           "host": "Endereço IP Local da Impressora:",
           "access_code": "Código de Acesso:",
           "usage_hours": "Horas de utilização atuais (opcional):"
+        },
+        "sections": {
+          "advanced": {
+            "name": "Opções avançadas",
+            "description": "Essas opções são necessárias apenas se você tiver uma configuração fora do padrão.",
+            "data": {
+              "disable_ssl_verify": "Desative a verificação SSL",
+              "enable_firmware_update": "Ativar suporte de atualização de firmware"
+            }
+          }
         }
       }
     }
@@ -123,6 +143,16 @@
           "access_code": "Código de Acesso:",
           "local_mqtt": "Conecte-se diretamente à impressora em vez da nuvem do Bambu Lab:",
           "usage_hours": "Horas de utilização atuais (opcional):"
+        },
+        "sections": {
+          "advanced": {
+            "name": "Opções avançadas",
+            "description": "Essas opções avançadas são funcionalidades precoces ou arriscadas. Leia a documentação e use -os por sua conta e risco.",
+            "data": {
+              "disable_ssl_verify": "Desative a verificação SSL",
+              "enable_firmware_update": "Ativar suporte de atualização de firmware"
+            }
+          }
         }
       },
       "Lan": {
@@ -132,6 +162,16 @@
           "host": "Endereço IP Local da Impressora:",
           "access_code": "Código de Acesso:",
           "usage_hours": "Horas de utilização atuais (opcional):"
+        },
+        "sections": {
+          "advanced": {
+            "name": "Opções avançadas",
+            "description": "Essas opções avançadas são funcionalidades precoces ou arriscadas. Leia a documentação e use -os por sua conta e risco.",
+            "data": {
+              "disable_ssl_verify": "Desative a verificação SSL",
+              "enable_firmware_update": "Ativar suporte de atualização de firmware"
+            }
+          }
         }
       }
     }
@@ -432,6 +472,21 @@
           },
           "type": {
             "name": "Tipo"
+          },
+          "remain": {
+            "name": "Filamento restante"
+          },
+          "remain_enabled": {
+            "name": "Estimativa de filamento restante habilitada"
+          },
+          "tag_uid": {
+            "name": "Número de série da bobina"
+          },
+          "filament_id": {
+            "name": "ID do filamento"
+          },
+          "tray_weight": {
+            "name": "Peso máximo de filamento"
           }
         }
       },
@@ -467,6 +522,15 @@
           },
           "type": {
             "name": "Tipo"
+          },
+          "remain_enabled": {
+            "name": "Estimativa de filamento restante habilitada"
+          },
+          "filament_id": {
+            "name": "ID do filamento"
+          },
+          "tray_weight": {
+            "name": "Peso máximo de filamento"
           }
         }
       },
@@ -502,6 +566,15 @@
           },
           "type": {
             "name": "Tipo"
+          },
+          "filament_id": {
+            "name": "ID do filamento"
+          },
+          "tray_weight": {
+            "name": "Peso máximo de filamento"
+          },
+          "remain_enabled": {
+            "name": "Estimativa de filamento restante habilitada"
           }
         }
       },
@@ -537,6 +610,15 @@
           },
           "type": {
             "name": "Tipo"
+          },
+          "filament_id": {
+            "name": "ID do filamento"
+          },
+          "tray_weight": {
+            "name": "Peso máximo de filamento"
+          },
+          "remain_enabled": {
+            "name": "Estimativa de filamento restante habilitada"
           }
         }
       },
@@ -572,6 +654,15 @@
           },
           "type": {
             "name": "Tipo"
+          },
+          "filament_id": {
+            "name": "ID do filamento"
+          },
+          "tray_weight": {
+            "name": "Peso máximo de filamento"
+          },
+          "remain_enabled": {
+            "name": "Estimativa de filamento restante habilitada"
           }
         }
       },
@@ -583,6 +674,9 @@
       },
       "skipped_objects": {
         "name": "Objetos ignorados"
+      },
+      "gcode_file_downloaded": {
+        "name": "Arquivo gcode baixado"
       }
     },
     "camera": {
@@ -608,6 +702,14 @@
       },
       "timelapse": {
         "name": "Carregue o mais recente timelapse da impressora"
+      },
+      "download_gcode_file": {
+        "name": "Salvar o arquivo gcode em ha"
+      }
+    },
+    "update": {
+      "firmware_update": {
+        "name": "Atualização de firmware"
       }
     }
   },
@@ -617,6 +719,12 @@
         "bambu": "Nuvem Bambu Lab",
         "lan": "Modo LAN"
       }
+    }
+  },
+  "issues": {
+    "authentication_failed": {
+      "title": "Autenticação falhou para {dispositivo}",
+      "description": "Tentar se conectar ao laboratório Bambu falhou. Reconfigure a integração e forneça novas credenciais."
     }
   }
 }

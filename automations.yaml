@@ -195,7 +195,7 @@
       entity_id: input_number.fin_ecs
   mode: single
 - id: '1719951775105'
-  alias: Début Frigo
+  alias: Frigo
   description: ''
   triggers:
   - entity_id:
@@ -203,58 +203,81 @@
     - sensor.prise_frigo_puissance
     above: 3
     trigger: numeric_state
-  conditions:
-  - condition: state
-    entity_id: input_boolean.frigo
-    state: 'off'
-  actions:
-  - metadata: {}
-    data: {}
-    target:
-      entity_id: input_boolean.frigo
-    action: input_boolean.turn_on
-  - action: input_number.set_value
-    metadata: {}
-    data:
-      value: '{{ states(''sensor.frigo_wh'') | float(0) }}'
-    target:
-      entity_id: input_number.debut_frigo
-  - action: input_datetime.set_datetime
-    target:
-      entity_id: input_datetime.dernier_cycle_frigo
-    data:
-      datetime: '{{state_attr(''automation.fin_frigo'',''last_triggered'')}}'
-  mode: single
-- id: '1719951809758'
-  alias: Fin Frigo
-  description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id:
+    id: debut
+  - entity_id:
     - sensor.prise_frigo_puissance
     - sensor.prise_frigo_local_puissance
     below: 3
-  condition:
-  - condition: state
-    entity_id: input_boolean.frigo
-    state: 'on'
-  action:
-  - data: {}
-    target:
-      entity_id: input_boolean.frigo
-    action: input_boolean.turn_off
-  - action: input_number.set_value
-    metadata: {}
-    data:
-      value: '{{ states(''sensor.frigo_wh'') | float(0) }}'
-    target:
-      entity_id: input_number.fin_frigo
-  - action: automation.trigger
-    metadata: {}
-    data:
-      skip_condition: true
-    target:
-      entity_id: automation.cycle_frigo
+    trigger: numeric_state
+    id: fin
+  conditions:
+  - condition: or
+    conditions:
+    - condition: and
+      conditions:
+      - condition: state
+        entity_id: input_boolean.frigo
+        state: 'off'
+      - condition: trigger
+        id:
+        - debut
+    - condition: and
+      conditions:
+      - condition: trigger
+        id:
+        - fin
+      - condition: state
+        entity_id: input_boolean.frigo
+        state: 'on'
+  actions:
+  - if:
+    - condition: trigger
+      id:
+      - debut
+    then:
+    - metadata: {}
+      data: {}
+      target:
+        entity_id: input_boolean.frigo
+      action: input_boolean.turn_on
+    - action: input_number.set_value
+      metadata: {}
+      data:
+        value: '{{ states(''sensor.frigo_wh'') | float(0) }}'
+      target:
+        entity_id: input_number.debut_frigo
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.dernier_cycle_frigo
+      data:
+        datetime: '{{state_attr(''automation.debut_frigo'',''last_triggered'')}}'
+  - if:
+    - condition: trigger
+      id:
+      - fin
+    then:
+    - data: {}
+      target:
+        entity_id: input_boolean.frigo
+      action: input_boolean.turn_off
+    - action: input_number.set_value
+      metadata: {}
+      data:
+        value: '{{ states(''sensor.frigo_wh'') | float(0) }}'
+      target:
+        entity_id: input_number.fin_frigo
+    - action: input_number.increment
+      data: {}
+      target:
+        entity_id:
+        - input_number.cycles_frigo
+    - action: input_number.set_value
+      metadata: {}
+      data:
+        value: '{{ ((now() - strptime(states(''input_datetime.dernier_cycle_frigo''),
+          "%Y-%m-%d %H:%M:%S").astimezone(now().tzinfo)).total_seconds()) | round(0)}}'
+      target:
+        entity_id: input_number.duree_cycle_frigo
   mode: single
 - id: '1720013652767'
   alias: Début Prise Salon
@@ -391,6 +414,7 @@
       - sensor.disjoncteur*
       - sensor.bidirectional_energy_meter*
       - sensor.shelly_*_power
+      - sensor.shelly_*_power*
       - sensor.puissance*
       - sensor.consommation*
     action: recorder.purge_entities
@@ -1447,42 +1471,6 @@
     target:
       device_id: 9b77fab7a9aa7b4577e7cfe2d53e7375
   mode: single
-- id: '1727786542143'
-  alias: Cycle Frigo
-  description: ''
-  triggers: []
-  conditions: []
-  actions:
-  - action: input_number.increment
-    data: {}
-    target:
-      entity_id:
-      - input_number.cycles_frigo
-  - data_template:
-      title: "Cycle Frigo n°{{states('input_number.cycles_frigo') | round (0)}} du
-        {{ as_timestamp(now()) | timestamp_custom(\"%d.%m.%y\", True) }} \n"
-      message: "{%- set time =\n    ((state_attr('automation.fin_frigo','last_triggered'))
-        -\n    (state_attr('automation.debut_frigo','last_triggered'))).seconds-%}\n{%-
-        set delai =\n((state_attr('automation.debut_frigo','last_triggered'))-(as_datetime(state_attr('input_datetime.dernier_cycle_frigo','timestamp')))).seconds-%}\n{%-
-        set energy =\n    ((states('input_number.fin_frigo')) | float(0) -\n    (states('input_number.debut_frigo'))
-        | float(0) ) | float(0) -%}\n{%- set heure = (as_timestamp(now()) | timestamp_custom(\"%H\",
-        True)) |\n\nint -%}{%- if (heure>=21 or heure<5) -%} \n  {%- set cout = (((states('input_number.prix_hc'))
-        | float(0)))  -%}\n{%- else-%}\n  {%- set cout = (((states('input_number.prix_hp'))
-        | float(0)))  -%}\n{%- endif -%} {%- set puissance =\n    ((energy)/(time)*3600)
-        | round(2) -%}\n\n\nDurée du cycle : {{ time | int(0) | timestamp_custom('%Mm%Ss',
-        false)}} depuis {{ delai | int(0) | timestamp_custom('%Mm%Ss', false)}}\nEnergie
-        du cycle : {{energy | round(2)}} Wh\nPuissance moyenne : {{puissance | round(0)}}
-        W\n"
-    action: notify.persistent_notification
-    enabled: false
-  - action: input_number.set_value
-    metadata: {}
-    data:
-      value: '{{(((state_attr(''automation.fin_frigo'',''last_triggered'')) - (state_attr(''automation.debut_frigo'',''last_triggered''))).seconds
-        | int(0)) | round(0) }}'
-    target:
-      entity_id: input_number.duree_cycle_frigo
-  mode: single
 - id: '1727901329718'
   alias: Alerte Tahoma
   description: ''
@@ -1608,16 +1596,16 @@
   conditions:
   - condition: and
     conditions:
-    - condition: device
-      device_id: 5e00dad4fa92ccb0ace23dd35c6d3bba
-      domain: device_tracker
-      entity_id: f7be33cbc21d1f5c745c51c814070bc8
-      type: is_not_home
     - condition: not
       conditions:
       - condition: state
-        entity_id: device_tracker.iphone_marine
         state: home
+        entity_id: person.marine
+    - condition: not
+      conditions:
+      - condition: state
+        state: home
+        entity_id: device_tracker.iphone_de_mat_13
   actions:
   - action: notify.notify
     data:
@@ -3354,6 +3342,7 @@
         target:
           device_id:
           - 95cac785555a1625a4b133475bc2c04b
+      enabled: false
     - if:
       - condition: state
         entity_id: switch.prise_tv_local
@@ -3789,18 +3778,20 @@
     entity_id:
     - sensor.maj_linky
   conditions:
-  - condition: not
+  - condition: and
     conditions:
-    - condition: state
-      entity_id: sensor.maj_linky
-      state: unavailable
-  actions:
-  - if:
     - condition: template
       value_template: '{{ states(''sensor.maj_linky'')!=states(''input_datetime.maj_linky'')
         }}'
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: sensor.maj_linky
+        state: unavailable
+  actions:
+  - if: []
     then:
-    - action: shell_command.startup
+    - action: shell_command.maj_linky
       data: {}
       response_variable: retour
     - action: input_datetime.set_datetime
@@ -3813,6 +3804,20 @@
       metadata: {}
       data:
         message: MAJ données LINKY OK
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 5
+        milliseconds: 0
+    - action: shell_command.maj_surplus
+      data: {}
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 5
+        milliseconds: 0
+    - action: shell_command.maj_conso
+      data: {}
   mode: single
 - id: '1736458938405'
   alias: Fermer Volets
@@ -4210,4 +4215,55 @@
     data: {}
     target:
       entity_id: climate.poele_talence
+  mode: single
+- id: '1741690754574'
+  alias: Gestion radiateur
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - switch.prise_5_local_none
+    from: 'off'
+    to: 'on'
+    enabled: false
+  - trigger: state
+    entity_id:
+    - input_boolean.ecs
+    from: 'on'
+    to: 'off'
+    enabled: false
+  - trigger: numeric_state
+    entity_id:
+    - sensor.surplus_production
+    above: 1200
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
+  conditions:
+  - condition: state
+    entity_id: input_boolean.automatisation
+    state: 'on'
+  actions:
+  - type: turn_on
+    device_id: 51cbd475bb5ce926ea2689c45727631a
+    entity_id: 14dd9a903ac77320fea72ac5c8da89f2
+    domain: switch
+  - action: notify.notify
+    metadata: {}
+    data:
+      message: ' Activation du radiateur'
+  - wait_for_trigger:
+    - trigger: numeric_state
+      entity_id:
+      - sensor.surplus_production
+      below: 1
+  - type: turn_off
+    device_id: 51cbd475bb5ce926ea2689c45727631a
+    entity_id: 14dd9a903ac77320fea72ac5c8da89f2
+    domain: switch
+  - action: notify.notify
+    metadata: {}
+    data:
+      message: Arrêt du radiateur
   mode: single

@@ -55,7 +55,7 @@ class WatchdogThread(threading.Thread):
         self.setName(f"{self._client._device.info.device_type}-Watchdog-{threading.get_native_id()}")
         LOGGER.debug("Watchdog thread started.")
 
-        WATCHDOG_TIMER = 30
+        WATCHDOG_TIMER = 60
         while True:
             # Wait out the remainder of the watchdog delay or 1s, whichever is higher.
             interval = time.time() - self._last_received_data
@@ -71,11 +71,11 @@ class WatchdogThread(threading.Thread):
             elif interval < WATCHDOG_TIMER:
                 self._watchdog_fired = False
 
-        LOGGER.info("Watchdog thread exited.")
+        LOGGER.debug("Watchdog thread exited.")
 
 
 class ChamberImageThread(threading.Thread):
-    def __init__(self, client):
+    def __init__(self, client: BambuClient):
         self._client = client
         self._stop_event = threading.Event()
         super().__init__()
@@ -110,7 +110,7 @@ class ChamberImageThread(threading.Thread):
         for i in range(0, 32 - len(access_code)):
             auth_data += struct.pack("<x")
 
-        ctx = create_local_ssl_context()
+        ctx = self._client.local_tls_context
 
         jpeg_start = bytearray([0xff, 0xd8, 0xff, 0xe0])
         jpeg_end = bytearray([0xff, 0xd9])
@@ -186,7 +186,7 @@ class ChamberImageThread(threading.Thread):
 
                                 # Reset buffer
                                 img = None
-                            # else:     
+                            # else:
                             # Otherwise we need to continue looping without reseting the buffer to receive the remaining data
                             # and without delaying.
 
@@ -215,13 +215,13 @@ class ChamberImageThread(threading.Thread):
                     LOGGER.error("A Chamber Image thread outer exception occurred:")
                     LOGGER.error(f"Exception. Type: {type(e)} Args: {e}")
                 if not self._stop_event.is_set():
-                    time.sleep(1)  # Avoid a tight loop if this is a persistent error.
+                    time.sleep(2)  # Avoid a tight loop if this is a persistent error.
 
             except Exception as e:
                 LOGGER.error(f"A Chamber Image thread outer exception occurred:")
                 LOGGER.error(f"Exception. Type: {type(e)} Args: {e}")
                 if not self._stop_event.is_set():
-                    time.sleep(1)  # Avoid a tight loop if this is a persistent error.
+                    time.sleep(2)  # Avoid a tight loop if this is a persistent error.
 
         LOGGER.debug("Chamber image thread exited.")
 
@@ -343,6 +343,8 @@ class BambuClient:
         self._enable_camera = config.get('enable_camera', True)
         self._enable_ftp = config.get('enable_ftp', self._local_mqtt)
         self._enable_timelapse = config.get('enable_timelapse', False)
+        self._disable_ssl_verify = config.get('disable_ssl_verify', False)
+        self._enable_download_gcode_file = config.get('enable_download_gcode_file', False)
 
         self._connected = False
         self._port = 1883
@@ -367,7 +369,7 @@ class BambuClient:
     @property
     def user_language(self):
         return self._user_language
-    
+
     @property
     def connected(self):
         """Return if connected to server"""
@@ -390,7 +392,7 @@ class BambuClient:
     @property
     def camera_enabled(self):
         return self._enable_camera
-    
+
     def callback(self, event: str):
         if self._callback is not None:
             self._callback(event)
@@ -408,17 +410,31 @@ class BambuClient:
 
     def set_ftp_enabled(self, enable):
         self._enable_ftp = enable
+        
+    @property
+    def download_gcode_file_enabled(self):
+        return self._device.supports_feature(Features.DOWNLOAD_GCODE_FILE) and self._enable_download_gcode_file
+
+    def set_download_gcode_file_enabled(self, enable):
+        self._enable_download_gcode_file = enable
 
     @property
     def timelapse_enabled(self):
         return self._device.supports_feature(Features.TIMELAPSE) and self._enable_timelapse
+
+    @property
+    def local_tls_context(self):
+        if self._disable_ssl_verify:
+            return create_insecure_ssl_context()
+        else:
+            return create_local_ssl_context()
 
     def set_timelapse_enabled(self, enable):
         self._enable_timelapse = enable
 
     def setup_tls(self):
         if self._local_mqtt:
-            self.client.tls_set_context(create_local_ssl_context())
+            self.client.tls_set_context(self.local_tls_context)
         else:
             self.client.tls_set()
 
@@ -520,7 +536,7 @@ class BambuClient:
         else:
             LOGGER.warning(f"On Disconnect: Printer disconnected with error code: {result_code}")
         self._on_disconnect()
-    
+
     def _on_disconnect(self):
         LOGGER.debug("_on_disconnect: Lost connection to the printer")
         self._loaded_slicer_settings = False
@@ -538,11 +554,15 @@ class BambuClient:
         self.publish(START_PUSH)
 
     def on_jpeg_received(self, bytes):
-        self._device.chamber_image.set_jpeg(bytes)
+        self._device.chamber_image.set_image(bytes)
 
     def on_message(self, client, userdata, message):
         """Return the payload when received"""
         try:
+            if self.client is None:
+                # We have been shut down. Drop any messages we receive late.
+                return
+
             if not self._loaded_slicer_settings:
                 # Only update slicer settings once per successful connection to the printer.
                 self._loaded_slicer_settings = True
@@ -628,8 +648,8 @@ class BambuClient:
 
 
     def ftp_connection(self) -> ImplicitFTP_TLS:
-        ftp = ImplicitFTP_TLS(context=create_local_ssl_context())
-        ftp.connect(host=self._device.info.ip_address, port=990, timeout=5)
+        ftp = ImplicitFTP_TLS(context=self.local_tls_context)
+        ftp.connect(host=self._device.info.ip_address, port=990, timeout=15)
         ftp.login(user='bblp', passwd=self._access_code)
         ftp.prot_p()
         return ftp
@@ -639,6 +659,9 @@ class BambuClient:
         LOGGER.debug("Try Connection")
 
         result: queue.Queue[bool] = queue.Queue(maxsize=1)
+
+        self.received_info = False
+        self.received_push = False
 
         def on_message(client, userdata, message):
             json_data = json.loads(message.payload)
@@ -653,8 +676,12 @@ class BambuClient:
             if json_data.get("info") and json_data.get("info").get("command") == "get_version":
                 LOGGER.debug("Got Version Command Data")
                 self._device.info_update(data=json_data.get("info"))
+                self.received_info = True
             if (json_data.get('print', {}).get('command', '') == 'push_status') and (json_data.get('print', {}).get('msg', 0) == 0):
                 self._device.print_update(data=json_data.get("print"))
+                self.received_push = True
+
+            if self.received_info and self.received_push:
                 result.put(True)
 
         self._test_mode = True
@@ -667,7 +694,7 @@ class BambuClient:
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(None, self.setup_tls)
 
-        host = self.host if self._local_mqtt else self.bambu_cloud.cloud_mqtt_host        
+        host = self.host if self._local_mqtt else self.bambu_cloud.cloud_mqtt_host
         if self._local_mqtt:
             self.client.username_pw_set("bblp", password=self._access_code)
         else:
@@ -682,10 +709,10 @@ class BambuClient:
                 LOGGER.debug("Connection test was successful")
                 return True
         except OSError as e:
-            LOGGER.error(f"Connection test failed with exception {type(e)} Args: {e}")
+            LOGGER.error(f"Connection test to '{host}' failed: {type(e)} Args: {e}")
             return False
         except queue.Empty:
-            LOGGER.error(f"Connection test failed with timeout")
+            LOGGER.error(f"Connection test to '{host}' failed with timeout")
             return False
         finally:
             self.disconnect()
@@ -718,4 +745,11 @@ def create_local_ssl_context():
     context.verify_flags &= ~ssl.VERIFY_X509_STRICT
     # Workaround because some users get this error despite SNI: "certificate verify failed: IP address mismatch"
     context.check_hostname = False
+    return context
+
+@functools.lru_cache(maxsize=1)
+def create_insecure_ssl_context():
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
     return context

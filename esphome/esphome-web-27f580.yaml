@@ -16,6 +16,9 @@ esp32:
   framework:
     type: arduino
 
+bluetooth_proxy:
+    active: True
+
 # Enable logging
 logger:
 
@@ -32,7 +35,11 @@ improv_serial:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
-
+  
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: !secret wifi_ssid_fallback
+    password: !secret wifi_password_fallback
 # In combination with the `ap` this allows the user
 # to provision wifi credentials to the device via WiFi AP.
 captive_portal:
@@ -49,20 +56,7 @@ esp32_improv:
 # To have a "next url" for improv serial
 web_server:
 
-#DS18B20
-one_wire:
-  - platform: gpio
-    pin: GPIO4
-
 sensor:
-
-#DS18B20
-  - platform: dallas_temp
-    name: "Testtemp"
-    update_interval: 30s # 60s ist default
-    accuracy_decimals: 1
-    filters:
-      - round: 1 # will round to 2 decimal place
 
 #HCSR04
   - platform: ultrasonic

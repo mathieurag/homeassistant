@@ -69,11 +69,10 @@ logger:
     homeassistant.helpers.frame: error
 
 shell_command:
-  batch_py: python3 /config/python_scripts/script.py
+  database: python3 /config/python_scripts/script.py
   supp_ecojoko: python3 /config/python_scripts/suppression_ecojoko.py
-  startup: python3 /config/python_scripts/startup.py
-  bronpi_nuit: bash /config/python_scripts/bronpi.sh {{customer_code}} {{authorization}} {{values}}
-  bronpi_auto: bash /config/python_scripts/bronpi.sh {{customer_code}} {{authorization}} {{values}}
-  bronpi_mode: bash /config/python_scripts/bronpi.sh {{customer_code}} {{authorization}} {{values}}
+  maj_linky: python3 /config/python_scripts/maj_linky.py
+  maj_conso: python3 /config/python_scripts/maj_conso.py
+  maj_surplus: python3 /config/python_scripts/maj_surplus.py
 
 my:

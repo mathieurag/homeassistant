@@ -63,6 +63,16 @@
           "host": "IP-Adresse des lokalen Druckers:",
           "access_code": "Zugangscode",
           "usage_hours": "Aktuelle Nutzungsstunden (optional):"
+        },
+        "sections": {
+          "advanced": {
+            "name": "Erweiterte Optionen",
+            "description": "Diese Optionen sind nur erforderlich, wenn Sie ein nicht standardmäßiges Setup haben.",
+            "data": {
+              "disable_ssl_verify": "Deaktivieren Sie die SSL -Überprüfung",
+              "enable_firmware_update": "Aktivieren Sie den Firmware -Update -Support"
+            }
+          }
         }
       },
       "Lan": {
@@ -73,6 +83,16 @@
           "host": "IP-Adresse des lokalen Druckers:",
           "access_code": "Zugangscode",
           "usage_hours": "Aktuelle Nutzungsstunden (optional):"
+        },
+        "sections": {
+          "advanced": {
+            "name": "Erweiterte Optionen",
+            "description": "Diese Optionen sind nur erforderlich, wenn Sie ein nicht standardmäßiges Setup haben.",
+            "data": {
+              "disable_ssl_verify": "Deaktivieren Sie die SSL -Überprüfung",
+              "enable_firmware_update": "Aktivieren Sie den Firmware -Update -Support"
+            }
+          }
         }
       }
     }
@@ -123,6 +143,16 @@
           "access_code": "Zugangscode",
           "local_mqtt": "Stellen Sie eine direkte Verbindung zum Drucker statt über die Bambu Lab-Cloud her:",
           "usage_hours": "Aktuelle Nutzungsstunden (optional):"
+        },
+        "sections": {
+          "advanced": {
+            "name": "Erweiterte Optionen",
+            "description": "Diese erweiterten Optionen sind frühe oder riskante Funktionen. Lesen Sie die Dokumentation und verwenden Sie sie auf eigenes Risiko.",
+            "data": {
+              "disable_ssl_verify": "Deaktivieren Sie die SSL -Überprüfung",
+              "enable_firmware_update": "Aktivieren Sie den Firmware -Update -Support"
+            }
+          }
         }
       },
       "Lan": {
@@ -132,6 +162,16 @@
           "host": "IP-Adresse des lokalen Druckers:",
           "access_code": "Zugangscode",
           "usage_hours": "Aktuelle Nutzungsstunden (optional):"
+        },
+        "sections": {
+          "advanced": {
+            "name": "Erweiterte Optionen",
+            "description": "Diese erweiterten Optionen sind frühe oder riskante Funktionen. Lesen Sie die Dokumentation und verwenden Sie sie auf eigenes Risiko.",
+            "data": {
+              "disable_ssl_verify": "Deaktivieren Sie die SSL -Überprüfung",
+              "enable_firmware_update": "Aktivieren Sie den Firmware -Update -Support"
+            }
+          }
         }
       }
     }
@@ -216,7 +256,7 @@
       "printing_speed": {
         "name": "Druckgeschwindigkeit",
         "state": {
-          "silent": "Stumm",
+          "silent": "Leise",
           "standard": "Standard",
           "sport": "Sport",
           "ludicrous": "Verrückt"
@@ -257,7 +297,7 @@
       "speed_profile": {
         "name": "Geschwindigkeitsprofil",
         "state": {
-          "silent": "Stumm",
+          "silent": "Leise",
           "standard": "Standard",
           "sport": "Sport",
           "ludicrous": "Verrückt"
@@ -334,11 +374,14 @@
         "name": "MQTT-Verbindungsmodus",
         "state": {
           "local": "Lokal",
-          "bambu_cloud": "Bambu Lab-Wolke"
+          "bambu_cloud": "Bambu Lab-Cloud"
         }
       },
       "gcode_file": {
         "name": "Gcode Dateiname"
+      },
+      "gcode_file_downloaded": {
+        "name": "Gcode Dateiname heruntergeladen"
       },
       "print_bed_type": {
         "name": "Druckbett Typ",
@@ -432,6 +475,21 @@
           },
           "type": {
             "name": "Typ"
+          },
+          "remain": {
+            "name": "Verbleibendes Filament"
+          },
+          "remain_enabled": {
+            "name": "Verbleibende Filamentschätzung aktiviert"
+          },
+          "tag_uid": {
+            "name": "Spulen -Seriennummer"
+          },
+          "filament_id": {
+            "name": "Filament -ID"
+          },
+          "tray_weight": {
+            "name": "Maximales Filamentgewicht"
           }
         }
       },
@@ -467,6 +525,15 @@
           },
           "type": {
             "name": "Typ"
+          },
+          "remain_enabled": {
+            "name": "Verbleibende Filamentschätzung aktiviert"
+          },
+          "filament_id": {
+            "name": "Filament -ID"
+          },
+          "tray_weight": {
+            "name": "Maximales Filamentgewicht"
           }
         }
       },
@@ -502,6 +569,15 @@
           },
           "type": {
             "name": "Typ"
+          },
+          "filament_id": {
+            "name": "Filament -ID"
+          },
+          "tray_weight": {
+            "name": "Maximales Filamentgewicht"
+          },
+          "remain_enabled": {
+            "name": "Verbleibende Filamentschätzung aktiviert"
           }
         }
       },
@@ -537,6 +613,15 @@
           },
           "type": {
             "name": "Typ"
+          },
+          "filament_id": {
+            "name": "Filament -ID"
+          },
+          "tray_weight": {
+            "name": "Maximales Filamentgewicht"
+          },
+          "remain_enabled": {
+            "name": "Verbleibende Filamentschätzung aktiviert"
           }
         }
       },
@@ -572,6 +657,15 @@
           },
           "type": {
             "name": "Typ"
+          },
+          "filament_id": {
+            "name": "Filament -ID"
+          },
+          "tray_weight": {
+            "name": "Maximales Filamentgewicht"
+          },
+          "remain_enabled": {
+            "name": "Verbleibende Filamentschätzung aktiviert"
           }
         }
       },
@@ -608,15 +702,29 @@
       },
       "timelapse": {
         "name": "Laden Sie den neuesten Zeitplan aus dem Drucker"
+      },
+      "download_gcode_file": {
+        "name": "GCode Datei in HA speichern"
+      }
+    },
+    "update": {
+      "firmware_update": {
+        "name": "Firmware Status"
       }
     }
   },
   "selector": {
     "configuration_type": {
       "options": {
-        "bambu": "Bambu Lab-Wolke",
-        "lan": "LAN-Mode"
+        "bambu": "Bambu Lab-Cloud",
+        "lan": "LAN-Modus"
       }
+    }
+  },
+  "issues": {
+    "authentication_failed": {
+      "title": "Authentifizierung fehlgeschlagen für {Gerät}",
+      "description": "Der Versuch, eine Verbindung zum Bambu -Labor herzustellen, schlug fehl. Bitte konfigurieren Sie die Integration und stellen Sie neue Anmeldeinformationen an."
     }
   }
 }

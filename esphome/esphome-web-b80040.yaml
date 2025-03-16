@@ -1,7 +1,5 @@
-
-
 substitutions:
-  name: esphome-web-b80040
+  name: lilygo-rs485
   friendly_name: ESP32-3
 
 esphome:
@@ -28,6 +26,9 @@ esp32:
   framework:
     type: arduino
 
+bluetooth_proxy:
+    active: True
+
 # Enable logging
 logger:
 
@@ -36,7 +37,7 @@ api:
 
 # Allow Over-The-Air updates
 ota:
-- platform: esphome
+  - platform: esphome
 
 # Allow provisioning Wi-Fi via serial
 improv_serial:
@@ -44,7 +45,11 @@ improv_serial:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
-
+  
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: !secret wifi_ssid_fallback
+    password: !secret wifi_password_fallback
 # In combination with the `ap` this allows the user
 # to provision wifi credentials to the device via WiFi AP.
 captive_portal:
@@ -127,8 +132,6 @@ display:
           // Adresse IP
           it.printf(0, 54, id(unbuntu), "IP:");
           it.printf(it.get_width() - 5, 54, id(unbuntu), TextAlign::RIGHT, "%s", id(esp32_3_ipaddress).state.c_str());
-
-
 
 binary_sensor:
   - platform: gpio
@@ -303,7 +306,7 @@ interval:
     then:
       - display.page.show_next: mydisplay
       - component.update: mydisplay
-# Intervalle dédié à la variation de luminosité (toutes les 100ms)
+  # Intervalle dédié à la variation de luminosité (toutes les 100ms)
   - interval: 100ms
     then:
       - lambda: |-
@@ -327,21 +330,20 @@ interval:
             call.perform();
           }
 
-
 # Variable pour vérifier si le script est en cours d'exécution
 globals:
   - id: last_press_time
     type: int
-    initial_value: '0'
+    initial_value: "0"
   - id: brightness
     type: float
-#    initial_value: '0.5'         # 50 % de luminosité initiale
+  #    initial_value: '0.5'         # 50 % de luminosité initiale
   - id: increasing
     type: bool
-    initial_value: 'true'
+    initial_value: "true"
   - id: dimming_active
     type: bool
-    initial_value: 'false'
+    initial_value: "false"
   - id: color_index
     type: int
 #    initial_value: '0'
@@ -381,57 +383,54 @@ font:
     size: 16
 
 sensor:
+  #Tension
 
-#Tension
+  #  - platform: adc
+  #    pin: GPIO32
+  #    name: "Test Tension secteur"
+  #    update_interval: 10s
+  #    accuracy_decimals: 2
+  #    attenuation: auto
 
-#  - platform: adc
-#    pin: GPIO32
-#    name: "Test Tension secteur"
-#    update_interval: 10s
-#    accuracy_decimals: 2
-#    attenuation: auto
+  #  - platform: custom
+  #    lambda: |-
+  #      auto my_sensor = new ZMPT101BSensor();
+  #      App.register_component(my_sensor);
+  #      return {my_sensor};
+  #    sensors:
+  #      name: "Test Tension secteur ZMPT101B"
+  #      id: tension_secteur_zmpt101b
+  #      unit_of_measurement: V
+  #      accuracy_decimals: 1
+  #      state_class: "measurement"
+  #      #pin: GPIO32 défini par A4 dans le .h
 
-#  - platform: custom
-#    lambda: |-
-#      auto my_sensor = new ZMPT101BSensor();
-#      App.register_component(my_sensor);
-#      return {my_sensor};
-#    sensors:
-#      name: "Test Tension secteur ZMPT101B"
-#      id: tension_secteur_zmpt101b
-#      unit_of_measurement: V
-#      accuracy_decimals: 1
-#      state_class: "measurement"
-#      #pin: GPIO32 défini par A4 dans le .h
-
-#  - platform: adc
-#   pin: GPIO35
-#    id: tension_secteur_long
-#    name: "Test Tension secteur Long"
-#    update_interval: 10s
-#    accuracy_decimals: 0
-#    attenuation: auto
-#    filters:
-#      - calibrate_polynomial:
-#          degree: 1
-#          datapoints:
-#            # Map 0.0 (from sensor) to 0.0 (true value)
-#            - 3.14 -> 0.0
-#            - 0.08 -> 240.0
-#    on_value:
-#      then:
-#        - lambda: |-
-#            ESP_LOGD("DEBUG", "Valeur brute: %.2f V", id(tension_secteur_long).raw_state);
-#            ESP_LOGD("DEBUG", "Valeur corrigée: %.2f V", id(tension_secteur_long).state);
-
-
+  #  - platform: adc
+  #   pin: GPIO35
+  #    id: tension_secteur_long
+  #    name: "Test Tension secteur Long"
+  #    update_interval: 10s
+  #    accuracy_decimals: 0
+  #    attenuation: auto
+  #    filters:
+  #      - calibrate_polynomial:
+  #          degree: 1
+  #          datapoints:
+  #            # Map 0.0 (from sensor) to 0.0 (true value)
+  #            - 3.14 -> 0.0
+  #            - 0.08 -> 240.0
+  #    on_value:
+  #      then:
+  #        - lambda: |-
+  #            ESP_LOGD("DEBUG", "Valeur brute: %.2f V", id(tension_secteur_long).raw_state);
+  #            ESP_LOGD("DEBUG", "Valeur corrigée: %.2f V", id(tension_secteur_long).state);
 
   - platform: template
     id: esp32_3_memory
     icon: mdi:memory
     name: "Free Memory"
     lambda: return heap_caps_get_free_size(MALLOC_CAP_INTERNAL) / 1024;
-    unit_of_measurement: 'kB'
+    unit_of_measurement: "kB"
     state_class: measurement
     entity_category: "diagnostic"
     update_interval: 30s
@@ -441,7 +440,7 @@ sensor:
     icon: mdi:memory
     name: "Memory"
     lambda: return heap_caps_get_total_size(MALLOC_CAP_INTERNAL) / 1024;
-    unit_of_measurement: 'kB'
+    unit_of_measurement: "kB"
     state_class: measurement
     entity_category: "diagnostic"
     update_interval: 30s
@@ -451,7 +450,7 @@ sensor:
     id: esp32_3_uptime
     update_interval: 60s
     internal: true
-  - platform: wifi_signal 
+  - platform: wifi_signal
     name: RSSI
     id: esp32_3_wifi_signal_db
     entity_category: "diagnostic"
@@ -462,7 +461,7 @@ sensor:
     name: "Internal Temperature"
     update_interval: 30s
     internal: true
-    
+
 text_sensor:
   - platform: wifi_info
     ip_address:

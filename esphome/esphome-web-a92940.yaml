@@ -1,0 +1,50 @@
+esphome:
+  name: esphome-web-a92940
+  friendly_name: Lilygo TCAN485
+  min_version: 2024.11.0
+  name_add_mac_suffix: false
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+#Bluetooth proxy
+
+bluetooth_proxy:
+    active: True
+    
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: !secret wifi_ssid_fallback
+    password: !secret wifi_password_fallback
+
+captive_portal:
+
+# Allow provisioning Wi-Fi via serial
+improv_serial:
+
+
+# Sets up Bluetooth LE (Only on ESP32) to allow the user
+# to provision wifi credentials to the device.
+esp32_improv:
+  authorizer: none
+
+# To have a "next url" for improv serial
+web_server:

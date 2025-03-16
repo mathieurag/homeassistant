@@ -63,6 +63,16 @@
           "host": "Lokaal IP-adres van printer:",
           "access_code": "Toegangscode:",
           "usage_hours": "Huidige gebruiksduur in uren (optioneel):"
+        },
+        "sections": {
+          "advanced": {
+            "name": "Geavanceerde opties",
+            "description": "Deze opties zijn alleen nodig als u een niet-standaardinstelling hebt.",
+            "data": {
+              "disable_ssl_verify": "Schakel SSL -verificatie uit",
+              "enable_firmware_update": "Ondersteuning van firmware -updates inschakelen"
+            }
+          }
         }
       },
       "Lan": {
@@ -73,6 +83,16 @@
           "host": "Lokaal IP-adres van printer:",
           "access_code": "Toegangscode:",
           "usage_hours": "Huidige gebruiksduur in uren (optioneel):"
+        },
+        "sections": {
+          "advanced": {
+            "name": "Geavanceerde opties",
+            "description": "Deze opties zijn alleen nodig als u een niet-standaardinstelling hebt.",
+            "data": {
+              "disable_ssl_verify": "Schakel SSL -verificatie uit",
+              "enable_firmware_update": "Ondersteuning van firmware -updates inschakelen"
+            }
+          }
         }
       }
     }
@@ -123,6 +143,16 @@
           "access_code": "Toegangscode:",
           "local_mqtt": "Lokaal verbinden met de printer in plaats van via Bambu Lab Cloud:",
           "usage_hours": "Huidige gebruiksduur in uren (optioneel):"
+        },
+        "sections": {
+          "advanced": {
+            "name": "Geavanceerde opties",
+            "description": "Deze geavanceerde opties zijn vroege of risicovolle functionaliteit. Lees de documentatie en gebruik ze op eigen risico.",
+            "data": {
+              "disable_ssl_verify": "Schakel SSL -verificatie uit",
+              "enable_firmware_update": "Ondersteuning van firmware -updates inschakelen"
+            }
+          }
         }
       },
       "Lan": {
@@ -132,6 +162,16 @@
           "host": "Lokaal IP-adres van printer:",
           "access_code": "Toegangscode:",
           "usage_hours": "Huidige gebruiksduur in uren (optioneel):"
+        },
+        "sections": {
+          "advanced": {
+            "name": "Geavanceerde opties",
+            "description": "Deze geavanceerde opties zijn vroege of risicovolle functionaliteit. Lees de documentatie en gebruik ze op eigen risico.",
+            "data": {
+              "disable_ssl_verify": "Schakel SSL -verificatie uit",
+              "enable_firmware_update": "Ondersteuning van firmware -updates inschakelen"
+            }
+          }
         }
       }
     }
@@ -438,6 +478,21 @@
           },
           "type": {
             "name": "Type"
+          },
+          "remain": {
+            "name": "Resterende gloeidraad"
+          },
+          "remain_enabled": {
+            "name": "Resterende schatting van de filament ingeschakeld"
+          },
+          "tag_uid": {
+            "name": "Spoel serienummer"
+          },
+          "filament_id": {
+            "name": "Filament -ID"
+          },
+          "tray_weight": {
+            "name": "Maximaal gewicht van de gloeidraad"
           }
         }
       },
@@ -473,6 +528,15 @@
           },
           "type": {
             "name": "Type"
+          },
+          "remain_enabled": {
+            "name": "Resterende schatting van de gloeidraad ingeschakeld"
+          },
+          "filament_id": {
+            "name": "Filament -ID"
+          },
+          "tray_weight": {
+            "name": "Maximaal gewicht van de gloeidraad"
           }
         }
       },
@@ -508,6 +572,15 @@
           },
           "type": {
             "name": "Type"
+          },
+          "filament_id": {
+            "name": "Filament -ID"
+          },
+          "tray_weight": {
+            "name": "Maximaal gewicht van de gloeidraad"
+          },
+          "remain_enabled": {
+            "name": "Resterende schatting van de filament ingeschakeld"
           }
         }
       },
@@ -543,6 +616,15 @@
           },
           "type": {
             "name": "Type"
+          },
+          "filament_id": {
+            "name": "Filament -ID"
+          },
+          "tray_weight": {
+            "name": "Maximaal gewicht van de gloeidraad"
+          },
+          "remain_enabled": {
+            "name": "Resterende schatting van de filament ingeschakeld"
           }
         }
       },
@@ -578,11 +660,23 @@
           },
           "type": {
             "name": "Type"
+          },
+          "filament_id": {
+            "name": "Filament -ID"
+          },
+          "tray_weight": {
+            "name": "Maximaal gewicht van de gloeidraad"
+          },
+          "remain_enabled": {
+            "name": "Resterende schatting van de filament ingeschakeld"
           }
         }
       },
       "skipped_objects": {
         "name": "Objecten overgeslagen"
+      },
+      "gcode_file_downloaded": {
+        "name": "Gcode -bestand gedownload"
       }
     },
     "camera": {
@@ -608,6 +702,14 @@
       },
       "timelapse": {
         "name": "Nieuwste timelapse vanuit de printer inladen"
+      },
+      "download_gcode_file": {
+        "name": "Sla Gcode -bestand op in HA"
+      }
+    },
+    "update": {
+      "firmware_update": {
+        "name": "Firmware-update"
       }
     }
   },
@@ -617,6 +719,12 @@
         "bambu": "Bambu Lab cloud",
         "lan": "Lan-modus"
       }
+    }
+  },
+  "issues": {
+    "authentication_failed": {
+      "title": "Authenticatie mislukt voor {apparaat}",
+      "description": "Proberen om verbinding te maken met Bambu Lab is mislukt. Configureer de integratie opnieuw en geef nieuwe referenties."
     }
   }
 }
