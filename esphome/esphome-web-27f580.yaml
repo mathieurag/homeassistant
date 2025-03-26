@@ -11,6 +11,7 @@ esphome:
     name: esphome.web
     version: dev
 
+
 esp32:
   board: esp32dev
   framework:

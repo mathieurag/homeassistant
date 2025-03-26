@@ -923,6 +923,7 @@
       minutes: 5
       seconds: 0
     trigger: state
+    enabled: false
   - entity_id:
     - sensor.prise_lave_vaiselle_local_tension
     for:
@@ -4266,4 +4267,38 @@
     metadata: {}
     data:
       message: Arrêt du radiateur
+  mode: single
+- id: '1742158035852'
+  alias: Alerte ESP32-2
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.esphome_web_27f580_ultrasonic_sensor
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+    trigger: state
+  - entity_id:
+    - sensor.esphome_web_27f580_ultrasonic_sensor
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: state
+    to: unavailable
+  conditions: []
+  actions:
+  - data:
+      message: Pas de réponse de ESP32-2 !
+    action: notify.persistent_notification
+  - action: notify.notify
+    metadata: {}
+    data:
+      message: Pas de réponse de ESP32-2 !
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
   mode: single

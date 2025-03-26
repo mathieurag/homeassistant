@@ -217,6 +217,7 @@ for j in range(0,24):
     if delta_conso[j]<=0.005:
         error=error+1
 
+entry=0
 conso_max=0
 if error>0:
     print("Consommation négative : ")
@@ -254,15 +255,20 @@ if error>0:
             else:
                 factor=1
 
-            query1 = "UPDATE 'statistics_short_term' set sum=sum"+str(round((delta_conso[j]-0.02)*factor,3))+" where metadata_id in (" + str(id_entity[range_max_entite]) +") and start_ts >="+str(ts0+(j)*3600)
-            data=database.execute(query1)
-            query1 = "UPDATE 'statistics' set sum=sum"+str(round((delta_conso[j]-0.02)*factor,3))+" where metadata_id in (" + str(id_entity[range_max_entite]) +") and start_ts >="+str(ts0+(j)*3600)
-            data=database.execute(query1)
+            if conso_max/factor > delta_conso[j] :
 
-    print("Fin du script : ",error," entrée(s) modifiée(s)")
+                query1 = "UPDATE 'statistics_short_term' set sum=sum"+str(round((delta_conso[j]-0.02)*factor,3))+" where metadata_id in (" + str(id_entity[range_max_entite]) +") and start_ts >="+str(ts0+(j)*3600)
+                data=database.execute(query1)
+                query1 = "UPDATE 'statistics' set sum=sum"+str(round((delta_conso[j]-0.02)*factor,3))+" where metadata_id in (" + str(id_entity[range_max_entite]) +") and start_ts >="+str(ts0+(j)*3600)
+                data=database.execute(query1)
+                entry = entry + 1
+            else:
+                print("Conso max inférieure au delta à corriger !",conso_max/factor,"kWh / Delta:",delta_conso[j],"kWh")
+    print("Fin du script : ",entry," entrée(s) modifiée(s)")
     query0 = "commit"
-    data=database.execute(query0)
+    if entry>0:
+        data=database.execute(query0)
 else:
-    print("Fin du script : pas de données à modifier")
+    print("Fin du script : Pas de données à modifier")
 
 database.close()

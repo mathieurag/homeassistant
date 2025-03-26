@@ -235,6 +235,8 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
                 result = self._service_call_get_filament_data(data)
             case "print_project_file":
                 result = self._service_call_print_project_file(data)
+            case "send_command":
+                result = self._service_call_send_gcode(data)
             case _:
                 LOGGER.error(f"Unknown service call: {data}")
 
@@ -383,7 +385,16 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         self.client.publish(command)
 
     def _service_call_get_filament_data(self, data: dict):
-        return FILAMENT_DATA | self.client.slicer_settings.filaments
+        # Create a copy of FILAMENT_DATA
+        combined_data = FILAMENT_DATA.copy()
+        
+        # Only add entries from slicer_settings that don't exist in FILAMENT_DATA otherwise named custom settings entries
+        # overwrite the default settings. We can only support one entry per filament id.
+        for filament_id, filament_data in self.client.slicer_settings.filaments.items():
+            if filament_id not in FILAMENT_DATA:
+                combined_data[filament_id] = filament_data
+        
+        return combined_data
 
     def _service_call_load_filament(self, data: dict):
         device_id = data.get('device_id', [])

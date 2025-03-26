@@ -5,7 +5,7 @@ template:
         device_class: power
         state_class: measurement
         unit_of_measurement: W
-        state: "{% if is_state('input_boolean.prise_salon', 'on') -%} 5 {%- else -%} 0 {%- endif %}"
+        state: "{% if is_state('input_boolean.prise_salon', 'on') -%} 15 {%- else -%} 0 {%- endif %}"
 
       - name: "Prises RDC"
         unique_id: "prises_rdc"
