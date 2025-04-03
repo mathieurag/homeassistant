@@ -718,7 +718,7 @@ select:
     optionsmap:
       "enable": 21930
       "disable": 21947
-    skip_updates: 2 # 10 seconds
+    skip_updates: 1 # 5 seconds
 
   - name: "Marstek Forcible Charge/Discharge" 
     platform: modbus_controller
@@ -734,6 +734,7 @@ select:
   - name: "Marstek Backup Function"
     platform: modbus_controller
     modbus_controller_id: mt
+    icon: mdi:power-plug-battery-outline
     address: 41200
     value_type: U_WORD
     optionsmap:

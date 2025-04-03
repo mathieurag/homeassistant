@@ -1,4 +1,3 @@
-
 import sqlite3
 import time
 import datetime
@@ -23,7 +22,7 @@ local_tz = pytz.timezone("Europe/Paris")
 dt_naive = datetime.datetime.combine(target_date, datetime.time.min)
 dt_local = local_tz.localize(dt_naive, is_dst=None)  # is_dst=None force une erreur si ambigü
 ts0 = dt_local.timestamp()
-print(ts0)
+#print(ts0)
 
 # Pour 23h00 locale
 dt_end_naive = datetime.datetime.combine(target_date, datetime.time(23, 00, 00))
@@ -228,15 +227,15 @@ for j in range(0,24):
 
     delta_conso[j]=conso_linky[j]-conso[j]-conso_surplus[j]
     print("Consommation non suivie : ",j,"à",j+1,"h : ",round(delta_conso[j],3),"kWh")
-    if delta_conso[j]<=0.005:
+    if delta_conso[j]>=0.005:
         error=error+1
 
 entry=0
 conso_max=0
 if error>0:
-    print("Consommation négative : ")
+    print("Consommation non suivie importante : ")
     for j in range(0,24):
-        if delta_conso[j]<=0.005:
+        if delta_conso[j]>0.05:
             print("Consommation non suivie : ",j,"à",j+1,"h : ",round(delta_conso[j],3),"kWh")
             conso_max=0
             for i in range(len(liste)):
@@ -271,17 +270,15 @@ if error>0:
                 factor=1000
             else:
                 factor=1
-
-            if conso_max > delta_conso[j]+0.01 :
-
-                query1 = "UPDATE 'statistics_short_term' set sum=sum"+str(round((delta_conso[j]-0.02)*factor,3))+" where metadata_id in (" + str(id_entity[range_max_entite]) +") and start_ts >="+str(ts0+(j)*3600)
+            if delta_conso[j]>=0.2:
+                 print("Delta trop important à :",j,"h:",delta_conso[j]," kWh")
+            elif delta_conso[j]>=0.05:
+                query1 = "UPDATE 'statistics_short_term' set sum=sum+"+str(round((delta_conso[j]-0.02)*factor,3))+" where metadata_id in (" + str(id_entity[range_max_entite]) +") and start_ts >="+str(ts0+(j)*3600)
                 data=database.execute(query1)
-                query1 = "UPDATE 'statistics' set sum=sum"+str(round((delta_conso[j]-0.02)*factor,3))+" where metadata_id in (" + str(id_entity[range_max_entite]) +") and start_ts >="+str(ts0+(j)*3600)
+                query1 = "UPDATE 'statistics' set sum=sum+"+str(round((delta_conso[j]-0.02)*factor,3))+" where metadata_id in (" + str(id_entity[range_max_entite]) +") and start_ts >="+str(ts0+(j)*3600)
                 data=database.execute(query1)
                 entry = entry + 1
                 print("Conso corrigée:",str(round((delta_conso[j]-0.02),3)),"kWh")
-            else:
-                print("Conso max inférieure au delta à corriger !",conso_max,"kWh / Delta:",str(round((delta_conso[j]-0.02)*factor,3)),"kWh")
     print("Fin du script : ",entry," entrée(s) modifiée(s)")
     query0 = "commit"
     if entry>0:

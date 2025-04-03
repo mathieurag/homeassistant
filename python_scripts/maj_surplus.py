@@ -7,6 +7,8 @@ except:
 
 import time
 import datetime
+import pytz
+
 error=0
 jours=1
 row=""
@@ -32,10 +34,28 @@ for row in data.fetchall():
 
 print("entité =",entity,"/ id=",id_entity_linky)
 
-yesterday = datetime.date.fromtimestamp(time.time()-24*3600*jours)
-dt0 = datetime.datetime(year=yesterday.year, month=yesterday.month, day=yesterday.day)
-ts0 = datetime.datetime.timestamp(dt0)
-tsmax = ts0 + 23*3600
+# Calcul de la date choisie à partir de jours:
+target_date = datetime.date.today() - datetime.timedelta(days=jours)
+
+# Fuseau horaire local
+local_tz = pytz.timezone("Europe/Paris")
+
+# Créer datetime à minuit, puis convertir proprement
+dt_naive = datetime.datetime.combine(target_date, datetime.time.min)
+dt_local = local_tz.localize(dt_naive, is_dst=None)  # is_dst=None force une erreur si ambigü
+ts0 = dt_local.timestamp()
+
+# Pour 23h00 locale
+dt_end_naive = datetime.datetime.combine(target_date, datetime.time(23, 00, 00))
+dt_end_local = local_tz.localize(dt_end_naive, is_dst=None)
+tsmax = dt_end_local.timestamp()
+
+#yesterday = datetime.date.fromtimestamp(time.time()-24*3600*jours)
+#dt0 = datetime.datetime(year=yesterday.year, month=yesterday.month, day=yesterday.day)
+#ts0 = datetime.datetime.timestamp(dt0)
+#tsmax = ts0 + 23*3600
+print(ts0)
+print(tsmax)
 
 #Analyse sur la journée des deltas :
 
@@ -59,6 +79,7 @@ energy_linky=0
 energy_linky_old=0
 
 data=database.execute("SELECT sum FROM 'statistics' where metadata_id = '" + str(id_entity_linky) +"' and start_ts='" + str(tsmax) + "'")
+print("SELECT sum FROM 'statistics' where metadata_id = '",str(id_entity_linky),"' and start_ts='",str(tsmax),"'")
 for row in data.fetchall():
     energy_linky=row[0]
 if energy_linky==0:

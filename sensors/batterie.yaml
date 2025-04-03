@@ -1,0 +1,126 @@
+template:
+  - sensor:
+      - name: "Charge Marstek"
+        state: "{{ (float(states('sensor.esphome_web_a92940_marstek_monthly_charging_energy'),0)) }}"
+        unique_id: "charge_marstek"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing # Exemples de valeurs possibles
+
+      - name: "Décharge Marstek"
+        state: "{{ (float(states('sensor.esphome_web_a92940_marstek_monthly_discharging_energy'),0)) }}"
+        unique_id: "decharge_marstek"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing # Exemples de valeurs possibles
+
+      - name: "Charge Batterie"
+        unique_id: charge_marstek_w
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        state: >
+          {% if states('sensor.esphome_web_a92940_marstek_ac_power') | float(0) <= 0 %}
+            {{ (states('sensor.esphome_web_a92940_marstek_ac_power') | float(0)) *-1 }}
+          {% else %}
+            0
+          {% endif %}
+
+      - name: "Décharge Batterie"
+        unique_id: decharge_marstek_w
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        state: >
+          {% if states('sensor.esphome_web_a92940_marstek_ac_power') | float(0) >= 0 %}
+            {{ (states('sensor.esphome_web_a92940_marstek_ac_power') | float(0)) }}
+          {% else %}
+            0
+          {% endif %}
+      - name: "Marstek Efficiency"
+        unique_id: marstek_efficiency
+        unit_of_measurement: "%"
+        #device_class: power
+        state_class: measurement
+        state: >
+          {% set charging = states('sensor.marstek_daily_charging_kwh') | float(0) %}
+          {% set discharging = states('sensor.marstek_daily_discharging_kwh') | float(0) %}
+          {% if charging > 0 %}
+            {{ ((discharging / charging) * 100) | int }}
+          {% else %}
+            0
+          {% endif %}
+
+# -------
+# SENSORS
+# -------
+
+sensor:
+  - platform: integration
+    name: "Décharge Marstek"
+    unique_id: marstek_discharging_kwh
+    source: sensor.decharge_marstek_w
+    round: 2
+    unit_prefix: k
+    unit_time: h
+    method: left
+  - platform: integration
+    name: Charge Marstek
+    unique_id: marstek_charging_kwh
+    source: sensor.charge_marstek_w
+    round: 2
+    unit_prefix: k
+    unit_time: h
+    method: left
+
+# --------------
+# UTILITY METERS
+# --------------
+utility_meter:
+  daily_discharge:
+    name: Marstek Daily Discharging kWh
+    unique_id: marstek_daily_discharging_kwh
+    source: sensor.marstek_discharging_kwh
+    cycle: daily
+
+  daily_charge:
+    name: Marstek Daily Charging kWh
+    unique_id: marstek_daily_charging_kwh
+    source: sensor.marstek_charging_kwh
+    cycle: daily
+
+  weekly_discharge:
+    name: Marstek Weekly Discharging kWh
+    unique_id: marstek_weekly_discharging_kwh
+    source: sensor.marstek_discharging_kwh
+    cycle: weekly
+
+  weekly_charge:
+    name: Marstek Weekly Charging kWh
+    unique_id: marstek_weekly_charging_kwh
+    source: sensor.marstek_charging_kwh
+    cycle: weekly
+
+  monthly_discharge:
+    name: Marstek Monthly Discharging kWh
+    unique_id: marstek_monthly_discharging_kwh
+    source: sensor.marstek_discharging_kwh
+    cycle: monthly
+
+  monthly_charge:
+    name: Marstek Monthly Charging kWh
+    unique_id: marstek_monthly_charging_kwh
+    source: sensor.marstek_charging_kwh
+    cycle: monthly
+
+  yearly_discharge:
+    name: Marstek Yearly Discharging kWh
+    unique_id: marstek_yearly_discharging_kwh
+    source: sensor.marstek_discharging_kwh
+    cycle: yearly
+
+  yearly_charge:
+    name: Marstek Yearly Charging kWh
+    unique_id: marstek_yearly_charging_kwh
+    source: sensor.marstek_charging_kwh
+    cycle: yearly

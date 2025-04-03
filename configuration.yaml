@@ -73,6 +73,7 @@ shell_command:
   supp_ecojoko: python3 /config/python_scripts/suppression_ecojoko.py
   maj_linky: python3 /config/python_scripts/maj_linky.py
   maj_conso: python3 /config/python_scripts/maj_conso.py
+  maj_conso_non_suivie: python3 /config/python_scripts/maj_conso_non_suivie.py
   maj_surplus: python3 /config/python_scripts/maj_surplus.py
   maj_solar: python3 /config/python_scripts/energie_solar.py
 
