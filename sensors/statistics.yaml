@@ -11,7 +11,7 @@ sensor:
 
   - platform: statistics
     name: conso_tr_mini_last_24h_em06
-    entity_id: sensor.em06_b1_power
+    entity_id: sensor.em06_02_a2_power
     state_characteristic: value_min
     unique_id: "conso_tr_mini_last_24h_em06"
     max_age:

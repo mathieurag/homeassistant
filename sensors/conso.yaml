@@ -42,6 +42,14 @@ template:
         unit_of_measurement: "W"
         state: "{% if float(states('sensor.mesureur_n1_local_puissance_a'),0) | round(1)==0 %} 22.0 {%- else -%} {{ (float(states('sensor.mesureur_n1_local_puissance_a'),0))| round(1) }} {%- endif %}"
 
+      - name: "mesureur_n1_puissance_b" #Entité gardée pour historique
+        unique_id: "mesureur_n1_puissance_b"
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: "W"
+        state: "{{ (float(states('sensor.mesureur_n1_local_puissance_b'),0))| round(1) }}"
+
+
       - name: "Puissance socle"
         unique_id: "puissance_socle"
         device_class: power
@@ -55,7 +63,7 @@ template:
         state_class: measurement
         unit_of_measurement: "W"
         state: "{{
-          (float(states('sensor.em06_b1_power'),0)
+          (float(states('sensor.em06_02_a2_power'),0)
           - float(states('sensor.puissance_socle'),0)
           - float(states('sensor.puissance_suivie'),0)
           + float(states('sensor.prises_rdc'),0)
@@ -87,7 +95,7 @@ template:
         device_class: power # Exemples de valeurs possibles
         state_class: measurement
         unit_of_measurement: "W"
-        state: "{% if float(states('sensor.em06_b1_power'),0) > 85 -%} {{float(states('sensor.em06_b1_power'),0)}} {%- else -%} 120.0 {%- endif %}"
+        state: "{% if float(states('sensor.em06_02_a2_power'),0) > 85 -%} {{float(states('sensor.em06_02_a2_power'),0)}} {%- else -%} 120.0 {%- endif %}"
 
       - name: "Consommation réseau Absolue"
         unique_id: "consommation_reseau_abs"
@@ -101,7 +109,7 @@ template:
         device_class: power # Exemples de valeurs possibles
         state_class: measurement
         unit_of_measurement: "W"
-        state: "{{ float(states('sensor.em06_b1_power'),0) + float(states('sensor.esphome_web_a92940_marstek_ac_power'),0) }}"
+        state: "{{ float(states('sensor.em06_02_a2_power'),0) + float(states('sensor.esphome_web_a92940_marstek_ac_power'),0) }}"
 
       - name: "Consommation Maison"
         unique_id: "consommation_maison"
