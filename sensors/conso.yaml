@@ -59,6 +59,7 @@ template:
           - float(states('sensor.puissance_socle'),0)
           - float(states('sensor.puissance_suivie'),0)
           + float(states('sensor.prises_rdc'),0)
+          + float(states('sensor.esphome_web_a92940_marstek_ac_power'),0)
           ) | round(1) }}"
 
       - name: "Consommation suivie"
@@ -94,6 +95,20 @@ template:
         state_class: measurement
         unit_of_measurement: "W"
         state: "{% if float(states('sensor.em06_02_b1_power'),0) > 0 -%} {{ float(states('sensor.em06_02_b1_power'),0)}} {%- else -%} 0 {%- endif %}"
+
+      - name: "Consommation Générale"
+        unique_id: "consommation_generale"
+        device_class: power # Exemples de valeurs possibles
+        state_class: measurement
+        unit_of_measurement: "W"
+        state: "{{ float(states('sensor.em06_b1_power'),0) + float(states('sensor.esphome_web_a92940_marstek_ac_power'),0) }}"
+
+      - name: "Consommation Maison"
+        unique_id: "consommation_maison"
+        device_class: power # Exemples de valeurs possibles
+        state_class: measurement
+        unit_of_measurement: "W"
+        state: "{{ (float(states('sensor.consommation_reseau'),0) + float(states('sensor.production_solaire'),0) - float(states('sensor.surplus_production'),0) + float(states('sensor.esphome_web_a92940_marstek_ac_power'),0))| round(0)}}"
 
       - name: "Taux de chauffe ECS"
         unique_id: "taux_chauffe_ecs"

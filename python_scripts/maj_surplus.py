@@ -54,8 +54,8 @@ tsmax = dt_end_local.timestamp()
 #dt0 = datetime.datetime(year=yesterday.year, month=yesterday.month, day=yesterday.day)
 #ts0 = datetime.datetime.timestamp(dt0)
 #tsmax = ts0 + 23*3600
-print(ts0)
-print(tsmax)
+#print(ts0)
+#print(tsmax)
 
 #Analyse sur la journée des deltas :
 
@@ -79,7 +79,7 @@ energy_linky=0
 energy_linky_old=0
 
 data=database.execute("SELECT sum FROM 'statistics' where metadata_id = '" + str(id_entity_linky) +"' and start_ts='" + str(tsmax) + "'")
-print("SELECT sum FROM 'statistics' where metadata_id = '",str(id_entity_linky),"' and start_ts='",str(tsmax),"'")
+#print("SELECT sum FROM 'statistics' where metadata_id = '",str(id_entity_linky),"' and start_ts='",str(tsmax),"'")
 for row in data.fetchall():
     energy_linky=row[0]
 if energy_linky==0:
@@ -104,65 +104,70 @@ delta_energie = []
 energy_linky_total=0
 energy_surplus_total=0
 delta_energie_total=0
+commit=0
 if error==0:
     if delta==0:
         retour="Pas de données à modifier : delta journalier = 0"
-    else:
-        for i in range(0, 24):
-            #Analyse heure / heure :
 
-            #Surplus
-            data = database.execute("SELECT sum FROM 'statistics' where metadata_id = '" + str(id_entity_surplus) +"' and start_ts ='" + str(ts0+i*3600)+"'")
-            for row in data.fetchall():
-                sum=row[0]
-            data = database.execute("SELECT sum FROM 'statistics' where metadata_id = '" + str(id_entity_surplus) +"' and start_ts ='" + str(ts0+(i-1)*3600)+"'")
-            for row in data.fetchall():
-                sum_old=row[0]
+    for i in range(0, 24):
+        #Analyse heure / heure :
 
-            energy_surplus.append(round(sum-sum_old,3))
+        #Surplus
+        data = database.execute("SELECT sum FROM 'statistics' where metadata_id = '" + str(id_entity_surplus) +"' and start_ts ='" + str(ts0+i*3600)+"'")
+        for row in data.fetchall():
+            sum=row[0]
+        data = database.execute("SELECT sum FROM 'statistics' where metadata_id = '" + str(id_entity_surplus) +"' and start_ts ='" + str(ts0+(i-1)*3600)+"'")
+        for row in data.fetchall():
+            sum_old=row[0]
 
-            #linky
-            data = database.execute("SELECT sum FROM 'statistics' where metadata_id = '" + str(id_entity_linky) +"' and start_ts ='" + str(ts0+i*3600)+"'")
-            for row in data.fetchall():
-                sum=row[0]
+        energy_surplus.append(round(sum-sum_old,3))
 
-            #linky
-            data = database.execute("SELECT sum FROM 'statistics' where metadata_id = '" + str(id_entity_linky) +"' and start_ts ='" + str(ts0+(i-1)*3600)+"'")
-            for row in data.fetchall():
-                sum_old=row[0]
+        #linky
+        data = database.execute("SELECT sum FROM 'statistics' where metadata_id = '" + str(id_entity_linky) +"' and start_ts ='" + str(ts0+i*3600)+"'")
+        for row in data.fetchall():
+            sum=row[0]
 
-            energy_linky.append(round((sum-sum_old)/1000,3))
+        #linky
+        data = database.execute("SELECT sum FROM 'statistics' where metadata_id = '" + str(id_entity_linky) +"' and start_ts ='" + str(ts0+(i-1)*3600)+"'")
+        for row in data.fetchall():
+            sum_old=row[0]
 
-            #Calcul des deltas
+        energy_linky.append(round((sum-sum_old)/1000,3))
 
-            delta_energie.append(round(energy_linky[i]-energy_surplus[i],3))
+        #Calcul des deltas
 
-            energy_linky_total=energy_linky_total+energy_linky[i]
-            energy_surplus_total=energy_surplus_total+energy_surplus[i]
-            delta_energie_total=delta_energie_total+delta_energie[i]
+        delta_energie.append(round(energy_linky[i]-energy_surplus[i],3))
 
-            if delta_energie[i]>0:
-                query="UPDATE statistics set sum=sum+"+str(delta_energie[i])+" where metadata_id='"+str(id_entity_surplus)+"' and start_ts>=" + str(ts0+i*3600)
-                print(query)
-                data=database.execute(query)
-                query="UPDATE statistics_short_term set sum=sum+"+str(delta_energie[i])+" where metadata_id='"+str(id_entity_surplus)+"' and start_ts>=" + str(ts0+i*3600)
-                data=database.execute(query)    
-            elif delta_energie[i]<0:
-                query="UPDATE statistics set sum=sum"+str(delta_energie[i])+" where metadata_id='"+str(id_entity_surplus)+"' and start_ts>=" + str(ts0+i*3600)
-                print(query)
-                data=database.execute(query)
-                query="UPDATE statistics_short_term set sum=sum"+str(delta_energie[i])+" where metadata_id='"+str(id_entity_surplus)+"' and start_ts>=" + str(ts0+i*3600)
-                data=database.execute(query)
+        energy_linky_total=energy_linky_total+energy_linky[i]
+        energy_surplus_total=energy_surplus_total+energy_surplus[i]
+        delta_energie_total=delta_energie_total+delta_energie[i]
 
-        print("Linky :",round(energy_linky_total,3),"détails :",energy_linky)
-        print("Surplus :",round(energy_surplus_total,3),"détails :",energy_surplus)
-        print("Delta :",round(delta_energie_total,3),"détails :",delta_energie)
+        if delta_energie[i]>0:
+            query="UPDATE statistics set sum=sum+"+str(delta_energie[i])+" where metadata_id='"+str(id_entity_surplus)+"' and start_ts>=" + str(ts0+i*3600)
+            print(query)
+            data=database.execute(query)
+            query="UPDATE statistics_short_term set sum=sum+"+str(delta_energie[i])+" where metadata_id='"+str(id_entity_surplus)+"' and start_ts>=" + str(ts0+i*3600)
+            data=database.execute(query)
+            commit=1
+        elif delta_energie[i]<0:
+            query="UPDATE statistics set sum=sum"+str(delta_energie[i])+" where metadata_id='"+str(id_entity_surplus)+"' and start_ts>=" + str(ts0+i*3600)
+            print(query)
+            data=database.execute(query)
+            query="UPDATE statistics_short_term set sum=sum"+str(delta_energie[i])+" where metadata_id='"+str(id_entity_surplus)+"' and start_ts>=" + str(ts0+i*3600)
+            data=database.execute(query)
+            commit=1
 
-        retour= "Delta corrigé:"+str(delta_energie)+" kWh (HP:"+str(round(delta_energie_total/1000,2))+")"
-        print(retour)
+    print("Linky :",round(energy_linky_total,3),"détails :",energy_linky)
+    print("Surplus :",round(energy_surplus_total,3),"détails :",energy_surplus)
+    print("Delta :",round(delta_energie_total,3),"détails :",delta_energie)
+
+    if commit==1:
         data=database.execute("commit")
+        retour= "Delta corrigé:"+str(delta_energie)+" kWh (HP:"+str(round(delta_energie_total/1000,2))+")"
 else:
-    print("Pas de données à J-",jours)
+    retour= "Pas de données à J-"+jours
+
+print(retour)
 
 
 database.close()

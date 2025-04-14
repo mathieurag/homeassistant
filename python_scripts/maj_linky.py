@@ -139,9 +139,9 @@ delta_hp=round(energy_linky_hp-energy_hp,2)
 delta_hc=round(energy_linky_hc-energy_hc,2)
 print ("Delta:",delta,"kWh","(HP:",delta_hp,"/HC:",delta_hc,")")
 
-if delta==0:
-    error=1
-    retour="Pas de données à modifier"
+#if delta==0:
+#    error=1
+#    retour="Pas de données à modifier"
 
 #Analyse heure / heure :
 
@@ -249,7 +249,7 @@ if error==0:
         delta_hp.append(energy_linky_hp[i]-energy_hp[i])
         delta_hc_total=delta_hc_total+delta_hc[i]
         delta_hp_total=delta_hp_total+delta_hp[i]
-
+        #print(i,delta_hc[i],"kwh / ",delta_hp[i],"kwh")
         if delta_hc[i]>0:
             query="UPDATE statistics set sum=sum+"+str(delta_hc[i])+" where metadata_id='"+str(id_entity_hc)+"' and start_ts>=" + str(ts0+i*3600)
             print(query)

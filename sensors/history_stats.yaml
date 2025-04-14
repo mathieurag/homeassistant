@@ -1,4 +1,19 @@
 sensor:
+  - platform: statistics
+    name: "Marstek Moyenne Quotidienne"
+    unique_id: "marstek_moyenne_qotidienne"
+    entity_id: sensor.marstek_efficiency_filtree
+    state_characteristic: mean
+    max_age:
+      hours: 24
+
+  - platform: filter
+    name: "Marstek Efficiency Filtrée"
+    unique_id: "marstek_efficiency_filtree"
+    entity_id: sensor.marstek_efficiency
+    filters:
+      - filter: range
+        lower_bound: 0.1
   #ECS
   - platform: history_stats
     name: temps_allumage_ecs_today

@@ -15,112 +15,128 @@ template:
         state_class: total_increasing # Exemples de valeurs possibles
 
       - name: "Charge Batterie"
-        unique_id: charge_marstek_w
-        unit_of_measurement: W
+        unique_id: "charge_marstek_w"
+        unit_of_measurement: "W"
         device_class: power
         state_class: measurement
         state: >
-          {% if states('sensor.esphome_web_a92940_marstek_ac_power') | float(0) <= 0 %}
-            {{ (states('sensor.esphome_web_a92940_marstek_ac_power') | float(0)) *-1 }}
+          {% set power = states('sensor.esphome_web_a92940_marstek_ac_power') | float(0) %}
+          {% if power < 0 %}
+            {{ power * -1 }}
           {% else %}
             0
           {% endif %}
 
       - name: "Décharge Batterie"
-        unique_id: decharge_marstek_w
-        unit_of_measurement: W
+        unique_id: "decharge_marstek_w"
+        unit_of_measurement: "W"
         device_class: power
         state_class: measurement
         state: >
-          {% if states('sensor.esphome_web_a92940_marstek_ac_power') | float(0) >= 0 %}
-            {{ (states('sensor.esphome_web_a92940_marstek_ac_power') | float(0)) }}
+          {% set power = states('sensor.esphome_web_a92940_marstek_ac_power') | float(0) %}
+          {% if power >= 0 %}
+            {{ power }}
           {% else %}
             0
           {% endif %}
-      - name: "Marstek Efficiency"
-        unique_id: marstek_efficiency
+
+      - name: "Marstek Daily Efficiency"
+        unique_id: "marstek_daily_efficiency"
         unit_of_measurement: "%"
         #device_class: power
         state_class: measurement
         state: >
-          {% set charging = states('sensor.marstek_daily_charging_kwh') | float(0) %}
-          {% set discharging = states('sensor.marstek_daily_discharging_kwh') | float(0) %}
+          {% set charging = states('sensor.esphome_web_a92940_marstek_daily_charging_energy') | float(0) %}
+          {% set discharging = states('sensor.esphome_web_a92940_marstek_daily_discharging_energy') | float(0) %}
           {% if charging > 0 %}
             {{ ((discharging / charging) * 100) | int }}
           {% else %}
             0
           {% endif %}
 
-# -------
-# SENSORS
-# -------
+      - name: "Marstek Efficiency Non Nulle"
+        unit_of_measurement: "%"
+        state_class: measurement
+        state: >
+          {% set val = states('sensor.marstek_efficiency') %}
+          {% if val is number and val | float > 0 %}
+            {{ val | float }}
+          {% else %}
+            0
+          {% endif %}
 
-sensor:
-  - platform: integration
-    name: "Décharge Marstek"
-    unique_id: marstek_discharging_kwh
-    source: sensor.decharge_marstek_w
-    round: 2
-    unit_prefix: k
-    unit_time: h
-    method: left
-  - platform: integration
-    name: Charge Marstek
-    unique_id: marstek_charging_kwh
-    source: sensor.charge_marstek_w
-    round: 2
-    unit_prefix: k
-    unit_time: h
-    method: left
+      - name: "Marstek Instant Efficiency"
+        unique_id: "marstek_efficiency"
+        unit_of_measurement: "%"
+        #device_class: power
+        state_class: measurement
+        state: >
+          {% set ac_power = states('sensor.esphome_web_a92940_marstek_ac_power') | float(0) %}
+          {% set battery_power = states('sensor.esphome_web_a92940_marstek_battery_power') | float(0) %}
 
-# --------------
-# UTILITY METERS
-# --------------
-utility_meter:
-  daily_discharge:
-    name: Marstek Daily Discharging kWh
-    unique_id: marstek_daily_discharging_kwh
-    source: sensor.marstek_discharging_kwh
-    cycle: daily
+          {% if battery_power != 0 and ac_power!=0 %}
+            {% if states('sensor.esphome_web_a92940_marstek_ac_power') | float(0) > 0 %}
+              {% set ratio = -(ac_power / battery_power) * 100 %}
+              {{ (max(min(ratio, 100), 0)) | int }}
+            {% elif states('sensor.esphome_web_a92940_marstek_ac_power') | float(0) < 0 %}
+              {% set ratio = -(battery_power/ac_power) * 100 %}
+              {{ (max(min(ratio, 100), 0)) | int }}
+            {% else %}
+            0
+            {% endif %}
+          {% else %}
+            0
+          {% endif %}
+        icon: >
+          {% if states('sensor.esphome_web_a92940_marstek_ac_power') | float(0) > 0 %}
+            mdi:battery-arrow-down
+          {% elif states('sensor.esphome_web_a92940_marstek_ac_power') | float(0) < 0 %}
+            mdi:battery-charging
+          {% else %}
+            mdi:battery-outline
+          {% endif %}
 
-  daily_charge:
-    name: Marstek Daily Charging kWh
-    unique_id: marstek_daily_charging_kwh
-    source: sensor.marstek_charging_kwh
-    cycle: daily
+      - name: "Estimation Temps Restant Batterie"
+        unique_id: "batterie_temps_restant"
+        state: >
+          {% set inverter = states('sensor.esphome_web_a92940_marstek_inverter_state') %}
+          {% set capacity_now = states('sensor.esphome_web_a92940_marstek_battery_remaining_capacity') | float(0) %}
+          {% set soc = states('sensor.esphome_web_a92940_marstek_battery_state_of_charge') | float(0) %}
+          {% set cutoff_charge_pct = states('number.esphome_web_a92940_marstek_charging_cutoff_capacity') | float(0) %}
+          {% set cutoff_discharge_pct = states('number.esphome_web_a92940_marstek_discharging_cutoff_capacity') | float(0) %}
 
-  weekly_discharge:
-    name: Marstek Weekly Discharging kWh
-    unique_id: marstek_weekly_discharging_kwh
-    source: sensor.marstek_discharging_kwh
-    cycle: weekly
+          {% set power = 0.0 %}
+          {% if inverter == 'Charge' %}
+            {% set power = states('sensor.batterie_charge_moyenne') | float(0) * -1 %}
+          {% elif inverter == 'Discharge' %}
+            {% set power = states('sensor.batterie_decharge_moyenne') | float(0) %}
+          {% endif %}
+          {% if power == 0 or soc == 0 %}
+            temps indéterminé
+          {% else %}
+            {% set capacity_total = capacity_now / (soc / 100) %}
+            {% set cutoff_charge_kwh = capacity_total * (cutoff_charge_pct / 100) %}
+            {% set cutoff_discharge_kwh = capacity_total * (cutoff_discharge_pct / 100) %}
 
-  weekly_charge:
-    name: Marstek Weekly Charging kWh
-    unique_id: marstek_weekly_charging_kwh
-    source: sensor.marstek_charging_kwh
-    cycle: weekly
-
-  monthly_discharge:
-    name: Marstek Monthly Discharging kWh
-    unique_id: marstek_monthly_discharging_kwh
-    source: sensor.marstek_discharging_kwh
-    cycle: monthly
-
-  monthly_charge:
-    name: Marstek Monthly Charging kWh
-    unique_id: marstek_monthly_charging_kwh
-    source: sensor.marstek_charging_kwh
-    cycle: monthly
-
-  yearly_discharge:
-    name: Marstek Yearly Discharging kWh
-    unique_id: marstek_yearly_discharging_kwh
-    source: sensor.marstek_discharging_kwh
-    cycle: yearly
-
-  yearly_charge:
-    name: Marstek Yearly Charging kWh
-    unique_id: marstek_yearly_charging_kwh
-    source: sensor.marstek_charging_kwh
-    cycle: yearly
+            {% if power > 0 %}
+              {% set to_discharge = capacity_now - cutoff_discharge_kwh %}
+              {% set heures = ((to_discharge * 1000) / power) | int %}
+              {% set minutes = ((((to_discharge * 1000) / power) - heures) * 60) | round(0) %}
+              Décharge – vide dans {{ heures }}h{{ minutes|int }}min
+            {% elif power < 0 %}
+              {% set to_charge = cutoff_charge_kwh - capacity_now %}
+              {% set heures = ((to_charge * 1000) / (power | abs)) | int %}
+              {% set minutes = ((((to_charge * 1000) / (power | abs)) - heures) * 60) | round(0) %}
+              Charge – pleine dans {{ heures }}h{{ minutes|int }}min
+            {% else %}
+              En attente
+            {% endif %}
+          {% endif %}
+        icon: >
+          {% if states('sensor.esphome_web_a92940_marstek_ac_power') | float(0) > 0 %}
+            mdi:battery-arrow-down
+          {% elif states('sensor.esphome_web_a92940_marstek_ac_power') | float(0) < 0 %}
+            mdi:battery-charging
+          {% else %}
+            mdi:battery-outline
+          {% endif %}

@@ -30,7 +30,6 @@ row2=""
 min=0
 
 if int(Count) > min:
-    print(">",min," entrée(s)")
     print("Modification des données erronnées :")
     
     query2 = "SELECT state_id FROM 'states' where metadata_id='" + str(id_entity) + "' and cast(state as float)>40"
@@ -41,7 +40,7 @@ if int(Count) > min:
         
         print("state_id=",state_id)
 
-        query2 = "SELECT state FROM 'states' where metadata_id='" + str(id_entity) + "' and state_id>"+str(state_id)+" LIMIT 1"
+        query2 = "SELECT state FROM 'states' where metadata_id='" + str(id_entity) + "' and state_id<"+str(state_id)+" ORDER BY state_id desc LIMIT 1"
         print(query2)
         data=database.execute(query2)
         for row in data.fetchall():
@@ -50,7 +49,7 @@ if int(Count) > min:
         if state=='unknown' or state=='unavailable':
             print("on ne fait rien pour",state)
         else: 
-            state=round(float(state)/1000,2)
+            state=float(state)
             query5="UPDATE 'states' set state='"+str(state)+"' where metadata_id='" + str(id_entity) +"' and state_id="+str(state_id)
             print(query5)
             data=database.execute(query5)

@@ -110,16 +110,24 @@ text_sensor:
   - platform: template
     name: "Marstek Inverter State"
     lambda: |-
-      switch (int(id(inverter_state).state)) {
-        case 0: return std::string("Sleep");
-        case 1: return std::string("Standby");
-        case 2: return std::string("Charge");
-        case 3: return std::string("Discharge");
-        case 4: return std::string("Fault");
-        case 5: return std::string("Idle");
-        default: return std::string("Unknown");
-      };
-    update_interval: 60s
+      static std::string last_valid_state = "Unknown";
+      int state = (int)id(inverter_state).state;
+
+      if (state >= 0 && state <= 5) {
+        switch (state) {
+          case 0: last_valid_state = "Sleep"; break;
+          case 1: last_valid_state = "Standby"; break;
+          case 2: last_valid_state = "Charge"; break;
+          case 3: last_valid_state = "Discharge"; break;
+          case 4: last_valid_state = "Fault"; break;
+          case 5: last_valid_state = "Idle"; break;
+        }
+      }
+      // Si la valeur n'est pas reconnue, on garde la dernière
+      return last_valid_state;
+    update_interval: 5s
+
+
 
 # Binaire sensoren
 binary_sensor:
@@ -321,13 +329,13 @@ binary_sensor:
 
 # Sensoren
 sensor:
-  - platform: modbus_controller
+  - name: "Marstek Internal State"
+    platform: modbus_controller
     id: inverter_state  # No name, since it's internal
     modbus_controller_id: mt
     register_type: holding
     address: 35100
     value_type: U_WORD
-    internal: true # Hides from Home Assistant
 
   - name: "Marstek Firmware Version"
     platform: modbus_controller
@@ -350,7 +358,7 @@ sensor:
     state_class: measurement
     filters:
       - multiply: 0.01
-    skip_updates: 60 # 5 minutes
+    skip_updates: 6 # 30 seconds
     
   - name: "Marstek Battery Current (Average)"
     platform: modbus_controller
@@ -364,6 +372,7 @@ sensor:
     state_class: measurement
     filters:
       - multiply: 0.01
+    skip_updates: 6 # 30 seconds
 
   - name: "Marstek Battery Power"
     platform: modbus_controller
@@ -375,7 +384,7 @@ sensor:
     device_class: power
     state_class: measurement
     accuracy_decimals: 0
-    skip_updates: 2 # 10 seconds
+    skip_updates: 1 # 5s 
 
   - name: "Marstek Battery State Of Charge"
     platform: modbus_controller
@@ -386,7 +395,7 @@ sensor:
     unit_of_measurement: "%"
     accuracy_decimals: 1
     id: marstek_soc
-    skip_updates: 60 # 5 minutes
+    skip_updates: 6 # 30 seconds
 
   - name: "Marstek Battery Total Energy"
     platform: modbus_controller
@@ -399,13 +408,13 @@ sensor:
     filters:
       - multiply: 0.001 # Firmware 148: 0.001 / Firmware 147: 0.01
     id: marstek_total_energy
-    skip_updates: 60 # 5 minutes
+    skip_updates: 6 # 30 seconds
 
   - platform: template
     name: "Marstek Battery Remaining Capacity"
     unit_of_measurement: "kWh"
     accuracy_decimals: 2
-    update_interval: 300s
+    update_interval: 30s
     lambda: |-
       if (id(marstek_total_energy).has_state() && id(marstek_soc).has_state()) {
         float total_energy = id(marstek_total_energy).state;
@@ -426,7 +435,7 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
-    skip_updates: 60 # 5 minutes
+    skip_updates: 6 # 30 seconds
 
   - name: "Marstek AC Current"
     platform: modbus_controller
@@ -452,7 +461,7 @@ sensor:
     device_class: power
     state_class: measurement
     accuracy_decimals: 0
-    skip_updates: 6 # 30 seconds
+    skip_updates: 1 # 5 s
 
 #  - name: "Marstek AC Offgrid Voltage"
 #    platform: modbus_controller
@@ -503,7 +512,7 @@ sensor:
     filters:
       - multiply: 0.01
     register_count: 2
-    skip_updates: 60 # 5 minutes
+    skip_updates: 6 # 30 seconds
 
   - name: "Marstek Total Discharging Energy"
     platform: modbus_controller
@@ -518,7 +527,7 @@ sensor:
     filters:
       - multiply: 0.01
     register_count: 2
-    skip_updates: 60 # 5 minutes
+    skip_updates: 6 # 30 seconds
 
   - name: "Marstek Daily Charging Energy"
     platform: modbus_controller
@@ -533,7 +542,7 @@ sensor:
     filters:
       - multiply: 0.01
     register_count: 2
-    skip_updates: 60 # 5 minutes
+    skip_updates: 6 # 30 seconds
 
   - name: "Marstek Daily Discharging Energy"
     platform: modbus_controller
@@ -548,7 +557,7 @@ sensor:
     filters:
       - multiply: 0.01
     register_count: 2
-    skip_updates: 60 # 5 minutes
+    skip_updates: 6 # 30 seconds
 
   - name: "Marstek Monthly Charging Energy"
     platform: modbus_controller
@@ -563,7 +572,7 @@ sensor:
     filters:
       - multiply: 0.01
     register_count: 2
-    skip_updates: 60 # 5 minutes
+    skip_updates: 6 # 30 seconds
 
   - name: "Marstek Monthly Discharging Energy"
     platform: modbus_controller
@@ -578,7 +587,7 @@ sensor:
     filters:
       - multiply: 0.01
     register_count: 2
-    skip_updates: 60 # 5 minutes
+    skip_updates: 6 # 30 seconds
 
   - name: "Marstek Internal Temperature"
     platform: modbus_controller
@@ -592,7 +601,7 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
-    skip_updates: 60 # 5 minutes
+    skip_updates: 6 # 30 seconds
 
   - name: "Marstek Internal MOS1 Temperature"
     platform: modbus_controller
@@ -604,7 +613,7 @@ sensor:
     device_class: temperature
     state_class: measurement
     accuracy_decimals: 1
-    skip_updates: 60 # 5 minutes
+    skip_updates: 6 # 30 seconds
     filters:
       - multiply: 0.1
    
@@ -618,7 +627,7 @@ sensor:
     device_class: temperature
     state_class: measurement
     accuracy_decimals: 1
-    skip_updates: 60 # 5 minutes
+    skip_updates: 6 # 30 seconds
     filters:
       - multiply: 0.1
 
@@ -632,7 +641,7 @@ sensor:
     device_class: temperature
     state_class: measurement
     accuracy_decimals: 1
-    skip_updates: 60 # 5 minutes
+    skip_updates: 6 # 30 seconds
     filters:
       - multiply: 0.1
     
@@ -646,7 +655,7 @@ sensor:
     device_class: temperature
     state_class: measurement
     accuracy_decimals: 1
-    skip_updates: 60 # 5 minutes
+    skip_updates: 6 # 30 seconds
     filters:
       - multiply: 0.1
     
@@ -660,7 +669,7 @@ sensor:
     device_class: voltage
     accuracy_decimals: 0
     state_class: measurement
-    skip_updates: 60 # 5 minutes
+    skip_updates: 6 # 30 seconds
     filters:
       - multiply: 0.01
 
@@ -674,7 +683,7 @@ sensor:
     device_class: current
     accuracy_decimals: 0
     state_class: measurement
-    skip_updates: 60 # 5 minutes
+    skip_updates: 6 # 30 seconds
     filters:
       - multiply: 0.01
 
@@ -688,7 +697,7 @@ sensor:
     device_class: current
     accuracy_decimals: 0
     state_class: measurement
-    skip_updates: 60 # 5 minutes
+    skip_updates: 6 # 30 seconds
     filters:
       - multiply: 0.01
 
@@ -729,7 +738,7 @@ select:
       "stop": 0
       "charge": 1
       "discharge": 2
-    skip_updates: 2 # 10 seconds
+    skip_updates: 6 # 30 seconds
 
   - name: "Marstek Backup Function"
     platform: modbus_controller
@@ -740,7 +749,7 @@ select:
     optionsmap:
       "enable": 0
       "disable": 1
-    skip_updates: 2 # 10 seconds
+    skip_updates: 6 # 30 seconds
 
   - name: "Marstek User Work Mode"
     icon: mdi:auto-mode
@@ -752,7 +761,7 @@ select:
       "manual": 0
       "anti-feed": 1
       "ai": 2
-    skip_updates: 2 # 10 seconds
+    skip_updates: 1 # 5 seconds
 
 number:
   - name: "Marstek Forcible Charge Power"
@@ -767,7 +776,7 @@ number:
     min_value: 0
     max_value: 2500
     step: 1
-    skip_updates: 2 # 10 seconds
+    skip_updates: 6 # 30 seconds
 
   - name: "Marstek Charge To SOC"
     icon: mdi:battery-charging-medium 
@@ -781,6 +790,7 @@ number:
     min_value: 12
     max_value: 100
     step: 1
+    skip_updates: 6 # 30 seconds
 
   - name: "Marstek Forcible Discharge Power"
     icon: mdi:tune-variant
@@ -794,7 +804,7 @@ number:
     min_value: 0
     max_value: 2500
     step: 1
-    skip_updates: 2 # 10 seconds
+    skip_updates: 6 # 30 seconds
 
   - name: "Marstek Charging Cutoff Capacity"
     icon: mdi:battery-90
@@ -834,7 +844,7 @@ number:
     min_value: 0
     max_value: 2500
     step: 1
-    skip_updates: 2 # 10 seconds
+    skip_updates: 6 # 30 seconds
 
   - name: "Marstek Max. Discharge Power"
     icon: mdi:tune-variant
@@ -848,7 +858,7 @@ number:
     min_value: 0
     max_value: 2500
     step: 1
-    skip_updates: 2 # 10 seconds
+    skip_updates: 6 # 30 seconds
 
 ###############################################################################
 # LED
@@ -863,7 +873,7 @@ light:
     id: status_led
 
 interval:
-  - interval: 5s
+  - interval: 30s
     then:
       - lambda: |-
           ESP_LOGD("status", "Modbus: %.0f, WiFi: %.0f", id(modbus_status).state, id(wifi_strength).state);
@@ -875,7 +885,7 @@ interval:
             - light.turn_on:
                 id: status_led
                 red: 0%
-                green: 100%  # 🟢 Green = Modbus OK & WiFi strong
+                green: 25%  # 🟢 Green = Modbus OK & WiFi strong
                 blue: 0%
           else:
             - if:
@@ -885,9 +895,9 @@ interval:
                 then:
                   - light.turn_on:
                       id: status_led
-                      red: 100%  # 🟣 Purple = Both Modbus & WiFi failed
+                      red: 25%  # 🟣 Purple = Both Modbus & WiFi failed
                       green: 0%
-                      blue: 100%
+                      blue: 25%
                 else:
                   - if:
                       condition:
@@ -898,10 +908,10 @@ interval:
                             id: status_led
                             red: 0%
                             green: 0%
-                            blue: 100%  # 🔵 Blue = Weak WiFi signal (< -80 dBm)
+                            blue: 25%  # 🔵 Blue = Weak WiFi signal (< -80 dBm)
                       else:
                         - light.turn_on:
                             id: status_led
-                            red: 100%  # 🔴 Red = Modbus error, WiFi OK
+                            red: 25%  # 🔴 Red = Modbus error, WiFi OK
                             green: 0%
                             blue: 0%

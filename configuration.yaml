@@ -76,5 +76,6 @@ shell_command:
   maj_conso_non_suivie: python3 /config/python_scripts/maj_conso_non_suivie.py
   maj_surplus: python3 /config/python_scripts/maj_surplus.py
   maj_solar: python3 /config/python_scripts/energie_solar.py
+  energie_solar: python3 /config/python_scripts/energie_solar.py
 
 my:
