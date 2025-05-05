@@ -1,5 +1,25 @@
 mqtt:
   - sensor:
+      - name: "Simulation PV"
+        unique_id: simulation_pv
+        state_topic: "homeassistant/simulation/solaire"
+        value_template: "{{ value_json.date }}"
+        json_attributes_topic: "homeassistant/simulation/solaire"
+        json_attributes_template: "{{ value_json | tojson }}"
+
+      - name: "Suivi PV"
+        unique_id: suivi_pv
+        state_topic: "homeassistant/suivi/solaire"
+        value_template: "{{ now().strftime('%H:%M') }}" # juste une heure d’actualisation
+        json_attributes_topic: "homeassistant/suivi/solaire"
+
+      - name: "Comparaison PV"
+        unique_id: comparaison_pv
+        state_topic: "homeassistant/comparaison/solaire"
+        value_template: "{{ value_json.comparaison.production.mesure | default(0) }}"
+        json_attributes_topic: "homeassistant/comparaison/solaire"
+        icon: mdi:chart-box
+
       - name: "Shelly Pro Em Power 0 (Mqtt)"
         state_topic: "shellyproem50-08f9e0e69644/status/em1:0"
         value_template: "{{ value_json.act_power }}"
@@ -15,6 +35,28 @@ mqtt:
         device_class: power
         json_attributes_topic: "shellyproem50-08f9e0e69644/status/em1:1"
         json_attributes_template: "{{ value_json | tojson }}"
+
+      - name: Simulation Solaire ECS
+        state_topic: "homeassistant/simulation/solaire"
+        value_template: "{{ value_json.total_ecs_kwh }}"
+        unit_of_measurement: "kWh"
+        unique_id: simulation_ecs_kwh
+
+      - name: Simulation Solaire Batterie
+        state_topic: "homeassistant/simulation/solaire"
+        value_template: "{{ value_json.total_bat_kwh }}"
+        unit_of_measurement: "kWh"
+        unique_id: simulation_bat_kwh
+
+      - name: Simulation Solaire ECS OK
+        state_topic: "homeassistant/simulation/solaire"
+        value_template: "{{ value_json.ecs_ok }}"
+        unique_id: simulation_ecs_ok
+
+      - name: Simulation Solaire Batterie OK
+        state_topic: "homeassistant/simulation/solaire"
+        value_template: "{{ value_json.bat_ok }}"
+        unique_id: simulation_bat_ok
 
   - switch:
       - name: "Shelly Pro Em Switch (Mqtt)"

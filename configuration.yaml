@@ -69,7 +69,8 @@ logger:
     homeassistant.helpers.frame: error
 
 shell_command:
-  database: python3 /config/python_scripts/script.py
+  database: python3 /config/python_scripts/database.py
+  script: python3 /config/python_scripts/script.py
   supp_ecojoko: python3 /config/python_scripts/suppression_ecojoko.py
   maj_linky: python3 /config/python_scripts/maj_linky.py
   maj_conso: python3 /config/python_scripts/maj_conso.py
@@ -77,5 +78,11 @@ shell_command:
   maj_surplus: python3 /config/python_scripts/maj_surplus.py
   maj_solar: python3 /config/python_scripts/energie_solar.py
   energie_solar: python3 /config/python_scripts/energie_solar.py
+  maj_hp_hc: python3 /config/python_scripts/update_hp_hc.py
+  maj_surplus_eco: python3 /config/python_scripts/update_surplus.py
+  migration: python3 /config/python_scripts/migration.py
+  simulation_pv: "python3 /config/python_scripts/simulation_pv.py"
+  suivi_pv: "python3 /config/python_scripts/suivi_pv.py"
+  comparaison_pv: "python3 /config/python_scripts/comparaison_pv.py"
 
 my:

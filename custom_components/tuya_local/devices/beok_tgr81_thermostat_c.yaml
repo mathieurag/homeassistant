@@ -7,6 +7,9 @@ products:
   - id: gogb05wrtredz3bs
     manufacturer: Avatto
     model: ME81
+  - id: pzlvdbgsvsnf6h4x
+    name: RT-VRF Thermostat-Wifi
+    manufacturer: Acmelec
 entities:
   - entity: climate
     translation_only_key: thermostat
@@ -15,79 +18,51 @@ entities:
         name: hvac_mode
         type: boolean
         mapping:
-          - dps_val: true
-            constraint: preset_mode
-            conditions:
-              - dps_val: auto
-                value: auto
-              - dps_val: manual
-                value: heat
           - dps_val: false
             value: "off"
+          - dps_val: true
+            constraint: mode
+            conditions:
+              - dps_val: "cold"
+                value: cool
+              - dps_val: "hot"
+                value: heat
+              - dps_val: "wind"
+                value: fan_only
+              - dps_val: "dry"
+                value: dry
+              - value: "off"
       - id: 2
         # Deprecated: use hvac_mode to select between these
         # left as preset_mode for now to avoid breaking things
-        name: preset_mode
+        name: mode
         type: string
-        mapping:
-          - dps_val: auto
-            value: program
-          - dps_val: manual
-            value: manual
+        hidden: true
       - id: 16
         type: integer
         name: temperature
-        unit: C
+        unit: °C
         range:
-          min: 5
-          max: 90
-      - id: 19
-        type: integer
-        optional: true
-        name: max_temperature
+          min: 0
+          max: 35
       - id: 24
         type: integer
         name: current_temperature
         mapping:
-          - scale: 10
-      - id: 26
-        optional: true
-        type: integer
-        name: min_temperature
-      - id: 36
+          - scale: 1
+      - id: 28
         type: string
-        name: hvac_action
-        optional: true
+        name: fan_mode
         mapping:
-          - dps_val: close
-            value: idle
-          - dps_val: open
-            value: heating
-  - entity: number
-    name: Temperature calibration
-    category: config
-    icon: "mdi:thermometer-check"
-    dps:
-      - id: 27
-        type: integer
-        optional: true
-        name: value
-        unit: C
-        range:
-          min: -9
-          max: 9
-  - entity: switch
-    translation_key: anti_frost
-    category: config
-    dps:
-      - id: 10
-        type: boolean
-        optional: true
-        name: switch
-        mapping:
-          - dps_val: null
-            value: false
-            hidden: true
+          - dps_val: "low"
+            value: low
+          - dps_val: "middle"
+            value: medium
+          - dps_val: "high"
+            value: high
+          - dps_val: "auto"
+            value: auto
+          - value: auto
   - entity: lock
     translation_key: child_lock
     category: config
@@ -96,119 +71,53 @@ entities:
         optional: true
         type: boolean
         name: lock
-  - entity: select
-    name: Sensor selection
-    icon: "mdi:home-thermometer"
-    category: config
-    dps:
-      - id: 43
-        type: string
-        name: option
-        optional: true
-        mapping:
-          - dps_val: in
-            value: Internal
-          - dps_val: out
-            value: External
-          - dps_val: all
-            value: Both
   - entity: binary_sensor
     category: diagnostic
     class: problem
     dps:
       - id: 45
-        type: bitfield
+        type: string
         name: sensor
         optional: true
         mapping:
-          - dps_val: 0
+          - dps_val: "None"
             value: false
           - value: true
-      - id: 45
-        name: fault_code
-        optional: true
-        type: bitfield
-  - entity: number
-    name: Maximum temperature
-    category: config
-    class: temperature
-    icon: "mdi:thermometer-chevron-up"
-    dps:
-      - id: 19
-        type: integer
-        name: value
-        unit: C
-        optional: true
-        range:
-          min: 30
-          max: 90
-  - entity: number
-    name: Minimum temperature
-    category: config
-    class: temperature
-    icon: "mdi:thermometer-chevron-down"
-    dps:
-      - id: 26
-        optional: true
-        name: value
-        type: integer
-        unit: C
-        range:
-          min: 5
-          max: 20
-  - entity: button
-    translation_key: factory_reset
-    category: config
-    dps:
-      - id: 39
-        name: button
-        type: boolean
-        optional: true
   - entity: select
-    name: Working week
-    icon: "mdi:calendar-clock"
+    name: Programmation
     category: config
     dps:
-      - id: 38
+      - id: 58
         type: string
         name: option
         optional: true
         mapping:
-          - dps_val: "00"
-            value: "Off"
-          - dps_val: "52"
-            value: "5 days"
-          - dps_val: "61"
-            value: "6 days"
-          - dps_val: "70"
-            value: "7 days"
-          - dps_val: null
-            value_redirect: alt
-      - id: 102
-        type: string
-        name: alt
-        optional: true
-        mapping:
-          - dps_val: "00"
-            value: "Off"
-          - dps_val: "52"
-            value: "5 days"
-          - dps_val: "61"
-            value: "6 days"
-          - dps_val: "70"
-            value: "7 days"
-          - dps_val: null
-            invalid: true
-  - entity: number
-    name: Hysteresis
+          - dps_val: "manual"
+            value: Manuelle
+          - dps_val: "auto"
+            value: Automatique
+          - value: Automatique
+  - entity: select
+    name: Affichage temperature
+    icon: "mdi:home-thermometer"
     category: config
-    icon: "mdi:arrow-expand-vertical"
     dps:
       - id: 101
-        type: integer
-        name: value
+        type: string
+        name: option
         optional: true
-        unit: °
-        range:
-          min: 1
-          max: 5
+        mapping:
+          - dps_val: "2"
+            value: Interne
+          - dps_val: "1"
+            value: Externe
+          - dps_val: "0"
+            value: Aucune
+  - entity: button
+    translation_key: factory_reset
+    category: config
+    dps:
+      - id: 102
+        name: button
+        type: boolean
+        optional: true

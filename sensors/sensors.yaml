@@ -9,7 +9,14 @@ template:
         device_class: duration # Exemples de valeurs possibles
         state_class: measurement # Exemples de valeurs possibles
 
-      # FRIGO
+      - name: "Taux de chauffe ECS"
+        unique_id: "taux_chauffe_ecs"
+        unit_of_measurement: "%"
+        device_class: power_factor # Exemples de valeurs possibles
+        state_class: measurement # Exemples de valeurs possibles
+        state: "{{ (100*(float(states('sensor.sonde_temperature_owon_temperature'),15) - float(states('input_number.tmin_ecs'),60) )/ (float(states('input_number.tmax_ecs'),60)-float(states('input_number.tmin_ecs'),15) ) )| round(0) }}"
+
+        # FRIGO
 
       - name: "Durée cycle Frigo sensor"
         state: "{{ (float(states('input_number.duree_cycle_frigo'),0))| round(0) }}"

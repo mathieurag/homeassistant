@@ -1,41 +1,41 @@
 {
     "0x70b3d52b6005f633": {
-        "state": "ON",
+        "state": "OFF",
         "power": 0,
-        "current": 0.035,
-        "voltage": 242,
-        "energy": 0.1,
+        "current": 0,
+        "voltage": 241,
+        "energy": 0.12,
         "power_outage_memory": "restore",
         "child_lock": "UNLOCK",
-        "linkquality": 144,
+        "linkquality": 112,
         "indicator_mode": "off"
     },
     "0x3c6a2cfffed4a7de": {
         "voltage": 2500,
-        "battery": 31.5,
-        "temperature": 39.7,
-        "linkquality": 168
+        "battery": 30.5,
+        "temperature": 23.6,
+        "linkquality": 160
     },
     "0xa4c138d9a41bd98f": {
-        "battery": 37,
+        "battery": 33,
         "voltage": 2600,
-        "linkquality": 84
+        "linkquality": 116
     },
     "0xa4c138682a772531": {
-        "illuminance": 82,
-        "illuminance_average_20min": 87,
-        "illuminance_maximum_today": 6012,
+        "illuminance": 5945,
+        "illuminance_average_20min": 5947,
+        "illuminance_maximum_today": 5966,
         "cleaning_reminder": true,
-        "rain_intensity": 118,
-        "linkquality": 144,
+        "rain_intensity": 0,
+        "linkquality": 108,
         "rain": false
     },
     "0xa4c138da3f8fc34f": {
-        "linkquality": 220
+        "linkquality": 212
     },
     "0xa4c138077ed1f7b8": {
-        "voltage": 243,
-        "linkquality": 168,
+        "voltage": 242,
+        "linkquality": 164,
         "power_outage_memory": "restore",
         "state": "OFF",
         "countdown": 0,
@@ -46,12 +46,12 @@
         "power": 0
     },
     "0x70b3d52b60103b94": {
-        "power": 4,
-        "current": 0.07,
-        "voltage": 246,
-        "energy": 31.32,
-        "linkquality": 196,
-        "state": "ON",
+        "power": 0,
+        "current": 0,
+        "voltage": 247,
+        "energy": 33.68,
+        "linkquality": 216,
+        "state": "OFF",
         "power_outage_memory": "restore",
         "indicator_mode": "off/on",
         "child_lock": "UNLOCK"

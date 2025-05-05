@@ -1,5 +1,29 @@
 template:
   - sensor:
+      - name: "Prévisions solaires JSON"
+        unique_id: "solcast_detailed_hourly_json"
+        state: >
+          {% set now_hour = now().hour %}
+          {% set source = 'sensor.solcast_pv_forecast_previsions_pour_aujourd_hui'%}
+          {% set forecasts = state_attr(source, 'detailedHourly') %}
+          {% if forecasts %}
+            {{ forecasts | map(attribute='pv_estimate') | map('round', 1) | map('string') | join(',') }}
+          {% else %}
+            "NA"
+          {% endif %}
+
+      - name: "Prévisions solaires demain JSON"
+        unique_id: "solcast_detailed_hourly_demain_json"
+        state: >
+          {% set now_hour = now().hour %}
+          {% set source = 'sensor.solcast_pv_forecast_previsions_pour_demain' %}
+          {% set forecasts = state_attr(source, 'detailedHourly') %}
+          {% if forecasts %}
+            {{ forecasts | map(attribute='pv_estimate') | map('round', 1) | map('string') | join(',') }}
+          {% else %}
+            "NA"
+          {% endif %}
+
       - name: "Taux de production solaire (j)"
         unique_id: "taux_solar_jour"
         state: "{{ (float(states('sensor.energie_solar_j'),0) / (float(states('sensor.solcast_pv_forecast_previsions_pour_aujourd_hui'),0)+0.001)) * 100 | round(1) }}"

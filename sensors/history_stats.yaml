@@ -14,6 +14,7 @@ sensor:
     filters:
       - filter: range
         lower_bound: 0.1
+
   #ECS
   - platform: history_stats
     name: temps_allumage_ecs_today
