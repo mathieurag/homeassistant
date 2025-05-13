@@ -2,18 +2,16 @@ import sqlite3
 import pandas as pd
 from datetime import datetime, timezone, timedelta
 import os
-import math
 
 # Configuration
 DB_PATH = "/config/home-assistant_v2.db"
 CSV_LOG = "/config/corrections_surplus.csv"
-ANALYSE_MODE = "last_hour"  # "last_hour" ou "since_midnight"
 ANALYSE_MODE = "since_midnight"  # "last_hour" ou "since_midnight"
 SURPLUS_ID = 490
 ECOJOKO_ID = 497
-min_diff_kwh = 0.01
+min_diff_kwh = 0.001
 max_delta_kwh = 1000
-rounding_step_kwh = 0.01
+rounding_step_kwh = 0.001
 LOCAL_TZ = timezone(timedelta(hours=2))
 
 def round_to_step(val, step=rounding_step_kwh):
@@ -43,6 +41,9 @@ def get_hour_starts_to_analyze(now_ts):
     else:
         raise ValueError(f"Mode d'analyse inconnu : {ANALYSE_MODE}")
 
+def to_utc_ts(ts_local):
+    return int(datetime.fromtimestamp(ts_local, tz=LOCAL_TZ).astimezone(timezone.utc).timestamp())
+
 # Connexion DB
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
@@ -53,156 +54,98 @@ now_ts = int(now.timestamp())
 hour_starts = get_hour_starts_to_analyze(now_ts)
 placeholders = ','.join('?' for _ in hour_starts)
 
-cur.execute(
-    f"SELECT s1.start_ts, s1.sum, s2.sum FROM statistics s1 "
-    f"JOIN statistics s2 ON s1.metadata_id = s2.metadata_id AND s2.start_ts = s1.start_ts - 3600 "
-    f"WHERE s1.metadata_id = ? AND s1.start_ts IN ({placeholders}) ORDER BY s1.start_ts",
-    (SURPLUS_ID, *hour_starts)
-)
-surplus_data = cur.fetchall()
-
-if not surplus_data:
-    print("\n⚠️ Aucune donnée disponible dans 'statistics' pour le surplus sur la période analysée.")
-
-cur.execute(
-    f"SELECT s1.start_ts, s1.sum, s2.sum FROM statistics s1 "
-    f"JOIN statistics s2 ON s1.metadata_id = s2.metadata_id AND s2.start_ts = s1.start_ts - 3600 "
-    f"WHERE s1.metadata_id = ? AND s1.start_ts IN ({placeholders})",
-    (ECOJOKO_ID, *hour_starts)
-)
-eco_data = {row[0]: (row[1], row[2]) for row in cur.fetchall()}
-
-if not eco_data:
-    print("⚠️ Aucune donnée disponible dans 'statistics' pour Ecojoko sur la période analysée.")
-
-for ts, sum_t, sum_t_1 in surplus_data:
+for ts in hour_starts:
     ts_local = datetime.fromtimestamp(ts, tz=LOCAL_TZ)
     print(f"\n🕓 Analyse prévue : {ts_local:%Y-%m-%d %H:%M:%S}")
 
-    if ts not in eco_data:
-        print(f"❌ Données manquantes pour Ecojoko à cette heure → comparaison impossible.")
-        continue
+    # Lecture données horaires
+    cur.execute(
+        f"SELECT s1.start_ts, s1.sum, s2.sum FROM statistics s1 "
+        f"JOIN statistics s2 ON s1.metadata_id = s2.metadata_id AND s2.start_ts = s1.start_ts - 3600 "
+        f"WHERE s1.metadata_id = ? AND s1.start_ts = ?",
+        (SURPLUS_ID, ts)
+    )
+    row_surplus = cur.fetchone()
 
-    eco_t, eco_t_1 = eco_data[ts]
+    cur.execute(
+        f"SELECT s1.start_ts, s1.sum, s2.sum FROM statistics s1 "
+        f"JOIN statistics s2 ON s1.metadata_id = s2.metadata_id AND s2.start_ts = s1.start_ts - 3600 "
+        f"WHERE s1.metadata_id = ? AND s1.start_ts = ?",
+        (ECOJOKO_ID, ts)
+    )
+    row_eco = cur.fetchone()
 
-    conso_delta = (sum_t - sum_t_1)
-    eco_delta = eco_t - eco_t_1
-    delta_kwh = round_to_step(eco_delta - conso_delta)
-    delta_rest = delta_kwh
+    if row_surplus and row_eco:
+        _, sum_t, sum_t_1 = row_surplus
+        _, eco_t, eco_t_1 = row_eco
+        conso_delta = sum_t - sum_t_1
+        eco_delta = eco_t - eco_t_1
+        delta_kwh = round_to_step(eco_delta - conso_delta)
 
-    print(f"    - Surplus Δ : {conso_delta:.3f} kWh")
-    print(f"    - Ecojoko Δ : {eco_delta:.3f} kWh")
-    print(f"    - Correction à appliquer : {delta_kwh:+.3f} kWh")
+        print(f"    - Surplus Δ : {conso_delta:.3f} kWh")
+        print(f"    - Ecojoko Δ : {eco_delta:.3f} kWh")
+        print(f"    - Correction à appliquer (horaires) : {delta_kwh:+.3f} kWh")
+    else:
+        print("    ⚠️ Données horaires manquantes pour cette heure.")
 
-    actual = get_actual_tranches(cur, SURPLUS_ID, ts)
-    expected = get_expected_tranches(ts)
+    # Vérification 5 minutes
+    ts_utc = to_utc_ts(ts)
+    surplus_5min = get_actual_tranches(cur, SURPLUS_ID, ts_utc)
+    eco_5min = get_actual_tranches(cur, ECOJOKO_ID, ts_utc)
+    expected = get_expected_tranches(ts_utc)
+
     df_rows = []
     for t in expected:
         dt = datetime.fromtimestamp(t, tz=timezone.utc).astimezone(LOCAL_TZ)
-        df_rows.append({"start_ts": t, "datetime": dt, "sum": actual.get(t)})
+        df_rows.append({
+            "start_ts": t,
+            "datetime": dt,
+            "surplus": surplus_5min.get(t),
+            "eco": eco_5min.get(t)
+        })
     df = pd.DataFrame(df_rows)
 
-    corrections = []
+    for i in range(1, len(df)):
+        row = df.iloc[i]
+        prev = df.iloc[i - 1]
+        if pd.isna(row["surplus"]) or pd.isna(prev["surplus"]):
+            continue
+        if pd.isna(row["eco"]):
+            continue
 
-    if abs(delta_kwh) < min_diff_kwh:
-        print(f"➡️  Ignoré : écart < {min_diff_kwh} kWh")
-        continue
-    if abs(delta_kwh) > max_delta_kwh:
-        print(f"⛔ Ignoré : écart > {max_delta_kwh} kWh (suspect)")
-        continue
+        delta_surplus = row["surplus"] - prev["surplus"]
+        delta_eco = row["eco"] - prev["eco"]
+        ecart = round_to_step(delta_eco - delta_surplus)
 
-    # Correction horaire
-    cur.execute("SELECT start_ts, sum FROM statistics WHERE metadata_id=? AND start_ts >= ? ORDER BY start_ts", (SURPLUS_ID, ts))
-    future = cur.fetchall()
-    for start_ts_f, sum_f in future:
-        new_sum = round(sum_f + delta_kwh, 3)
-        cur.execute("UPDATE statistics SET sum=? WHERE metadata_id=? AND start_ts=?", (new_sum, SURPLUS_ID, start_ts_f))
-        ts_local_f = datetime.fromtimestamp(start_ts_f, tz=LOCAL_TZ)
-        all_updates.append({
-            "type": "SURPLUS", "level": "hourly", "start_ts": start_ts_f,
-            "timestamp": ts_local_f.strftime("%Y-%m-%d %H:%M:%S"),
-            "old": sum_f, "new": new_sum, "delta": delta_kwh
-        })
+        correction = round_to_step(ecart, step=rounding_step_kwh)
+        if abs(correction) < min_diff_kwh:
+            continue
 
-    print(f"✅ Correction horaire appliquée : {delta_kwh:+.3f} kWh")
+        print(f"➡️ Correction globale {correction:+.3f} kWh à partir de {row['datetime'].strftime('%H:%M:%S')} (UTC+2)")
+        start_ts_key = int(row["start_ts"])
+        # Appliquer la correction à toutes les tranches 5min >= start_ts de la ligne courante
+        cur.execute(
+            "SELECT start_ts, sum FROM statistics_short_term "
+            "WHERE metadata_id = ? AND start_ts >= ? ORDER BY start_ts",
+            (SURPLUS_ID, start_ts_key)
+        )
+        rows_to_update = cur.fetchall()
 
-    total_applique = 0.0
+        for start_ts_update, sum_val in rows_to_update:
+            new_sum = round(sum_val + correction, 3)
 
-    if delta_kwh > 0:
-        part = math.ceil((delta_kwh / 12) / rounding_step_kwh) * rounding_step_kwh
-        part = round_to_step(part)
-        needed = math.ceil(delta_kwh / part)
-        for i in range(min(needed, len(df))):
-            row = df.iloc[i]
-            if pd.isna(row["sum"]): continue
-            if delta_rest < rounding_step_kwh: break
-
-            sum_now = row["sum"]
-            prev_sum = df.iloc[i - 1]["sum"] if i > 0 and not pd.isna(df.iloc[i - 1]["sum"]) else sum_now
-            delta_avant = (sum_now - prev_sum)
-
-            new_sum = round(sum_now + part, 3)
-            cur.execute("UPDATE statistics_short_term SET sum=? WHERE metadata_id=? AND start_ts=?",
-                        (new_sum, SURPLUS_ID, row["start_ts"]))
-
-            delta_apres = (new_sum - prev_sum)
-            corrections.append(f"        • {row['datetime'].strftime('%H:%M')} → Δ: {delta_avant:.3f} → {delta_apres:.3f} kWh (+{part:.3f})")
-
-            total_applique += part
-            delta_rest -= part
+            print(f"🔍 Mise à jour prévue : ts={start_ts_update}, old={sum_val}, new={new_sum}")
+            cur.execute(
+                "UPDATE statistics_short_term SET sum = ? WHERE metadata_id = ? AND start_ts = ?",
+                (new_sum, SURPLUS_ID, start_ts_update)
+            )
+            print(f"↪️  SQLite rowcount = {cur.rowcount}")
             all_updates.append({
                 "type": "SURPLUS", "level": "5min",
-                "start_ts": row["start_ts"],
-                "timestamp": row["datetime"].strftime("%Y-%m-%d %H:%M:%S"),
-                "old": sum_now, "new": new_sum, "delta": part
+                "start_ts": start_ts_update,
+                "timestamp": datetime.fromtimestamp(start_ts_update, tz=timezone.utc).astimezone(LOCAL_TZ).strftime("%Y-%m-%d %H:%M:%S"),
+                "old": sum_val, "new": new_sum, "delta": correction
             })
-
-    else:
-        for i, row in df.iterrows():
-            if pd.isna(row["sum"]): continue
-            sum_now = row["sum"]
-            prev_sum = df.iloc[i - 1]["sum"] if i > 0 and not pd.isna(df.iloc[i - 1]["sum"]) else sum_now
-            delta_avant = (sum_now - prev_sum)
-
-            if delta_avant <= 0:
-                corrections.append(f"        • {row['datetime'].strftime('%H:%M')} → Δ: {delta_avant:.3f} kWh → Ignorée (déjà nulle ou négative)")
-                continue
-
-            max_possible = round_to_step(delta_avant)
-            correction = min(abs(delta_rest), max_possible)
-            correction = round_to_step(correction)
-
-            if correction <= 0:
-                continue
-
-            corr = -correction
-            new_sum = round(sum_now + corr, 3)
-            cur.execute("UPDATE statistics_short_term SET sum=? WHERE metadata_id=? AND start_ts=?",
-                        (new_sum, SURPLUS_ID, row["start_ts"]))
-            delta_apres = (new_sum - prev_sum)
-
-            corrections.append(f"        • {row['datetime'].strftime('%H:%M')} → Δ: {delta_avant:.3f} → {delta_apres:.3f} kWh ({corr:+.3f})")
-
-            total_applique += corr
-            delta_rest -= correction
-
-            all_updates.append({
-                "type": "SURPLUS", "level": "5min",
-                "start_ts": row["start_ts"],
-                "timestamp": row["datetime"].strftime("%Y-%m-%d %H:%M:%S"),
-                "old": sum_now, "new": new_sum, "delta": corr
-            })
-
-            if abs(delta_rest) < rounding_step_kwh:
-                break
-
-    if abs(total_applique) > 0:
-        print(f"✅ Correction 5min appliquée : {total_applique:+.3f} kWh")
-    else:
-        print(f"❗ Impossible d’appliquer {delta_kwh:+.3f} kWh sans générer de consommation incohérente.")
-
-    for c in corrections:
-        print(c)
 
 # Finalisation
 conn.commit()
@@ -214,4 +157,3 @@ if all_updates:
     df_log.to_csv(CSV_LOG, mode='a', header=header, index=False)
 
 print(f"\n📦 Corrections historisées : {len(all_updates)} ligne(s)", flush=True)
-

@@ -316,26 +316,18 @@
   alias: Suppression données (purge recorder)
   description: Suppression données quotidiennes
   triggers:
-  - at: 00:04:00
+  - at: 00:02:00
     trigger: time
   conditions: []
   actions:
   - data:
       keep_days: 1
       entity_id:
-      - sensor.consommation_non_suivie_moyenne
       - sensor.consommation_suivie
-      - sensor.consommation_non_suivie
-      - sensor.puissance_socle
-      - sensor.puissance_suivie
       - sensor.four
       - sensor.prises_rdc
       - sensor.prises_rdc_2
       - sensor.em06_01_b1
-      - sensor.taux_solar_heure
-      - sensor.taux_solar_jour
-      - sensor.conso_mini
-      - sensor.cumulus_3
       - sensor.salon_jour
       - sensor.energie_reseau_absolue
       - sensor.em06_02_b1
@@ -343,11 +335,17 @@
       - sensor.esphome_web_a92940_marstek_ac_power
       - sensor.decharge_batterie
       - sensor.charge_batterie
-      - sensor.esphome_web_27f580_ultrasonic_sensor
-      - sensor.batterie_decharge_moyenne
-      - sensor.batterie_charge_moyenne
-      - sensor.estimation_temps_restant_batterie
+      - sensor.rain_sensor_illuminance
+      - sensor.rain_sensor_illuminance_average_20min
+      - sensor.esphome_web_a92940_marstek_ac_voltage
+      - sensor.energie_generale
+      - sensor.shelly_em0_voltage
     action: recorder.purge_entities
+  - delay:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
   - data:
       keep_days: 1
       domains:
@@ -397,9 +395,38 @@
       - sensor.shelly_*_power
       - sensor.shelly_*_power*
       - sensor.puissance*
-      - sensor.consommation*
+      - sensor.*consommation*
       - sensor.*marstek*
+      - number.*marstek*
+      - light.*marstek*
       - sensor.*production*
+    action: recorder.purge_entities
+  - delay:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
+  - data:
+      entity_id:
+      - sensor.consommation_non_suivie_moyenne
+      - sensor.consommation_non_suivie
+      - sensor.taux_solar_heure
+      - sensor.taux_solar_jour
+      - sensor.conso_mini
+      - sensor.cumulus_3
+      - sensor.esphome_web_27f580_ultrasonic_sensor
+      - sensor.batterie_decharge_moyenne
+      - sensor.batterie_charge_moyenne
+      - sensor.estimation_temps_restant_batterie
+      - sensor.puissance_socle
+      - sensor.puissance_suivie
+      - sensor.esphome_web_a92940_wifi_signal_strength
+      - sensor.shelly_em0_total_active_energy
+      - sensor.four
+      - sensor.esphome_web_a92940_marstek_ac_current
+      - sensor.marstek_efficiency
+      - sensor.marstek_efficiency_filtree
+      keep_days: 0
     action: recorder.purge_entities
   mode: single
 - id: '1724796582689'
@@ -1170,6 +1197,11 @@
         * states('input_number.surplus_production_j_1') | float(0)) | round(2) }}
         €\n"
     action: notify.persistent_notification
+  - data_template:
+      entity_id: input_number.energie_cumulus_jour
+      value: '{{ states(''sensor.cumulus_kwh'') | float }}'
+    action: input_number.set_value
+    enabled: true
   mode: single
 - id: '1727255726386'
   alias: Energie - Calcul
@@ -1799,6 +1831,7 @@
       entity_id: input_number.energie_cumulus_jour
       value: '{{ states(''sensor.cumulus_kwh'') | float }}'
     action: input_number.set_value
+    enabled: false
   - if:
     - condition: state
       entity_id: input_boolean.priorite_batterie
@@ -2434,6 +2467,9 @@
   - condition: state
     entity_id: input_boolean.automatisation
     state: 'on'
+  - condition: state
+    entity_id: input_boolean.mode_present_a_la_maison
+    state: 'off'
   actions:
   - parallel:
     - if:
@@ -3077,106 +3113,6 @@
       seconds: 0
       milliseconds: 0
   mode: single
-- id: '1743200761977'
-  alias: Gestion batterie autonome
-  description: Pilotage dynamique de la batterie en fonction du surplus corrigé
-  triggers:
-  - entity_id: sensor.surplus_production
-    trigger: state
-  conditions:
-  - condition: state
-    entity_id: input_boolean.gestion_batterie_autonome
-    state: 'on'
-  actions:
-  - variables:
-      surplus_mesure: '{{ states(''sensor.surplus_production'') | float(0) }}'
-      puissance_batterie: '{{ states(''sensor.em06_02_b2_power'') | float(0) }}'
-      surplus_disponible: '{{ surplus_mesure + puissance_batterie }}'
-      puissance_reseau: '{{ states(''sensor.em06_02_b1_power'') | float(0) }}'
-      puissance_charge_max: '{{ states(''number.esphome_web_a92940_marstek_max_charge_power'')
-        | float(2400) }}'
-      puissance_decharge_max: '{{ states(''number.esphome_web_a92940_marstek_max_discharge_power'')
-        | float(2400) }}'
-      current_mode: '{{ states(''sensor.esphome_web_a92940_marstek_inverter_state'')
-        | default(''StandBy'') }}'
-      current_work_mode: '{{ states(''select.esphome_web_a92940_marstek_user_work_mode'')
-        | default(''anti-feed'') }}'
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ surplus_disponible > 110 }}'
-      - condition: template
-        value_template: '{{ current_mode != ''Charge'' }}'
-      sequence:
-      - target:
-          entity_id: select.esphome_web_a92940_marstek_user_work_mode
-        data:
-          option: manual
-        action: select.select_option
-      - target:
-          entity_id: number.esphome_web_a92940_marstek_forcible_discharge_power
-        data:
-          value: 0
-        action: number.set_value
-      - target:
-          entity_id: number.esphome_web_a92940_marstek_forcible_charge_power
-        data:
-          value: "{% set disponible = surplus_disponible - 10 %} {% if disponible
-            > puissance_charge_max %}\n  {{ puissance_charge_max }}\n{% else %}\n
-            \ {{ disponible | max(0) }}\n{% endif %}\n"
-        action: number.set_value
-    - conditions:
-      - condition: template
-        value_template: '{{ puissance_reseau > 10 }}'
-      - condition: template
-        value_template: '{{ current_mode != ''Discharge'' }}'
-      sequence:
-      - target:
-          entity_id: select.esphome_web_a92940_marstek_user_work_mode
-        data:
-          option: manual
-        action: select.select_option
-      - target:
-          entity_id: number.esphome_web_a92940_marstek_forcible_charge_power
-        data:
-          value: 0
-        action: number.set_value
-      - target:
-          entity_id: number.esphome_web_a92940_marstek_forcible_discharge_power
-        data:
-          value: "{% if puissance_decharge_max > 0 %}\n  {{ puissance_decharge_max
-            }}\n{% else %}\n  0\n{% endif %}\n"
-        action: number.set_value
-    - conditions:
-      - condition: template
-        value_template: '{{ surplus_disponible >= 10 and surplus_disponible <= 110
-          }}'
-      - condition: template
-        value_template: '{{ current_mode != ''StandBy'' }}'
-      sequence:
-      - target:
-          entity_id: select.esphome_web_a92940_marstek_user_work_mode
-        data:
-          option: manual
-        action: select.select_option
-      - target:
-          entity_id:
-          - number.esphome_web_a92940_marstek_forcible_charge_power
-          - number.esphome_web_a92940_marstek_forcible_discharge_power
-        data:
-          value: 0
-        action: number.set_value
-  - if:
-    - condition: template
-      value_template: '{{ current_work_mode == ''manual'' and (puissance_reseau >=
-        -10 and puissance_reseau <= 10) }}'
-    then:
-    - target:
-        entity_id: select.esphome_web_a92940_marstek_user_work_mode
-      data:
-        option: anti-feed
-      action: select.select_option
-  mode: single
 - id: '1743596448001'
   alias: Désactiver batterie
   description: ''
@@ -3188,21 +3124,11 @@
     entity_id: 6e525dc6e7cf73abc626c817e8002ce6
     type: select_option
     option: enable
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 1
-      milliseconds: 0
   - device_id: cad5cf1c1acf9585f1a244da05cf1cac
     domain: select
     entity_id: 29d02385bfa6a107834f0b8cab20c349
     type: select_option
     option: manual
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 1
-      milliseconds: 0
   - device_id: cad5cf1c1acf9585f1a244da05cf1cac
     domain: select
     entity_id: d9f81c55028cbfb4283f09a46b1cf024
@@ -3230,11 +3156,6 @@
     entity_id: 6e525dc6e7cf73abc626c817e8002ce6
     type: select_option
     option: enable
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 1
-      milliseconds: 0
   - device_id: cad5cf1c1acf9585f1a244da05cf1cac
     domain: select
     entity_id: 29d02385bfa6a107834f0b8cab20c349
@@ -3259,14 +3180,11 @@
   alias: Relance batterie
   description: ''
   triggers:
-  - device_id: cad5cf1c1acf9585f1a244da05cf1cac
-    domain: select
-    entity_id: 29d02385bfa6a107834f0b8cab20c349
-    type: current_option_changed
-    trigger: device
+  - trigger: state
+    entity_id:
+    - select.esphome_web_a92940_marstek_user_work_mode
     from: anti-feed
     to: manual
-    id: Saturation
   conditions:
   - condition: state
     entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
@@ -3408,15 +3326,10 @@
       '
     for:
       hours: 0
-      minutes: 2
+      minutes: 1
       seconds: 0
     trigger: template
     id: alerte
-  - event_type: mobile_app_notification_action
-    event_data:
-      action: TURN_OFF_PRIORITE
-    trigger: event
-    id: action
   conditions: []
   actions:
   - if:
@@ -3425,36 +3338,38 @@
       - alerte
     then:
     - data:
-        message: 'La batterie se décharge et le chauffe-eau est en charge. Souhaitez-vous
-          désactiver la priorité batterie ?
+        message: La batterie se décharge et le chauffe-eau est en charge. Désactivation
+          de la batterie.
+      action: notify.mobile_app_iphone_de_mat_13
+    - target:
+        entity_id:
+        - input_boolean.priorite_batterie
+        - input_boolean.gestion_batterie_autonome
+      action: input_boolean.turn_off
+      data: {}
+    - action: automation.trigger
+      metadata: {}
+      data:
+        skip_condition: true
+      target:
+        entity_id: automation.desactiver_batterie
+    - wait_for_trigger:
+      - value_template: '{{ (states(''sensor.consommation_cumulus'')|float(0) < 10)
+          }}
 
           '
-        data:
-          actions:
-          - action: TURN_OFF_PRIORITE
-            title: Désactiver priorité batterie
-      action: notify.mobile_app_iphone_de_mat_13
-  - if:
-    - condition: trigger
-      id:
-      - action
-    then:
-    - if:
-      - condition: state
-        entity_id: input_boolean.priorite_batterie
-        state: 'on'
-      then:
-      - target:
-          entity_id: input_boolean.priorite_batterie
-        action: input_boolean.turn_off
-        data: {}
-      else:
-      - action: automation.trigger
-        metadata: {}
-        data:
-          skip_condition: true
-        target:
-          entity_id: automation.desactiver_batterie
+        for:
+          hours: 0
+          minutes: 1
+          seconds: 0
+        trigger: template
+        id: alerte
+    - action: input_boolean.turn_on
+      target:
+        entity_id:
+        - input_boolean.priorite_batterie
+        - input_boolean.gestion_batterie_autonome
+      data: {}
   mode: single
 - id: '1744807044766'
   alias: Alerte Marstek
@@ -3490,10 +3405,6 @@
   - event: shutdown
     id: redemarrage_ha
     trigger: homeassistant
-  - entity_id:
-    - sensor.esphome_web_a92940_marstek_battery_state_of_charge
-    id: verification_soc
-    trigger: state
   conditions: []
   actions:
   - variables:
@@ -3510,62 +3421,52 @@
         | float(0) }}'
       soc_min: '{{ states(''number.esphome_web_a92940_marstek_discharging_cutoff_capacity'')
         | float(0) }}'
-      gestion_active: '{{ states(''input_boolean.gestion_batterie_autonome'') == ''on''
-        }}'
-      correction_consigne_decharge: 40
-      correction_consigne_charge: -30
-  - choose:
+      voltage: '{{ states(''sensor.esphome_web_a92940_marstek_battery_voltage_average'')
+        | float(0) }}'
+      correction_consigne_decharge: 0
+      correction_consigne_charge: 0
+    alias: Calcul des variables
+  - alias: Choix entre désactivation et charge/décharge
+    choose:
     - conditions:
-      - condition: trigger
-        id:
-        - redemarrage_ha
-        - desactivation_gestion
-      sequence:
-      - target:
-          entity_id: select.esphome_web_a92940_marstek_user_work_mode
-        data:
-          option: anti-feed
-        action: select.select_option
-      - target:
-          entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
-        data:
-          option: disable
-        action: select.select_option
-      - target:
-          entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
-        data:
-          option: stop
-        action: select.select_option
-      - target:
-          entity_id:
-          - number.esphome_web_a92940_marstek_forcible_charge_power
-          - number.esphome_web_a92940_marstek_forcible_discharge_power
-        data:
-          value: '0'
-        action: number.set_value
-    - conditions:
-      - condition: or
+      - alias: SOC MIN/MAX ou désactivation
+        condition: or
         conditions:
-        - condition: template
-          value_template: '{{ soc_batterie >= soc_max }}'
-        - condition: template
-          value_template: '{{ soc_batterie <= soc_min }}'
+        - alias: SOC = MIN
+          condition: template
+          value_template: '{{ soc_batterie <= soc_min+1}}'
+          enabled: false
+        - condition: trigger
+          id:
+          - redemarrage_ha
+          - desactivation_gestion
       sequence:
-      - target:
-          entity_id: select.esphome_web_a92940_marstek_user_work_mode
-        data:
-          option: anti-feed
-        action: select.select_option
-      - target:
-          entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
-        data:
-          option: disable
-        action: select.select_option
-      - target:
-          entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
-        data:
-          option: stop
-        action: select.select_option
+      - if:
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: select.esphome_web_a92940_marstek_user_work_mode
+            state: anti-feed
+        then:
+        - target:
+            entity_id: select.esphome_web_a92940_marstek_user_work_mode
+          data:
+            option: anti-feed
+          action: select.select_option
+        alias: Mode anti-feed
+      - alias: Mode Stop
+        if:
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
+            state: stop
+        then:
+        - target:
+            entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
+          data:
+            option: stop
+          action: select.select_option
       - target:
           entity_id:
           - number.esphome_web_a92940_marstek_forcible_charge_power
@@ -3573,6 +3474,23 @@
         data:
           value: '0'
         action: number.set_value
+        alias: Charge/Discharge à 0
+      - alias: Mode Disable
+        if:
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
+            state: disable
+          alias: Mode Disable
+        then:
+        - target:
+            entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
+          data:
+            option: disable
+          action: select.select_option
+          alias: Mode Disable
+      alias: Désactivation
     - conditions:
       - condition: state
         entity_id: input_boolean.gestion_batterie_autonome
@@ -3581,93 +3499,248 @@
       - choose:
         - conditions:
           - condition: template
-            value_template: '{{ consigne_batterie > 10 }}'
-          sequence:
-          - target:
-              entity_id: select.esphome_web_a92940_marstek_user_work_mode
-            data:
-              option: manual
-            action: select.select_option
-          - target:
-              entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
-            data:
-              option: discharge
-            action: select.select_option
-          - target:
-              entity_id: number.esphome_web_a92940_marstek_forcible_charge_power
-            data:
-              value: 0
-            action: number.set_value
-          - target:
-              entity_id: number.esphome_web_a92940_marstek_forcible_discharge_power
-            data:
-              value: "{% set besoin = consigne_batterie + correction_consigne_decharge
-                %} {% if besoin > puissance_decharge_max %}\n  {{ puissance_decharge_max
-                | int }}\n{% else %}\n  {{ [besoin, 0] | max | int }}\n{% endif %}\n"
-            action: number.set_value
-          - target:
-              entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
-            data:
-              option: enable
-            action: select.select_option
-        - conditions:
-          - condition: template
-            value_template: '{{ consigne_batterie < -10 }}'
-          sequence:
-          - target:
-              entity_id: select.esphome_web_a92940_marstek_user_work_mode
-            data:
-              option: manual
-            action: select.select_option
-          - target:
-              entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
-            data:
-              option: charge
-            action: select.select_option
-          - target:
-              entity_id: number.esphome_web_a92940_marstek_forcible_discharge_power
-            data:
-              value: 0
-            action: number.set_value
-          - target:
-              entity_id: number.esphome_web_a92940_marstek_forcible_charge_power
-            data:
-              value: "{% set dispo = (consigne_batterie | abs) + correction_consigne_charge
-                %} {% if dispo > puissance_charge_max %}\n  {{ puissance_charge_max
-                | int }}\n{% else %}\n  {{ [dispo, 0] | max | int }}\n{% endif %}\n"
-            action: number.set_value
-          - target:
-              entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
-            data:
-              option: enable
-            action: select.select_option
-        - conditions:
-          - condition: template
             value_template: '{{ consigne_batterie >= -10 and consigne_batterie <=
               10 }}'
+            alias: Zone morte (+/- 10W)
           sequence:
-          - target:
-              entity_id: select.esphome_web_a92940_marstek_user_work_mode
-            data:
-              option: manual
-            action: select.select_option
-          - target:
-              entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
-            data:
-              option: stop
-            action: select.select_option
+          - alias: Mode manual
+            if:
+            - condition: not
+              conditions:
+              - condition: state
+                entity_id: select.esphome_web_a92940_marstek_user_work_mode
+                state: manual
+              alias: Mode Manual
+            then:
+            - target:
+                entity_id: select.esphome_web_a92940_marstek_user_work_mode
+              data:
+                option: manual
+              action: select.select_option
+              alias: Mode Manual
+            enabled: false
           - target:
               entity_id:
               - number.esphome_web_a92940_marstek_forcible_charge_power
               - number.esphome_web_a92940_marstek_forcible_discharge_power
             data:
-              value: 0
+              value: '0'
             action: number.set_value
-          - target:
+            alias: Charge/Discharge à 0
+          - if:
+            - condition: not
+              conditions:
+              - condition: state
+                entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
+                state: stop
+            then:
+            - target:
+                entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
+              data:
+                option: stop
+              action: select.select_option
+            alias: Mode Stop
+          - if:
+            - condition: state
               entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
-            data:
-              option: enable
-            action: select.select_option
+              state: disable
+            then:
+            - target:
+                entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
+              data:
+                option: enable
+              action: select.select_option
+            alias: Mode Enable
+          alias: Zone morte (+/- 10W)
+        - conditions:
+          - condition: template
+            value_template: '{{ consigne_batterie > 10 }}'
+            alias: Discharge > 10W
+          sequence:
+          - alias: Comparaison SOC MIN
+            choose:
+            - conditions:
+              - alias: SOC = MIN
+                condition: template
+                value_template: '{{ soc_batterie <= soc_min}}'
+                enabled: true
+              sequence:
+              - alias: Mode Stop
+                if:
+                - condition: not
+                  conditions:
+                  - condition: state
+                    entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
+                    state: stop
+                then:
+                - target:
+                    entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
+                  data:
+                    option: stop
+                  action: select.select_option
+              - target:
+                  entity_id:
+                  - number.esphome_web_a92940_marstek_forcible_charge_power
+                  - number.esphome_web_a92940_marstek_forcible_discharge_power
+                data:
+                  value: '0'
+                action: number.set_value
+                alias: Charge/Discharge à 0
+              - if:
+                - condition: state
+                  entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
+                  state: disable
+                then:
+                - target:
+                    entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
+                  data:
+                    option: enable
+                  action: select.select_option
+                alias: Mode Enable
+            - conditions:
+              - alias: SOC > MIN
+                condition: template
+                value_template: '{{ soc_batterie > soc_min}}'
+                enabled: true
+              sequence:
+              - if:
+                - condition: not
+                  conditions:
+                  - condition: state
+                    entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
+                    state: discharge
+                  alias: Mode Discharge
+                then:
+                - target:
+                    entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
+                  data:
+                    option: discharge
+                  action: select.select_option
+                  alias: Mode Discharge
+                alias: Mode Discharge
+              - alias: Charge à 0
+                target:
+                  entity_id:
+                  - number.esphome_web_a92940_marstek_forcible_charge_power
+                data:
+                  value: '0'
+                action: number.set_value
+              - target:
+                  entity_id: number.esphome_web_a92940_marstek_forcible_discharge_power
+                data:
+                  value: "{% if voltage <= 48.0 %}\n  {% set puissance_decharge_max
+                    = 500 %}\n{% endif %} {% set besoin = consigne_batterie + correction_consigne_decharge
+                    %} {% if besoin > puissance_decharge_max %}\n  {{ puissance_decharge_max
+                    | int }}\n{% else %}\n  {{ [besoin, 0] | max | int }}\n{% endif
+                    %}\n"
+                action: number.set_value
+                alias: Valeur de Discharge
+              - if:
+                - condition: state
+                  entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
+                  state: disable
+                then:
+                - target:
+                    entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
+                  data:
+                    option: enable
+                  action: select.select_option
+                alias: Mode Enable
+          alias: Décharge
+        - conditions:
+          - condition: template
+            value_template: '{{ consigne_batterie < -10 }}'
+            alias: Charge < -10W
+          sequence:
+          - alias: Comparaison SOC MAX
+            choose:
+            - conditions:
+              - alias: SOC = MAX
+                condition: template
+                value_template: '{{ soc_batterie >= soc_max}}'
+                enabled: true
+              sequence:
+              - alias: Mode Stop
+                if:
+                - condition: not
+                  conditions:
+                  - condition: state
+                    entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
+                    state: stop
+                then:
+                - target:
+                    entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
+                  data:
+                    option: stop
+                  action: select.select_option
+              - target:
+                  entity_id:
+                  - number.esphome_web_a92940_marstek_forcible_charge_power
+                  - number.esphome_web_a92940_marstek_forcible_discharge_power
+                data:
+                  value: '0'
+                action: number.set_value
+                alias: Charge/Discharge à 0
+              - if:
+                - condition: state
+                  entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
+                  state: disable
+                then:
+                - target:
+                    entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
+                  data:
+                    option: enable
+                  action: select.select_option
+                alias: Mode Enable
+            - conditions:
+              - alias: SOC < MAX
+                condition: template
+                value_template: '{{ soc_batterie < soc_max}}'
+                enabled: true
+              sequence:
+              - alias: Mode charge
+                if:
+                - condition: not
+                  conditions:
+                  - condition: state
+                    entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
+                    state: charge
+                  alias: Mode Charge
+                then:
+                - target:
+                    entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
+                  data:
+                    option: charge
+                  action: select.select_option
+              - target:
+                  entity_id: number.esphome_web_a92940_marstek_forcible_discharge_power
+                data:
+                  value: '0'
+                action: number.set_value
+                alias: Discharge à 0
+              - target:
+                  entity_id: number.esphome_web_a92940_marstek_forcible_charge_power
+                data:
+                  value: "{% if voltage >= 54 %}\n  {% set puissance_charge_max =
+                    500 %}\n{% endif %} {% set dispo = (consigne_batterie | abs) +
+                    correction_consigne_charge %} {% if dispo > puissance_charge_max
+                    %}\n  {{ puissance_charge_max | int }}\n{% else %}\n  {{ [dispo,
+                    0] | max | int }}\n{% endif %}\n"
+                action: number.set_value
+                alias: Valeur de charge
+              - if:
+                - condition: state
+                  entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
+                  state: disable
+                then:
+                - target:
+                    entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
+                  data:
+                    option: enable
+                  action: select.select_option
+                alias: Mode Enable
+          alias: Charge
+      alias: Charge/Décharge
   mode: single
 - id: '1744819508007'
   alias: Batterie pleine
@@ -3783,9 +3856,10 @@
     for:
       minutes: 5
     trigger: numeric_state
+    enabled: false
   - id: mode_jour_production_forte
     value_template: '{{ states(''sensor.production_solaire'')|float(0) > 1.5 * states(''sensor.consommation_maison'')|float(0)
-      }}
+      and states(''sensor.sonde_temperature_owon_temperature'')|float(0) < 0.8 * states(''input_number.tmax_ecs'')|float(0)}}
 
       '
     for:
@@ -3857,6 +3931,9 @@
       = trigger.to_state.state | float(0) %} {{ old - new > 1 }}
 
       '
+  - condition: numeric_state
+    entity_id: sensor.esphome_web_a92940_marstek_battery_state_of_charge
+    above: 0
   actions:
   - data:
       title: ⚠️ Chute brutale du SOC
@@ -3866,4 +3943,23 @@
 
         '
     action: notify.notify
+  mode: single
+- id: '1746561093976'
+  alias: Alerte consommation réseau
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.consommation_reseau
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+    above: 100
+  conditions: []
+  actions:
+  - action: notify.notify
+    metadata: {}
+    data:
+      message: Consommation réseau > 100W depuis 1 min !
   mode: single

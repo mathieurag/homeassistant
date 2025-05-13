@@ -458,9 +458,6 @@
       "humidity_index": {
         "name": "Indeks wilgotności"
       },
-      "ams_temp": {
-        "name": "Temperatura AMS"
-      },
       "external_spool": {
         "name": "Zewnętrzna szpula",
         "state_attributes": {
@@ -680,6 +677,15 @@
             "name": "Maksymalna waga filamentu"
           }
         }
+      },
+      "remaining_drying_time": {
+        "name": "Pozostały czas suszenia"
+      },
+      "ams_temp": {
+        "name": "Temperatura"
+      },
+      "humidity": {
+        "name": "Wilgotność"
       }
     },
     "camera": {

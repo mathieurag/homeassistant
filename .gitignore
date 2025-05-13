@@ -23,6 +23,10 @@ known_devices.yaml
 !esphome/**
 !custom_components
 !custom_components/**
+!myelectricaldata
+!myelectricaldata/**
+!scripts
+!scripts/**
 !zigbee2mqtt
 !www
 !lovelace*

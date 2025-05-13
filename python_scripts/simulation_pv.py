@@ -26,12 +26,12 @@ rendement_bat = 0.95
 surplus_ecs_w = 0
 surplus_bat_w = 0
 perte_reseau_bat_w = 50
-conso_maison_w = 125
+conso_maison_w = 200
 soc_min = 18
 conso_maison_nuit_w = 150
 
 epsilon = 0.005
-CORRECTION_PV = 0.89
+CORRECTION_PV = 1
 
 conn = sqlite3.connect(DB_PATH)
 cursor = conn.cursor()

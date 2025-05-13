@@ -1,5 +1,12 @@
 template:
   - sensor:
+      - name: "Puissance CT001"
+        unique_id: "puissance_ct001"
+        unit_of_measurement: "W"
+        state_class: measurement
+        device_class: power
+        state: "{{ (states('sensor.valeur_ct001') | float(0) * states('sensor.em06_02_b1_power_factor') | float(0)) | round(1) }}"
+
       - name: "Charge Marstek"
         state: "{{ (float(states('sensor.esphome_web_a92940_marstek_monthly_charging_energy'),0)) }}"
         unique_id: "charge_marstek"

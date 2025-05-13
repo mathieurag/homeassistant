@@ -58,6 +58,14 @@ mqtt:
         value_template: "{{ value_json.bat_ok }}"
         unique_id: simulation_bat_ok
 
+      - name: "Valeur CT001"
+        state_topic: "CT001/"
+        unique_id: valeur_ct001
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: "W" # ← mets "W", "lux", etc. selon ton capteur
+        value_template: "{{ value | int }}"
+
   - switch:
       - name: "Shelly Pro Em Switch (Mqtt)"
         unique_id: shelly_pro_em_switch

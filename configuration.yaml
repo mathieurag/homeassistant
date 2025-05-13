@@ -33,9 +33,16 @@ logbook:
       - sensor.bronpi*
       - automation.*bronpi*
       - sensor.*vu_pour_la_derniere_fois
+      - sensor.*marstek*
+      - automation.*batterie*
+      - sensor.estimation_temps_restant_batterie*
+      - input_number.*frigo*
+      - input_number.*frigo*
+      - sensor.*frigo*
+
 # Purge de la base
 recorder:
-  purge_keep_days: 10
+  purge_keep_days: 7
   auto_repack: true
   auto_purge: true
 
@@ -67,6 +74,7 @@ logger:
     aioesphomeapi.connection: error
     homeassistant.loader: error
     homeassistant.helpers.frame: error
+    custom_components.bambu_lab.pybambu: error
 
 shell_command:
   database: python3 /config/python_scripts/database.py
