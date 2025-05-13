@@ -92,5 +92,6 @@ shell_command:
   simulation_pv: "python3 /config/python_scripts/simulation_pv.py"
   suivi_pv: "python3 /config/python_scripts/suivi_pv.py"
   comparaison_pv: "python3 /config/python_scripts/comparaison_pv.py"
+  refoss: "python3 /config/packages/refoss_ha/script.py"
 
 my:

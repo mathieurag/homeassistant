@@ -1,0 +1,16 @@
+{
+  "domain": "refoss_local",
+  "name": "Refoss Local",
+  "version": "1.0.0",
+  "documentation": "https://github.com/home-assistant/core",
+  "requirements": [
+    "aiohttp",
+    "pyaes",
+    "crcmod"
+  ],
+  "dependencies": [],
+  "codeowners": [
+    "@home-assistant"
+  ],
+  "config_flow": true
+}

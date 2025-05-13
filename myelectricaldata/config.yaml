@@ -7,8 +7,8 @@ home_assistant:
 home_assistant_ws:
   enable: true
   ssl: true
-  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyYmY0ZTcwZGQyOWE0OGJhOGY0OGJiMjdlYTg4YTZkOCIsImlhdCI6MTczMzc1MzY5MCwiZXhwIjoyMDQ5MTEzNjkwfQ.AxnyMlqz1vX5AZXuJcaoK4iQtT94M0-K7xveyHpNeek
-  url: https://8srjdkmbbkboq1rgiyskaqxooel9paqp.ui.nabu.casa/
+  token: !secret token_homeassistant
+  url: !secret url_nabucasa
 influxdb:
   batching_options:
     batch_size: 1000
@@ -31,12 +31,12 @@ mqtt:
   client_id: myelectricaldata
   enable: true
   hostname: core-mosquitto.local.hass.io
-  password: Celipo14?
+  password: !secret password_mqtt
   port: 1883
   prefix: myelectricaldata
   qos: 0
   retain: true
-  username: matrag
+  username: !secret login_mqtt
 myelectricaldata:
   "16127930466069":
     addresses: "true"
@@ -66,5 +66,5 @@ myelectricaldata:
     production_price: 0.13
     refresh_addresse: false
     refresh_contract: false
-    token: Cx8C2mCiLa49Ze326F6YRVbhmmKjmlc3tCRSXX_pZdE=
+    token: !secret token_myelectricaldata
 wipe_influxdb: false

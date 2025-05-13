@@ -3405,6 +3405,7 @@
   - event: shutdown
     id: redemarrage_ha
     trigger: homeassistant
+    enabled: false
   conditions: []
   actions:
   - variables:
