@@ -3,7 +3,7 @@
         "state": "OFF",
         "power": 0,
         "current": 0,
-        "voltage": 240,
+        "voltage": 242,
         "energy": 0.16,
         "power_outage_memory": "restore",
         "child_lock": "UNLOCK",
@@ -13,7 +13,7 @@
     "0x3c6a2cfffed4a7de": {
         "voltage": 2500,
         "battery": 30.5,
-        "temperature": 51.4,
+        "temperature": 52.4,
         "linkquality": 160
     },
     "0xa4c138d9a41bd98f": {
@@ -22,8 +22,8 @@
         "linkquality": 116
     },
     "0xa4c138682a772531": {
-        "illuminance": 5564,
-        "illuminance_average_20min": 5597,
+        "illuminance": 5561,
+        "illuminance_average_20min": 5588,
         "illuminance_maximum_today": 5923,
         "cleaning_reminder": true,
         "rain_intensity": 0,
@@ -48,7 +48,7 @@
     "0x70b3d52b60103b94": {
         "power": 0,
         "current": 0,
-        "voltage": 246,
+        "voltage": 247,
         "energy": 34.46,
         "linkquality": 216,
         "state": "OFF",

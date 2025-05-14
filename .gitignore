@@ -5,7 +5,10 @@
 ip_bans.yaml
 secrets.yaml
 known_devices.yaml
+__pycache__/
+**/__pycache__/
 *.pyc
+*.pyo
 
 # Include
 !*.yaml
