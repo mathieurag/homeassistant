@@ -340,6 +340,7 @@
                             "fresh": "Frais",
                             "smart": "Intelligent",
                             "strong": "Fort",
+                            "custom": "Personnalisé",
                             "high": "Haut",
                             "medium": "Moyen",
                             "low": "Bas",
@@ -504,6 +505,9 @@
                 "state": {
                     "cancel": "Annuler",
                     "continuous": "Continu",
+                    "30s": "30 secondes",
+                    "1m": "1 minute",
+                    "2m": "2 minutes",
                     "5m": "5 minutes",
                     "10m": "10 minutes",
                     "20m": "20 minutes",
