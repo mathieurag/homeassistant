@@ -1,0 +1,200 @@
+network:
+  port: 7070
+
+log: debug
+
+interval: 3s
+
+meters:
+  - name: grid
+    type: http
+    uri: http://homeassistant.local:8123/api/states/sensor.consommation_reseau
+    headers:
+      Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyYjNkYTc0MTFmN2I0NGE2YmE0ZTFiNTM4NTU5MzA1NCIsImlhdCI6MTc1MDE5NTg4NiwiZXhwIjoyMDY1NTU1ODg2fQ.QyCghYdLihw0folok2E-RHePeDddRh1WAHQCf6ye25c"
+    jq: .state | tonumber
+    power: true
+
+  - name: pv
+    type: http
+    power: true
+    energy: true
+    uri: http://homeassistant.local:8123/api/states/sensor.puissance_solaire
+    headers:
+      Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyYjNkYTc0MTFmN2I0NGE2YmE0ZTFiNTM4NTU5MzA1NCIsImlhdCI6MTc1MDE5NTg4NiwiZXhwIjoyMDY1NTU1ODg2fQ.QyCghYdLihw0folok2E-RHePeDddRh1WAHQCf6ye25c"
+    jq: .state | tonumber
+    energyuri: http://homeassistant.local:8123/api/states/sensor.energie_solar_j
+    energyjq: .state | tonumber
+
+  - name: battery
+    type: http
+    capacity: 5.12 # Capacité en kWh
+
+    soc:
+      source: http
+      uri: http://homeassistant.local:8123/api/states/sensor.soc_estime
+      headers:
+        Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyYjNkYTc0MTFmN2I0NGE2YmE0ZTFiNTM4NTU5MzA1NCIsImlhdCI6MTc1MDE5NTg4NiwiZXhwIjoyMDY1NTU1ODg2fQ.QyCghYdLihw0folok2E-RHePeDddRh1WAHQCf6ye25c"
+      jq: .state | tonumber
+
+    power:
+      source: http
+      uri: http://homeassistant.local:8123/api/states/sensor.consommation_batterie
+      headers:
+        Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyYjNkYTc0MTFmN2I0NGE2YmE0ZTFiNTM4NTU5MzA1NCIsImlhdCI6MTc1MDE5NTg4NiwiZXhwIjoyMDY1NTU1ODg2fQ.QyCghYdLihw0folok2E-RHePeDddRh1WAHQCf6ye25c"
+      jq: .state | tonumber
+
+    batterymode:
+      source: http
+      uri: http://homeassistant.local:8123/api/states/sensor.marstek_inverter_state
+      headers:
+        Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyYjNkYTc0MTFmN2I0NGE2YmE0ZTFiNTM4NTU5MzA1NCIsImlhdCI6MTc1MDE5NTg4NiwiZXhwIjoyMDY1NTU1ODg2fQ.QyCghYdLihw0folok2E-RHePeDddRh1WAHQCf6ye25c"
+      jq: .state
+      values:
+        charging: "Charge"
+        discharging: "Discharge"
+        idle: "StandBy"
+
+  - name: my_meter_shelly_0
+    type: custom
+    power:
+      source: http
+      uri: http://192.168.68.124/rpc/Shelly.GetStatus
+      jq: .["em1:0"].act_power
+    energy:
+      source: http
+      uri: http://192.168.68.124/rpc/Shelly.GetStatus
+      jq: .["em1data:0"].total_act_energy
+      scale: 0.001
+
+  - name: my_meter_shelly_1
+    type: custom
+    power:
+      source: http
+      uri: http://192.168.68.124/rpc/Shelly.GetStatus
+      jq: .["em1:1"].act_power
+    energy:
+      source: http
+      uri: http://192.168.68.124/rpc/Shelly.GetStatus
+      jq: .["em1data:1"].total_act_energy
+      scale: 0.001
+
+
+  - name: my_meter_shelly_pm_1
+    type: custom
+    power:
+      source: http
+      uri: http://192.168.68.143/rpc/Shelly.GetStatus
+      jq: .["switch:0"].apower
+    energy:
+      source: http
+      uri: http://192.168.68.143/rpc/Shelly.GetStatus
+      jq: .["switch:0"].aenergy.total
+      scale: 0.001
+
+  - name: my_meter_shelly_pm_2
+    type: custom
+    power:
+      source: http
+      uri: http://192.168.68.144/rpc/Shelly.GetStatus
+      jq: .["switch:0"].apower
+    energy:
+      source: http
+      uri: http://192.168.68.144/rpc/Shelly.GetStatus
+      jq: .["switch:0"].aenergy.total
+      scale: 0.001
+
+chargers:
+  - name: wallbox
+    title: Wallbox
+    type: custom
+
+    status:
+      source: http
+      uri: http://homeassistant.local:8123/api/states/switch.prise_5_local_none
+      headers:
+        Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyYjNkYTc0MTFmN2I0NGE2YmE0ZTFiNTM4NTU5MzA1NCIsImlhdCI6MTc1MDE5NTg4NiwiZXhwIjoyMDY1NTU1ODg2fQ.QyCghYdLihw0folok2E-RHePeDddRh1WAHQCf6ye25c"
+      jq: .state # Renvoie "on" ou "off"
+
+    enabled:
+      source: http
+      uri: http://homeassistant.local:8123/api/states/switch.prise_5_local_none
+      headers:
+        Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyYjNkYTc0MTFmN2I0NGE2YmE0ZTFiNTM4NTU5MzA1NCIsImlhdCI6MTc1MDE5NTg4NiwiZXhwIjoyMDY1NTU1ODg2fQ.QyCghYdLihw0folok2E-RHePeDddRh1WAHQCf6ye25c"
+      jq: .state == "on"
+
+    enable:
+      source: http
+      uri: http://homeassistant.local:8123/api/services/switch/turn_on
+      method: POST
+      headers:
+        Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyYjNkYTc0MTFmN2I0NGE2YmE0ZTFiNTM4NTU5MzA1NCIsImlhdCI6MTc1MDE5NTg4NiwiZXhwIjoyMDY1NTU1ODg2fQ.QyCghYdLihw0folok2E-RHePeDddRh1WAHQCf6ye25c"
+        Content-Type: application/json
+      body: >
+        {"entity_id": "switch.prise_5_local_none"}
+
+    disable:
+      source: http
+      uri: http://homeassistant.local:8123/api/services/switch/turn_off
+      method: POST
+      headers:
+        Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyYjNkYTc0MTFmN2I0NGE2YmE0ZTFiNTM4NTU5MzA1NCIsImlhdCI6MTc1MDE5NTg4NiwiZXhwIjoyMDY1NTU1ODg2fQ.QyCghYdLihw0folok2E-RHePeDddRh1WAHQCf6ye25c"
+        Content-Type: application/json
+      body: >
+        {"entity_id": "switch.prise_5_local_none"}
+
+    maxcurrent:
+      source: http
+      uri: http://homeassistant.local:8123/api/states/sensor.esphome_web_a92940_marstek_battery_discharge_current_limit
+      headers:
+        Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyYjNkYTc0MTFmN2I0NGE2YmE0ZTFiNTM4NTU5MzA1NCIsImlhdCI6MTc1MDE5NTg4NiwiZXhwIjoyMDY1NTU1ODg2fQ.QyCghYdLihw0folok2E-RHePeDddRh1WAHQCf6ye25c"
+      jq: .state | tonumber
+
+vehicles:
+  - name: vehicle_1
+    title: Skoda ENYAQ 85 (manual)
+    type: custom
+    soc:
+      source: http
+      uri: http://homeassistant.local:8123/api/states/sensor.esphome_web_a92940_marstek_battery_state_of_charge
+      headers:
+        Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyYjNkYTc0MTFmN2I0NGE2YmE0ZTFiNTM4NTU5MzA1NCIsImlhdCI6MTc1MDE5NTg4NiwiZXhwIjoyMDY1NTU1ODg2fQ.QyCghYdLihw0folok2E-RHePeDddRh1WAHQCf6ye25c"
+      jq: .state | tonumber
+    range: 580
+    capacity: 77
+
+  - name: my_car
+    type: template
+    template: enyaq
+    user: matrag@gmail.com
+    password: Celipo14
+    vin:
+    title: ENYAQ 85 (auto)
+    capacity: 73
+    timeout: 10s # Zeitüberschreitung, optional
+
+site:
+  title: Test
+  meters:
+    grid: grid
+    pv: pv
+    battery: battery
+
+loadpoints:
+  - title: Garage
+    charger: wallbox
+    mode: pv
+    meter: my_meter_maison
+    vehicles:
+      - vehicle_1
+      - my_car
+
+tariffs:
+  currency: EUR # three letter ISO-4217 currency code (default EUR)
+  grid:
+    type: template
+    template: energy-charts-api # epex spot market prices
+    bzn: FR
+    charges: 0.20
+  feedin:
+    type: fixed
+    price: 0.04 # EUR/kWh

@@ -1,0 +1,27 @@
+{
+    "entity": {
+        "sensor": {
+            "total_energy": {
+                "name": "Total Energy"
+            },
+            "phase1_energy": {
+                "name": "Phase 1 Energy"
+            },
+            "phase2_energy": {
+                "name": "Phase 2 Energy"
+            },
+            "phase3_energy": {
+                "name": "Phase 3 Energy"
+            },
+            "current_session_energy": {
+                "name": "Energy of current session"
+            },
+            "power": {
+                "name": "Power"
+            },
+            "current_session_duration": {
+                "name": "Duration of current session"
+            }
+        }
+    }
+}

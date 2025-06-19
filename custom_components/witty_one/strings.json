@@ -1,0 +1,47 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "description": "[%key:component::bluetooth::config::step::user::description%]",
+        "data": {
+          "address": "[%key:common::config_flow::data::device%]"
+        }
+      },
+      "bluetooth_confirm": {
+        "description": "[%key:component::bluetooth::config::step::bluetooth_confirm::description%]"
+      }
+    },
+    "abort": {
+      "not_supported": "Device not supported",
+      "no_devices_found": "[%key:common::config_flow::abort::no_devices_found%]",
+      "already_in_progress": "[%key:common::config_flow::abort::already_in_progress%]",
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "total_energy": {
+        "name": "Total Energy"
+      },
+      "phase1_energy": {
+        "name": "Phase 1 Energy"
+      },
+      "phase2_energy": {
+        "name": "Phase 2 Energy"
+      },
+      "phase3_energy": {
+        "name": "Phase 3 Energy"
+      },
+      "current_session_energy": {
+        "name": "Energy of current session"
+      },
+      "power": {
+        "name": "Power"
+      },
+      "current_session_duration": {
+        "name": "Duration of current session"
+      }
+    }
+  }
+}
