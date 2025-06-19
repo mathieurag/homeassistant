@@ -1,6 +1,6 @@
 substitutions:
   name: esp32-3
-  friendly_name: ESP32-3
+  friendly_name: ESP32-TEST
 
 esphome:
   name: ${name}

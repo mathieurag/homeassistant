@@ -83,6 +83,12 @@ class BboxDataUpdateCoordinator(DataUpdateCoordinator):
         except BboxException as error:
             _LOGGER.error(error)
             raise UpdateFailed from error
+        
+        try:
+            speedtest_infos = self.check_list(await self.bbox.speedtest.async_get_speedtest_infos())
+        except BboxException as error:
+            _LOGGER.warning('SpeedTest Module not found (%s)', error)     
+            speedtest_infos = {}       
 
         return {
             "info": bbox_info,
@@ -94,6 +100,7 @@ class BboxDataUpdateCoordinator(DataUpdateCoordinator):
             "wps": wps,
             "wifi": wifi,
             "wan_ip": wan_ip,
+            "speedtest_infos": speedtest_infos,
         }
 
     @staticmethod

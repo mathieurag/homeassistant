@@ -162,6 +162,7 @@
         },
         "climate": {
             "aircon_extra": {
+                "name": "Aire acondicionado",
                 "state_attributes": {
                     "fan_mode": {
                         "state": {
@@ -676,7 +677,12 @@
                     "starting": "Iniciando",
                     "emptying": "Vaciando",
                     "resetting": "Restableciendo",
-                    "reverse": "Reversa"
+                    "reverse": "Reversa",
+                    "full": "Lleno",
+                    "empty": "Vacío",
+                    "missing": "Faltante",
+                    "formatting": "Formateando",
+                    "unformatted": "Sin formatear"
                 }
             },
             "time_remaining": {
@@ -757,6 +763,40 @@
         "text": {
             "scene": {
                 "name": "Escena"
+            }
+        },
+        "water_heater": {
+            "water_air": {
+                "name": "Calentador de agua",
+                "state_attributes": {
+                    "operation_mode": {
+                        "state": {
+                            "heat": "Calor",
+                            "cool": "Frío",
+                            "auto": "Automático",
+                            "off": "Apagar",
+                            "hotwater": "Agua caliente",
+                            "hotwater_cool": "Agua caliente y frío",
+                            "hotwater_heat": "Agua caliente y calor",
+                            "hotwater_auto": "Agua caliente y automático"
+                        }
+                    }
+                }
+            },
+            "kettle": {
+                "name": "Hervidor",
+                "state_attributes": {
+                    "operation_mode": {
+                        "state": {
+                            "off": "Apagar",
+                            "heat": "Calor",
+                            "boil": "Hervir",
+                            "quick_heat": "Calor rápido",
+                            "quick_boil": "Hervir rápido",
+                            "keep_warm": "Mantener caliente"
+                        }
+                    }
+                }
             }
         }
     }

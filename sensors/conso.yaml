@@ -78,7 +78,8 @@ template:
           + float(states('sensor.em06_a2_power'),0)
           + float(states('sensor.em06_b2_power'),0)
           + float(states('sensor.em06_c2_power'),0)
-          + float(states('sensor.em06_b1_power'),0)
+          + float(states('sensor.consommation_cumulus'),0)
+          + float(states('sensor.consommation_borne'),0)
           + float(states('sensor.disjoncteur_3_puissance_2'),0)
           + float(states('sensor.disjoncteur_4_puissance_2'),0)
           + float(states('sensor.prise_frigo_local_puissance'),0)
@@ -106,21 +107,21 @@ template:
         device_class: power # Exemples de valeurs possibles
         state_class: measurement
         unit_of_measurement: "W"
-        state: "{% if float(states('sensor.consommation_batterie'),0)>0 -%} {{float(states('sensor.consommation_maison'),0) + float(states('sensor.consommation_cumulus'),0) }} {%- else -%} {{ float(states('sensor.consommation_maison'),0) - float(states('sensor.consommation_batterie'),0) + float(states('sensor.consommation_cumulus'),0) }} {%- endif %}"
+        state: "{% if float(states('sensor.consommation_batterie'),0)>0 -%} {{float(states('sensor.consommation_maison'),0) + float(states('sensor.consommation_cumulus'),0) + float(states('sensor.consommation_borne'),0) }} {%- else -%} {{ float(states('sensor.consommation_maison'),0) - float(states('sensor.consommation_batterie'),0) + float(states('sensor.consommation_cumulus'),0) + float(states('sensor.consommation_borne'),0)}} {%- endif %}"
 
       - name: "Consommation Maison"
         unique_id: "consommation_maison"
         device_class: power # Exemples de valeurs possibles
         state_class: measurement
         unit_of_measurement: "W"
-        state: "{{ (float(states('sensor.consommation_reseau'),0) + float(states('sensor.production_solaire'),0) - float(states('sensor.surplus_production'),0) - float(states('sensor.consommation_cumulus'),0)- (-float(states('sensor.consommation_batterie'),0))) | abs | round(0)}}"
+        state: "{{ (float(states('sensor.consommation_reseau'),0) + float(states('sensor.production_solaire'),0) - float(states('sensor.surplus_production'),0) - float(states('sensor.consommation_cumulus'),0) - float(states('sensor.consommation_borne'),0)- (-float(states('sensor.consommation_batterie'),0))) | abs | round(0)}}"
 
       - name: "Consommation Cumulus"
         unique_id: "consommation_cumulus"
         device_class: power # Exemples de valeurs possibles
         state_class: measurement
         unit_of_measurement: "W"
-        state: "{% if float(states('sensor.em06_b1_power'),0)>=0 and float(states('sensor.em06_b1_power'),0)<10 -%} 0 {%- else -%} {{ float(states('sensor.em06_b1_power'),0)}} {%- endif %}"
+        state: "{% if float(states('sensor.em06_02_c1_power'),0)>=0 and float(states('sensor.em06_02_c1_power'),0)<10 -%} 0 {%- else -%} {{ float(states('sensor.em06_02_c1_power'),0)}} {%- endif %}"
 
       - name: "Consommation Batterie"
         unique_id: "consommation_batterie"
@@ -129,6 +130,13 @@ template:
         unit_of_measurement: "W"
         state: "{% if float(states('sensor.em06_02_b2_power'),0)<10 and float(states('sensor.em06_02_b2_power'),0)>-10 -%} 0 {%- else -%} {{ float(states('sensor.em06_02_b2_power'),0)}} {%- endif %}"
 
+      - name: "Consommation Borne"
+        unique_id: "consommation_borne"
+        device_class: power # Exemples de valeurs possibles
+        state_class: measurement
+        unit_of_measurement: "W"
+        state: "{% if float(states('sensor.em06_02_c2_power'),0)<10 and float(states('sensor.em06_02_c2_power'),0)>-10 -%} 0 {%- else -%} {{ float(states('sensor.em06_02_c2_power'),0)}} {%- endif %}"
+
       - name: "Consommation brute" # hors batterie et cumulus, somme de tous les capteurs possible (même si redondants)
         unique_id: "consommation_brute"
         device_class: power
@@ -136,6 +144,7 @@ template:
         unit_of_measurement: "W"
         state: "{{
           ( float(states('sensor.em06_a1_power'),0)
+          + float(states('sensor.em06_b1_power'),0)
           + float(states('sensor.em06_c1_power'),0)
           + float(states('sensor.em06_a2_power'),0)
           + float(states('sensor.em06_b2_power'),0)
@@ -155,11 +164,3 @@ template:
           + float(states('sensor.bidirectional_energy_meter_power_a'),0)
           + float(states('sensor.bidirectional_energy_meter_power_b'),0)
           ) | round(0) }}"
-
-      - name: "Delta consommation brute"
-        unique_id: "consommation_brute_delta"
-        unit_of_measurement: "W"
-        device_class: power
-        state_class: measurement
-        state: >
-          {{ float(states('sensor.consommation_maison'),0) - float(states('sensor.consommation_brute'),0) | round(0) }}

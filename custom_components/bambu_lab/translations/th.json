@@ -82,7 +82,8 @@
           "serial": "หมายเลขซีเรียล:",
           "host": "ที่อยู่ IP เครื่องพิมพ์ท้องถิ่น:",
           "access_code": "รหัสการเข้าถึง:",
-          "usage_hours": "ชั่วโมงการใช้งานปัจจุบัน (ไม่บังคับ):"
+          "usage_hours": "ชั่วโมงการใช้งานปัจจุบัน (ไม่บังคับ):",
+          "developer_lan_mode": "เปิดใช้งานโหมด LAN ของนักพัฒนา:"
         },
         "sections": {
           "advanced": {
@@ -161,7 +162,8 @@
         "data": {
           "host": "ที่อยู่ IP เครื่องพิมพ์ท้องถิ่น:",
           "access_code": "รหัสการเข้าถึง:",
-          "usage_hours": "ชั่วโมงการใช้งานปัจจุบัน (ไม่บังคับ):"
+          "usage_hours": "ชั่วโมงการใช้งานปัจจุบัน (ไม่บังคับ):",
+          "developer_lan_mode": "เปิดใช้งานโหมด LAN ของนักพัฒนา:"
         },
         "sections": {
           "advanced": {
@@ -198,6 +200,15 @@
       },
       "extruder_filament_state": {
         "name": "สถานะไส้กรอง"
+      },
+      "developer_lan_mode": {
+        "name": "นักพัฒนาโหมด LAN"
+      },
+      "mqtt_encryption": {
+        "name": "เฟิร์มแวร์การเข้ารหัส MQTT"
+      },
+      "active_ams": {
+        "name": "คล่องแคล่ว"
       }
     },
     "button": {
@@ -267,6 +278,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "โมดูลเครื่องมือ",
+        "state": {
+          "none": "ไม่ได้ติดตั้ง",
+          "laser": "เลเซอร์",
+          "cutter": "เครื่องตัด"
+        }
+      },
       "wifi_signal": {
         "name": "สัญญาณ Wi-Fi"
       },
@@ -435,9 +454,6 @@
       },
       "active_tray": {
         "name": "ถาดที่ใช้งานอยู่"
-      },
-      "active_tray_index": {
-        "name": "ดัชนีถาดที่ใช้งานอยู่"
       },
       "nozzle_diameter": {
         "name": "ขนาดหัวฉีด"
@@ -686,6 +702,27 @@
       },
       "humidity": {
         "name": "ความชื้น"
+      },
+      "left_nozzle_temp": {
+        "name": "อุณหภูมิหัวฉีดซ้าย"
+      },
+      "left_target_nozzle_temp": {
+        "name": "อุณหภูมิเป้าหมายหัวฉีดซ้าย"
+      },
+      "right_nozzle_temp": {
+        "name": "อุณหภูมิหัวฉีดขวา"
+      },
+      "right_target_nozzle_temp": {
+        "name": "อุณหภูมิเป้าหมายหัวฉีดขวา"
+      },
+      "sdcard_status": {
+        "name": "สถานะการ์ด SD",
+        "state": {
+          "missing": "หายไป",
+          "normal": "ปกติ",
+          "abnormal": "ผิดปกติ",
+          "readonly": "อ่านเท่านั้น"
+        }
       }
     },
     "camera": {
@@ -694,9 +731,6 @@
       }
     },
     "switch": {
-      "manual": {
-        "name": "โหมดรีเฟรชด้วยตนเอง"
-      },
       "camera": {
         "name": "เปิดใช้งานกล้อง"
       },

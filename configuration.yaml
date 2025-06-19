@@ -16,6 +16,23 @@ automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
+mqtt_statestream:
+  base_topic: ha2evcc
+  publish_attributes: false
+  publish_timestamps: false
+  include:
+    entities:
+      - sensor.consommation_reseau
+      - sensor.consommation_batterie
+      - sensor.consommation_borne
+      - sensor.consommation_cumulus
+      - sensor.consommation_maison
+      - sensor.production_solaire
+      - sensor.surplus_production
+      - sensor.soc_estime_batterie
+      - sensor.em06_02_b1_power
+      - sensor.esphome_web_a92940_marstek_inverter_state
+      
 logbook:
   exclude:
     domains:
@@ -39,6 +56,7 @@ logbook:
       - input_number.*frigo*
       - input_number.*frigo*
       - sensor.*frigo*
+      - number.esphome_web_a92940_marstek_forcible_charge_power
 
 # Purge de la base
 recorder:
@@ -75,6 +93,8 @@ logger:
     homeassistant.loader: error
     homeassistant.helpers.frame: error
     custom_components.bambu_lab.pybambu: error
+    homeassistant.components.automation.simulation_pv: error
+    custom_components.bbox.coordinator: error
 
 shell_command:
   database: python3 /config/python_scripts/database.py
@@ -93,5 +113,6 @@ shell_command:
   suivi_pv: "python3 /config/python_scripts/suivi_pv.py"
   comparaison_pv: "python3 /config/python_scripts/comparaison_pv.py"
   refoss: "python3 /config/packages/refoss_ha/script.py"
+  taux_hc: "python3 /config/python_scripts/taux_hc.py"
 
 my:

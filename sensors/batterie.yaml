@@ -1,11 +1,56 @@
+light:
+  - platform: template
+    lights:
+      communication_batterie_led:
+        friendly_name: "Communication Batterie LED"
+        value_template: >
+          {% set last = as_timestamp(states.sensor.esphome_web_a92940_marstek_ac_voltage.last_updated) %}
+          {% set now_ts = now().timestamp() %}
+          {{ (now_ts - last) < 30 }}
+        turn_on:
+          service: script.none
+        turn_off:
+          service: script.none
+        level_template: 255
+        color_template: >
+          {% set last = as_timestamp(states.sensor.esphome_web_a92940_marstek_ac_voltage.last_updated) %}
+          {% set now_ts = now().timestamp() %}
+          {% if (now_ts - last) < 30 %}
+            [0, 255, 0]
+          {% else %}
+            [255, 0, 0]
+          {% endif %}
+
 template:
   - sensor:
-      - name: "Puissance CT001"
-        unique_id: "puissance_ct001"
-        unit_of_measurement: "W"
+      - name: "SOC estimé batterie"
+        unique_id: soc_estime_batterie
+        unit_of_measurement: "%"
+        device_class: battery
         state_class: measurement
-        device_class: power
-        state: "{{ (states('sensor.valeur_ct001') | float(0) * states('sensor.em06_02_b1_power_factor') | float(0)) | round(1) }}"
+        state: >
+          {% set energie_actuelle = states('sensor.energie_estimee_batterie_dc') | float(0) %}
+          {% set energie_reference = states('input_number.energie_batterie_a_100') | float(0) %}
+          {% set capacite = 5.12 %}
+          {% set soc = 100 + ((energie_actuelle - energie_reference) / capacite * 100) %}
+          {{ soc | round(1) }}
+
+      - name: "Energie restante Batterie"
+        unique_id: energie_restante_batterie
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: measurement
+        state: >
+          {% set soc = states('sensor.soc_estime_batterie') | float(0) %}
+          {% set capacite = 5.12 %}
+          {% set energie_restante = soc * capacite / 100 %}
+          {{ energie_restante | round(2) }}
+
+      - name: LED Batterie
+        unique_id: led_batterie_status
+        state: "OK"
+        attributes:
+          rgb_color: "{{ state_attr('light.esphome_web_a92940_status_led', 'rgb_color') }}"
 
       - name: "Charge Marstek"
         state: "{{ (float(states('sensor.esphome_web_a92940_marstek_monthly_charging_energy'),0)) }}"
@@ -22,7 +67,7 @@ template:
         state_class: total_increasing # Exemples de valeurs possibles
 
       - name: "Charge Batterie"
-        unique_id: "charge_marstek_w"
+        unique_id: "charge_batterie"
         unit_of_measurement: "W"
         device_class: power
         state_class: measurement
@@ -35,7 +80,7 @@ template:
           {% endif %}
 
       - name: "Décharge Batterie"
-        unique_id: "decharge_marstek_w"
+        unique_id: "decharge_batterie"
         unit_of_measurement: "W"
         device_class: power
         state_class: measurement
@@ -43,31 +88,6 @@ template:
           {% set power = states('sensor.esphome_web_a92940_marstek_ac_power') | float(0) %}
           {% if power >= 0 %}
             {{ power }}
-          {% else %}
-            0
-          {% endif %}
-
-      - name: "Marstek Daily Efficiency"
-        unique_id: "marstek_daily_efficiency"
-        unit_of_measurement: "%"
-        #device_class: power
-        state_class: measurement
-        state: >
-          {% set charging = states('sensor.esphome_web_a92940_marstek_daily_charging_energy') | float(0) %}
-          {% set discharging = states('sensor.esphome_web_a92940_marstek_daily_discharging_energy') | float(0) %}
-          {% if charging > 0 %}
-            {{ ((discharging / charging) * 100) | int }}
-          {% else %}
-            0
-          {% endif %}
-
-      - name: "Marstek Efficiency Non Nulle"
-        unit_of_measurement: "%"
-        state_class: measurement
-        state: >
-          {% set val = states('sensor.marstek_efficiency') %}
-          {% if val is number and val | float > 0 %}
-            {{ val | float }}
           {% else %}
             0
           {% endif %}
@@ -98,7 +118,7 @@ template:
           {% if states('sensor.esphome_web_a92940_marstek_ac_power') | float(0) > 0 %}
             mdi:battery-arrow-down
           {% elif states('sensor.esphome_web_a92940_marstek_ac_power') | float(0) < 0 %}
-            mdi:battery-charging
+            mdi:battery-arrow-up
           {% else %}
             mdi:battery-outline
           {% endif %}
@@ -108,7 +128,7 @@ template:
         state: >
           {% set inverter = states('sensor.esphome_web_a92940_marstek_inverter_state') %}
           {% set capacity_now = states('sensor.esphome_web_a92940_marstek_battery_remaining_capacity') | float(0) %}
-          {% set soc = states('sensor.esphome_web_a92940_marstek_battery_state_of_charge') | float(0) %}
+          {% set soc = states('sensor.soc_estime_batterie') | float(0) %}
           {% set cutoff_charge_pct = states('number.esphome_web_a92940_marstek_charging_cutoff_capacity') | float(0) %}
           {% set cutoff_discharge_pct = states('number.esphome_web_a92940_marstek_discharging_cutoff_capacity') | float(0) %}
 

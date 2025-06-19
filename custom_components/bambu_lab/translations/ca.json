@@ -82,7 +82,8 @@
           "serial": "Número de Serie:",
           "host": "Adreça IP Local de la Impressora:",
           "access_code": "Codi d'accés:",
-          "usage_hours": "Quantitat d'hores d'ús (opcional):"
+          "usage_hours": "Quantitat d'hores d'ús (opcional):",
+          "developer_lan_mode": "Mode LAN desenvolupador activat:"
         },
         "sections": {
           "advanced": {
@@ -161,7 +162,8 @@
         "data": {
           "host": "Adreça IP Local de la Impressora:",
           "access_code": "Codi d'accés:",
-          "usage_hours": "Quantitat d'hores d'ús (opcional):"
+          "usage_hours": "Quantitat d'hores d'ús (opcional):",
+          "developer_lan_mode": "Mode LAN desenvolupador activat:"
         },
         "sections": {
           "advanced": {
@@ -198,6 +200,15 @@
       },
       "extruder_filament_state": {
         "name": "Estat de filament d'extrús"
+      },
+      "developer_lan_mode": {
+        "name": "Mode LAN desenvolupador"
+      },
+      "mqtt_encryption": {
+        "name": "Firmware de xifrat MQTT"
+      },
+      "active_ams": {
+        "name": "Activa"
       }
     },
     "button": {
@@ -267,6 +278,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "Mòdul d'eines",
+        "state": {
+          "none": "No muntat",
+          "laser": "Làser",
+          "cutter": "Tallador"
+        }
+      },
       "wifi_signal": {
         "name": "Senyal Wi-Fi"
       },
@@ -429,9 +448,6 @@
       },
       "active_tray": {
         "name": "Safata activa"
-      },
-      "active_tray_index": {
-        "name": "Índex de safata activa"
       },
       "nozzle_diameter": {
         "name": "Grandària del broquet"
@@ -686,6 +702,27 @@
       },
       "humidity": {
         "name": "Humitat"
+      },
+      "left_nozzle_temp": {
+        "name": "Temperatura de la boquilla esquerra"
+      },
+      "left_target_nozzle_temp": {
+        "name": "Temperatura objectiu de la boquilla esquerra"
+      },
+      "right_nozzle_temp": {
+        "name": "Temperatura de la boquilla dreta"
+      },
+      "right_target_nozzle_temp": {
+        "name": "Temperatura objectiu de la boquilla dreta"
+      },
+      "sdcard_status": {
+        "name": "Estat de la targeta SD",
+        "state": {
+          "missing": "Perduda",
+          "normal": "Normal",
+          "abnormal": "Anormal",
+          "readonly": "Llegiu només"
+        }
       }
     },
     "camera": {
@@ -694,9 +731,6 @@
       }
     },
     "switch": {
-      "manual": {
-        "name": "Mode d'actualització manual"
-      },
       "camera": {
         "name": "Habilitar càmera"
       },

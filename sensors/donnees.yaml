@@ -1,5 +1,0 @@
-sensor:
-  - platform: command_line
-    name: Statistiques script Python
-    command: "cat /config/custom_stats.md"
-    scan_interval: 30

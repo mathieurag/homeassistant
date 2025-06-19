@@ -162,6 +162,7 @@
         },
         "climate": {
             "aircon_extra": {
+                "name": "Air conditioner",
                 "state_attributes": {
                     "fan_mode": {
                         "state": {
@@ -676,7 +677,12 @@
                     "starting": "Starting",
                     "emptying": "Emptying",
                     "resetting": "Resetting",
-                    "reverse": "Reverse"
+                    "reverse": "Reverse",
+                    "full": "Full",
+                    "empty": "Empty",
+                    "missing": "Missing",
+                    "formatting": "Formatting",
+                    "unformatted": "Unformatted"
                 }
             },
             "time_remaining": {
@@ -757,6 +763,40 @@
         "text": {
             "scene": {
                 "name": "Scene"
+            }
+        },
+        "water_heater": {
+            "water_air": {
+                "name": "Water heater",
+                "state_attributes": {
+                    "operation_mode": {
+                        "state": {
+                            "off": "Off",
+                            "heat": "Heat",
+                            "cool": "Cool",
+                            "auto": "Auto",
+                            "hotwater": "Hot water",
+                            "hotwater_cool": "Hot water & Cool",
+                            "hotwater_heat": "Hot water & Heat",
+                            "hotwater_auto": "Hot water & Auto"
+                        }
+                    }
+                }
+            },
+            "kettle": {
+                "name": "Kettle",
+                "state_attributes": {
+                    "operation_mode": {
+                        "state": {
+                            "off": "Off",
+                            "heat": "Heat",
+                            "boil": "Boil",
+                            "quick_heat": "Quick heat",
+                            "quick_boil": "Quick boil",
+                            "keep_warm": "Keep warm"
+                        }
+                    }
+                }
             }
         }
     }

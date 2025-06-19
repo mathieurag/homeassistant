@@ -82,7 +82,8 @@
           "serial": "Numer seryjny:",
           "host": "Lokalny adres IP drukarki:",
           "access_code": "Kod dostępu:",
-          "usage_hours": "Aktualny czas pracy (opcjonalnie):"
+          "usage_hours": "Aktualny czas pracy (opcjonalnie):",
+          "developer_lan_mode": "Włączony tryb programisty LAN:"
         },
         "sections": {
           "advanced": {
@@ -161,7 +162,8 @@
         "data": {
           "host": "Lokalny adres IP drukarki:",
           "access_code": "Kod dostępu:",
-          "usage_hours": "Aktualny czas pracy (opcjonalnie):"
+          "usage_hours": "Aktualny czas pracy (opcjonalnie):",
+          "developer_lan_mode": "Włączony tryb programisty LAN:"
         },
         "sections": {
           "advanced": {
@@ -179,7 +181,7 @@
   "entity": {
     "binary_sensor": {
       "door_open": {
-        "name": "Drzwi obudowy"
+        "name": "Drzwi komory"
       },
       "timelapse": {
         "name": "Nagrywanie timelapse"
@@ -198,6 +200,15 @@
       },
       "extruder_filament_state": {
         "name": "Stan filamentu w ekstruderze"
+      },
+      "developer_lan_mode": {
+        "name": "Tryb programisty LAN"
+      },
+      "mqtt_encryption": {
+        "name": "Oprogramowanie układowe szyfrowania MQTT"
+      },
+      "active_ams": {
+        "name": "Aktywny"
       }
     },
     "button": {
@@ -257,7 +268,7 @@
     },
     "select": {
       "printing_speed": {
-        "name": "Prędkość drukowania",
+        "name": "Prędkość druku",
         "state": {
           "silent": "Cichy",
           "standard": "Standardowy",
@@ -267,6 +278,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "Moduł narzędziowy",
+        "state": {
+          "none": "Nie zamontowany",
+          "laser": "Laser",
+          "cutter": "Nóż"
+        }
+      },
       "wifi_signal": {
         "name": "Sygnał Wi-Fi"
       },
@@ -438,9 +457,6 @@
       },
       "active_tray": {
         "name": "Aktywny slot"
-      },
-      "active_tray_index": {
-        "name": "Indeks aktywnego slotu"
       },
       "nozzle_diameter": {
         "name": "Średnica dyszy"
@@ -686,6 +702,27 @@
       },
       "humidity": {
         "name": "Wilgotność"
+      },
+      "left_nozzle_temp": {
+        "name": "Temperatura dyszy lewej"
+      },
+      "left_target_nozzle_temp": {
+        "name": "Temperatura docelowa dyszy lewej"
+      },
+      "right_nozzle_temp": {
+        "name": "Temperatura dyszy prawej"
+      },
+      "right_target_nozzle_temp": {
+        "name": "Temperatura docelowa dyszy prawej"
+      },
+      "sdcard_status": {
+        "name": "Status karty SD",
+        "state": {
+          "missing": "Brak karty",
+          "normal": "Prawidłowy",
+          "abnormal": "Nieprawidłowy",
+          "readonly": "Tylko do odczytu"
+        }
       }
     },
     "camera": {
@@ -694,9 +731,6 @@
       }
     },
     "switch": {
-      "manual": {
-        "name": "Tryb ręcznego odświeżania"
-      },
       "camera": {
         "name": "Włącz kamerę"
       },

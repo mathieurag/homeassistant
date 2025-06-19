@@ -163,6 +163,7 @@
         },
         "climate": {
             "aircon_extra": {
+                "name": "Klimaanlegg",
                 "state_attributes": {
                     "fan_mode": {
                         "state": {
@@ -677,7 +678,12 @@
                     "starting": "Starter",
                     "emptying": "Tømming",
                     "resetting": "Tilbakestilling",
-                    "reverse": "Revers"
+                    "reverse": "Revers",
+                    "full": "Full",
+                    "empty": "Tom",
+                    "missing": "Manglende",
+                    "formatting": "Formatering",
+                    "unformatted": "Uformaterte"
                 }
             },
             "time_remaining": {
@@ -758,6 +764,40 @@
         "text": {
             "scene": {
                 "name": "Scene"
+            }
+        },
+        "water_heater": {
+            "water_air": {
+                "name": "Vannvarmer",
+                "state_attributes": {
+                    "operation_mode": {
+                        "state": {
+                            "heat": "Varm",
+                            "cool": "Kald",
+                            "auto": "Auto",
+                            "off": "Av",
+                            "hotwater": "Varmt vann",
+                            "hotwater_cool": "Varmt vann og kald",
+                            "hotwater_heat": "Varmt vann og varmt",
+                            "hotwater_auto": "Varmt vann og auto"
+                        }
+                    }
+                }
+            },
+            "kettle": {
+                "name": "Vannkoker",
+                "state_attributes": {
+                    "operation_mode": {
+                        "state": {
+                            "off": "Av",
+                            "heat": "Varm",
+                            "boil": "Kok",
+                            "quick_heat": "Kjapp varming",
+                            "quick_boil": "Kjapp koking",
+                            "keep_warm": "Hold varm"
+                        }
+                    }
+                }
             }
         }
     }

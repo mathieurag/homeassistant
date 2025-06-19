@@ -228,7 +228,7 @@ temp_seuil = round(temp_cible * 0.99, 2)
 soc_seuil = round(soc_cible * 0.99, 2)
 
 ecs_fin_reelle = get_first_time_threshold_reached("sensor.sonde_temperature_owon_temperature", ts_debut, ts_now, temp_seuil)
-bat_fin_reelle = get_first_time_threshold_reached("sensor.esphome_web_a92940_marstek_battery_state_of_charge", ts_debut, ts_now, soc_seuil)
+bat_fin_reelle = get_first_time_threshold_reached("sensor.soc_estime_batterie", ts_debut, ts_now, soc_seuil)
 
 print("Prévision simulation ECS :", ecs_fin_reelle)
 print("Prévision simulation BAT :", bat_fin_reelle)
@@ -238,7 +238,7 @@ result["entites"]["batterie"]["heure_fin_reelle"] = bat_fin_reelle
 
 # --- SIMULATION CONDITIONS REELLES ---
 
-soc_actuel = get_state("sensor.marstek_battery_state_of_charge", 0.0)
+soc_actuel = get_state("sensor.soc_estime_batterie", 0.0)
 temp_ecs_actuelle = get_state("sensor.sonde_temperature_owon_temperature", 30.0)
 
 # Paramètres

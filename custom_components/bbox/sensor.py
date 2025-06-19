@@ -168,7 +168,7 @@ SENSOR_TYPES: tuple[BboxSensorDescription, ...] = (
     BboxSensorDescription(
         key="memory.device.mem.free",
         name="Memory free",
-        device_class=SensorDeviceClass.CURRENT,
+        device_class=SensorDeviceClass.POWER_FACTOR,
         icon="mdi:gauge",
         get_value=lambda self: (
             int(finditem(self.coordinator.data, "memory.device.mem.free") * 100)
@@ -176,6 +176,16 @@ SENSOR_TYPES: tuple[BboxSensorDescription, ...] = (
         ),
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
+    ),
+    BboxSensorDescription(
+        key="speedtest_infos.speedtest.latestmeasurements.download.0.speed",
+        name="Speedtest download",
+        icon="mdi:speedometer",
+        device_class=SensorDeviceClass.DATA_RATE,
+        value_fn=lambda x: float(x),
+        native_unit_of_measurement=UnitOfDataRate.KILOBITS_PER_SECOND,
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_registry_enabled_default= False
     ),
 )
 

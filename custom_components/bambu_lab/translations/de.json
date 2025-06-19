@@ -82,7 +82,8 @@
           "serial": "Seriennummer:",
           "host": "IP-Adresse des lokalen Druckers:",
           "access_code": "Zugangscode",
-          "usage_hours": "Aktuelle Nutzungsstunden (optional):"
+          "usage_hours": "Aktuelle Nutzungsstunden (optional):",
+          "developer_lan_mode": "Entwickler LAN -Modus aktiviert:"
         },
         "sections": {
           "advanced": {
@@ -161,7 +162,8 @@
         "data": {
           "host": "IP-Adresse des lokalen Druckers:",
           "access_code": "Zugangscode",
-          "usage_hours": "Aktuelle Nutzungsstunden (optional):"
+          "usage_hours": "Aktuelle Nutzungsstunden (optional):",
+          "developer_lan_mode": "Entwickler LAN -Modus aktiviert:"
         },
         "sections": {
           "advanced": {
@@ -198,6 +200,15 @@
       },
       "extruder_filament_state": {
         "name": "Extruder Filament Status"
+      },
+      "developer_lan_mode": {
+        "name": "Entwickler LAN -Modus"
+      },
+      "mqtt_encryption": {
+        "name": "MQTT -Verschlüsselungsfirmware"
+      },
+      "active_ams": {
+        "name": "Aktiv"
       }
     },
     "button": {
@@ -267,6 +278,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "Werkzeugmodul",
+        "state": {
+          "none": "Nicht montiert",
+          "laser": "Laser",
+          "cutter": "Schneider"
+        }
+      },
       "wifi_signal": {
         "name": "Wi-Fi-Signalqualität"
       },
@@ -432,9 +451,6 @@
       },
       "active_tray": {
         "name": "Aktiver Slot"
-      },
-      "active_tray_index": {
-        "name": "Aktiver Slotindex"
       },
       "nozzle_diameter": {
         "name": "Düsengröße"
@@ -686,6 +702,27 @@
       },
       "humidity": {
         "name": "Luftfeuchtigkeit"
+      },
+      "left_nozzle_temp": {
+        "name": "Linke Düsentemperatur"
+      },
+      "left_target_nozzle_temp": {
+        "name": "Linksdüsenzieltemperatur"
+      },
+      "right_nozzle_temp": {
+        "name": "Rechte Düsentemperatur"
+      },
+      "right_target_nozzle_temp": {
+        "name": "Rechte Düsenzieltemperatur"
+      },
+      "sdcard_status": {
+        "name": "SD -Kartenstatus",
+        "state": {
+          "missing": "Fehlen",
+          "normal": "Normal",
+          "abnormal": "Abnormal",
+          "readonly": "Nur lesen"
+        }
       }
     },
     "camera": {
@@ -694,9 +731,6 @@
       }
     },
     "switch": {
-      "manual": {
-        "name": "Manueller Aktualisierungsmodus"
-      },
       "camera": {
         "name": "Kamera aktivieren"
       },

@@ -108,7 +108,7 @@ hourly_production = hourly_production[heure_debut:heure_fin+1]
 hourly_production_brute = hourly_production_brute[heure_debut:heure_fin+1]
 
 heure_actuelle = datetime.now().hour
-soc_actuel = get_state("sensor.esphome_web_a92940_marstek_battery_state_of_charge", 25)
+soc_actuel = get_state("sensor.soc_estime_batterie", 25)
 soc_min = get_state("number.esphome_web_a92940_marstek_discharging_cutoff_capacity", 18)
 soc_max = get_state("number.esphome_web_a92940_marstek_charging_cutoff_capacity", 98)
 
@@ -148,7 +148,7 @@ else:
         AND s.state NOT IN ('unknown', 'unavailable')
         ORDER BY s.last_updated_ts DESC
         LIMIT 1
-    """, ("sensor.esphome_web_a92940_marstek_battery_state_of_charge", ts_debut_prod))
+    """, ("sensor.soc_estime_batterie", ts_debut_prod))
     row = cursor.fetchone()
     soc_depart = float(row[0]) if row else soc_actuel
     soc_depart_mode = "mesuré"

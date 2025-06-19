@@ -162,6 +162,7 @@
         },
         "climate": {
             "aircon_extra": {
+                "name": "Klimaanlage",
                 "state_attributes": {
                     "fan_mode": {
                         "state": {
@@ -676,7 +677,12 @@
                     "starting": "Starten",
                     "emptying": "Leeren",
                     "resetting": "Zurücksetzen",
-                    "reverse": "Rückwärts"
+                    "reverse": "Rückwärts",
+                    "full": "Voll",
+                    "empty": "Leer",
+                    "missing": "Fehlend",
+                    "formatting": "Formatieren",
+                    "unformatted": "Unformatiert"
                 }
             },
             "time_remaining": {
@@ -757,6 +763,40 @@
         "text": {
             "scene": {
                 "name": "Szene"
+            }
+        },
+        "water_heater": {
+            "water_air": {
+                "name": "Wasserkocher",
+                "state_attributes": {
+                    "operation_mode": {
+                        "state": {
+                            "heat": "Heizen",
+                            "cool": "Kühlen",
+                            "auto": "Auto",
+                            "off": "Aus",
+                            "hotwater": "Warmwasser",
+                            "hotwater_cool": "Warmwasser Kühlen",
+                            "hotwater_heat": "Warmwasser Heizen",
+                            "hotwater_auto": "Warmwasser Auto"
+                        }
+                    }
+                }
+            },
+            "kettle": {
+                "name": "Wasserkocher",
+                "state_attributes": {
+                    "operation_mode": {
+                        "state": {
+                            "off": "Aus",
+                            "heat": "Heizen",
+                            "boil": "Kochen",
+                            "quick_heat": "Schnellheizen",
+                            "quick_boil": "Schnellkochen",
+                            "keep_warm": "Warmhalten"
+                        }
+                    }
+                }
             }
         }
     }

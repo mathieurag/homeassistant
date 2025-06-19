@@ -1,5 +1,38 @@
 mqtt:
   - sensor:
+      - name: "Taux HC jour"
+        unique_id: taux_hc_day
+        state_topic: "homeassistant/sensor/taux_hc_day/state"
+        value_template: "{{ value }}"
+        json_attributes_topic: "homeassistant/sensor/taux_hc_day/attributes"
+        unit_of_measurement: "%"
+        device_class: battery
+
+      - name: "Taux HC semaine"
+        unique_id: taux_hc_week
+        state_topic: "homeassistant/sensor/taux_hc_week/state"
+        value_template: "{{ value }}"
+        json_attributes_topic: "homeassistant/sensor/taux_hc_week/attributes"
+        unit_of_measurement: "%"
+        device_class: battery
+
+      - name: "Taux HC mensuel"
+        unique_id: taux_hc_month
+        state_topic: "homeassistant/sensor/taux_hc_month/state"
+        value_template: "{{ value }}"
+        json_attributes_topic: "homeassistant/sensor/taux_hc_month/attributes"
+        unit_of_measurement: "%"
+        device_class: battery
+        state_class: measurement
+
+      - name: "Taux HC annuel"
+        unique_id: taux_hc_year
+        state_topic: "homeassistant/sensor/taux_hc_year/state"
+        value_template: "{{ value }}"
+        json_attributes_topic: "homeassistant/sensor/taux_hc_year/attributes"
+        unit_of_measurement: "%"
+        device_class: battery
+
       - name: "Simulation PV"
         unique_id: simulation_pv
         state_topic: "homeassistant/simulation/solaire"

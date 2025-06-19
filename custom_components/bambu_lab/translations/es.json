@@ -82,7 +82,8 @@
           "serial": "Número de Serie:",
           "host": "Dirección de IP Local de la Impresora:",
           "access_code": "Código de Acceso:",
-          "usage_hours": "Cantidad de horas de uso (opcional):"
+          "usage_hours": "Cantidad de horas de uso (opcional):",
+          "developer_lan_mode": "Modo LAN de desarrollador habilitado:"
         },
         "sections": {
           "advanced": {
@@ -161,7 +162,8 @@
         "data": {
           "host": "Dirección de IP Local de la Impresora:",
           "access_code": "Código de Acceso:",
-          "usage_hours": "Cantidad de horas de uso (opcional):"
+          "usage_hours": "Cantidad de horas de uso (opcional):",
+          "developer_lan_mode": "Modo LAN de desarrollador habilitado:"
         },
         "sections": {
           "advanced": {
@@ -198,6 +200,15 @@
       },
       "extruder_filament_state": {
         "name": "Estado del filamento extrusor"
+      },
+      "developer_lan_mode": {
+        "name": "Modo LAN de desarrollador"
+      },
+      "mqtt_encryption": {
+        "name": "Firmware de cifrado MQTT"
+      },
+      "active_ams": {
+        "name": "Activo"
       }
     },
     "button": {
@@ -267,6 +278,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "Módulo de herramienta",
+        "state": {
+          "none": "No montado",
+          "laser": "Láser",
+          "cutter": "Cortador"
+        }
+      },
       "wifi_signal": {
         "name": "Señal Wi-Fi"
       },
@@ -429,9 +448,6 @@
       },
       "active_tray": {
         "name": "Bandeja activa"
-      },
-      "active_tray_index": {
-        "name": "Índice de bandeja activa"
       },
       "nozzle_diameter": {
         "name": "Tamaño de boquilla"
@@ -686,6 +702,27 @@
       },
       "humidity": {
         "name": "Humedad"
+      },
+      "left_nozzle_temp": {
+        "name": "Temperatura de la boquilla izquierda"
+      },
+      "left_target_nozzle_temp": {
+        "name": "Temperatura objetivo de la boquilla izquierda"
+      },
+      "right_nozzle_temp": {
+        "name": "Temperatura de la boquilla derecha"
+      },
+      "right_target_nozzle_temp": {
+        "name": "Temperatura objetivo de la boquilla derecha"
+      },
+      "sdcard_status": {
+        "name": "Estado de la tarjeta SD",
+        "state": {
+          "missing": "Desaparecido",
+          "normal": "Normal",
+          "abnormal": "Anormal",
+          "readonly": "Solo lectura"
+        }
       }
     },
     "camera": {
@@ -694,9 +731,6 @@
       }
     },
     "switch": {
-      "manual": {
-        "name": "Modo de actualización manual"
-      },
       "camera": {
         "name": "Habilitar cámara"
       },

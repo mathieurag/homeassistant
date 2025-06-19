@@ -82,7 +82,8 @@
           "serial": "Σειριακός Αριθμός:",
           "host": "Τοπική Διεύθυνση IP του Εκτυπωτή:",
           "access_code": "Κωδικός Πρόσβασης:",
-          "usage_hours": "Ώρες Χρήσης (προαιρετικά):"
+          "usage_hours": "Ώρες Χρήσης (προαιρετικά):",
+          "developer_lan_mode": "Ενεργοποιημένη η λειτουργία Developer LAN:"
         },
         "sections": {
           "advanced": {
@@ -161,7 +162,8 @@
         "data": {
           "host": "Τοπική Διεύθυνση IP του Εκτυπωτή:",
           "access_code": "Κωδικός Πρόσβασης:",
-          "usage_hours": "Ώρες Χρήσης (προαιρετικά):"
+          "usage_hours": "Ώρες Χρήσης (προαιρετικά):",
+          "developer_lan_mode": "Ενεργοποιημένη η λειτουργία Developer LAN:"
         },
         "sections": {
           "advanced": {
@@ -198,6 +200,15 @@
       },
       "extruder_filament_state": {
         "name": "Κράτος νήματος εξωθητήρα"
+      },
+      "developer_lan_mode": {
+        "name": "Λειτουργία προγραμματιστή LAN"
+      },
+      "mqtt_encryption": {
+        "name": "Firmware κρυπτογράφησης MQTT"
+      },
+      "active_ams": {
+        "name": "Ενεργός"
       }
     },
     "button": {
@@ -267,6 +278,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "Μονάδα εργαλείου",
+        "state": {
+          "none": "Μη τοποθετημένο",
+          "laser": "Λέιζερ",
+          "cutter": "Κόφτης"
+        }
+      },
       "wifi_signal": {
         "name": "Σήμα Wi-Fi"
       },
@@ -429,9 +448,6 @@
       },
       "active_tray": {
         "name": "Τρέχον Νήμα"
-      },
-      "active_tray_index": {
-        "name": "Ενεργή θέση AMS"
       },
       "nozzle_diameter": {
         "name": "Μέγεθος ακροφυσίου"
@@ -686,6 +702,27 @@
       },
       "humidity": {
         "name": "Υγρότητα"
+      },
+      "left_nozzle_temp": {
+        "name": "Αριστερά θερμοκρασία ακροφυσίου"
+      },
+      "left_target_nozzle_temp": {
+        "name": "Αριστερά θερμοκρασία στόχου ακροφυσίου"
+      },
+      "right_nozzle_temp": {
+        "name": "Θερμοκρασία δεξιά ακροφύσιο"
+      },
+      "right_target_nozzle_temp": {
+        "name": "Δεξιά θερμοκρασία στόχου ακροφυσίου"
+      },
+      "sdcard_status": {
+        "name": "Κατάσταση κάρτας SD",
+        "state": {
+          "missing": "Απών",
+          "normal": "Κανονικός",
+          "abnormal": "Ανώμαλος",
+          "readonly": "Μόνο διαβάστε"
+        }
       }
     },
     "camera": {
@@ -694,9 +731,6 @@
       }
     },
     "switch": {
-      "manual": {
-        "name": "Χειροκίνητη λειτουργία ανανέωσης"
-      },
       "camera": {
         "name": "Ενεργοποίηση κάμερας"
       },

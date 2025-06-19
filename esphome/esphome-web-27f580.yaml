@@ -1,6 +1,6 @@
 substitutions:
   name: esphome-web-27f580
-  friendly_name: ESP32-2
+  friendly_name: ESP32-POELE
 
 esphome:
   name: ${name}

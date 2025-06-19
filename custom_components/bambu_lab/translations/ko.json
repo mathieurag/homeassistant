@@ -82,7 +82,8 @@
           "serial": "시리얼 번호:",
           "host": "로컬 프린터 IP 주소:",
           "access_code": "접근 코드:",
-          "usage_hours": "현재 사용 시간 (선택 사항):"
+          "usage_hours": "현재 사용 시간 (선택 사항):",
+          "developer_lan_mode": "개발자 LAN 모드 활성화 :"
         },
         "sections": {
           "advanced": {
@@ -161,7 +162,8 @@
         "data": {
           "host": "로컬 프린터 IP 주소:",
           "access_code": "접근 코드:",
-          "usage_hours": "현재 사용 시간 (선택 사항):"
+          "usage_hours": "현재 사용 시간 (선택 사항):",
+          "developer_lan_mode": "개발자 LAN 모드 활성화 :"
         },
         "sections": {
           "advanced": {
@@ -198,6 +200,15 @@
       },
       "extruder_filament_state": {
         "name": "압출기 필라멘트 상태"
+      },
+      "developer_lan_mode": {
+        "name": "개발자 LAN 모드"
+      },
+      "mqtt_encryption": {
+        "name": "MQTT 암호화 펌웨어"
+      },
+      "active_ams": {
+        "name": "활동적인"
       }
     },
     "button": {
@@ -267,6 +278,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "도구 모듈",
+        "state": {
+          "none": "장착되지 않음",
+          "laser": "레이저",
+          "cutter": "커터"
+        }
+      },
       "wifi_signal": {
         "name": "Wi-Fi 신호"
       },
@@ -429,9 +448,6 @@
       },
       "active_tray": {
         "name": "활성 트레이"
-      },
-      "active_tray_index": {
-        "name": "활성 트레이 인덱스"
       },
       "nozzle_diameter": {
         "name": "노즐 직경"
@@ -686,6 +702,27 @@
       },
       "humidity": {
         "name": "습기"
+      },
+      "left_nozzle_temp": {
+        "name": "남은 노즐 온도"
+      },
+      "left_target_nozzle_temp": {
+        "name": "남은 노즐 목표 온도"
+      },
+      "right_nozzle_temp": {
+        "name": "오른쪽 노즐 온도"
+      },
+      "right_target_nozzle_temp": {
+        "name": "오른쪽 노즐 목표 온도"
+      },
+      "sdcard_status": {
+        "name": "SD 카드 상태",
+        "state": {
+          "missing": "없어진",
+          "normal": "정상",
+          "abnormal": "이상",
+          "readonly": "만 읽으십시오"
+        }
       }
     },
     "camera": {
@@ -694,9 +731,6 @@
       }
     },
     "switch": {
-      "manual": {
-        "name": "수동 새로 고침 모드"
-      },
       "camera": {
         "name": "카메라 활성화"
       },

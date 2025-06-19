@@ -82,7 +82,8 @@
           "serial": "Numéro de série",
           "host": "Adresse IP de l’imprimante locale :",
           "access_code": "Code d'accès",
-          "usage_hours": "Heures d'utilisation actuelles (facultatif) :"
+          "usage_hours": "Heures d'utilisation actuelles (facultatif) :",
+          "developer_lan_mode": "Mode LAN développeur activé:"
         },
         "sections": {
           "advanced": {
@@ -161,7 +162,8 @@
         "data": {
           "host": "Adresse IP de l’imprimante locale :",
           "access_code": "Code d'accès",
-          "usage_hours": "Heures d'utilisation actuelles (facultatif) :"
+          "usage_hours": "Heures d'utilisation actuelles (facultatif) :",
+          "developer_lan_mode": "Mode LAN développeur activé:"
         },
         "sections": {
           "advanced": {
@@ -198,6 +200,15 @@
       },
       "extruder_filament_state": {
         "name": "État de filament extrudeur"
+      },
+      "developer_lan_mode": {
+        "name": "Mode LAN développeur"
+      },
+      "mqtt_encryption": {
+        "name": "Firmware de cryptage MQTT"
+      },
+      "active_ams": {
+        "name": "Actif"
       }
     },
     "button": {
@@ -267,6 +278,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "Module d’outil",
+        "state": {
+          "none": "Non monté",
+          "laser": "Laser",
+          "cutter": "Découpeur"
+        }
+      },
       "wifi_signal": {
         "name": "Signal Wi-Fi"
       },
@@ -429,9 +448,6 @@
       },
       "active_tray": {
         "name": "Emplacement actif"
-      },
-      "active_tray_index": {
-        "name": "Emplacement actif (index)"
       },
       "nozzle_diameter": {
         "name": "Taille de la buse"
@@ -686,6 +702,27 @@
       },
       "humidity": {
         "name": "Humidité"
+      },
+      "left_nozzle_temp": {
+        "name": "Température de la buse gauche"
+      },
+      "left_target_nozzle_temp": {
+        "name": "Température cible de la buse gauche"
+      },
+      "right_nozzle_temp": {
+        "name": "Température de la buse droite"
+      },
+      "right_target_nozzle_temp": {
+        "name": "Température cible de la buse droite"
+      },
+      "sdcard_status": {
+        "name": "Statut de carte SD",
+        "state": {
+          "missing": "Manquant",
+          "normal": "Normale",
+          "abnormal": "Anormal",
+          "readonly": "Lire uniquement"
+        }
       }
     },
     "camera": {
@@ -694,9 +731,6 @@
       }
     },
     "switch": {
-      "manual": {
-        "name": "Actualisation manuelle"
-      },
       "camera": {
         "name": "Activer la caméra"
       },

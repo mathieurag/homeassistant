@@ -85,6 +85,30 @@ for ts in hour_starts:
         print(f"    - Surplus Δ : {conso_delta:.3f} kWh")
         print(f"    - Ecojoko Δ : {eco_delta:.3f} kWh")
         print(f"    - Correction à appliquer (horaires) : {delta_kwh:+.3f} kWh")
+
+        # Application de la correction horaire dans la base de données
+        if abs(delta_kwh) >= min_diff_kwh:  # Si la correction est significative
+            cur.execute(
+                "SELECT start_ts, sum FROM statistics "
+                "WHERE metadata_id = ? AND start_ts = ?",
+                (SURPLUS_ID, ts)
+            )
+            row_to_update = cur.fetchone()
+            if row_to_update:
+                old_sum = row_to_update[1]
+                new_sum = round(old_sum + delta_kwh, 3)
+                print(f"🔍 Mise à jour horaire : ts={ts}, old={old_sum}, new={new_sum}")
+                cur.execute(
+                    "UPDATE statistics SET sum = ? WHERE metadata_id = ? AND start_ts = ?",
+                    (new_sum, SURPLUS_ID, ts)
+                )
+                print(f"↪️  SQLite rowcount = {cur.rowcount}")
+                all_updates.append({
+                    "type": "SURPLUS", "level": "horaire",
+                    "start_ts": ts,
+                    "timestamp": datetime.fromtimestamp(ts, tz=timezone.utc).astimezone(LOCAL_TZ).strftime("%Y-%m-%d %H:%M:%S"),
+                    "old": old_sum, "new": new_sum, "delta": delta_kwh
+                })
     else:
         print("    ⚠️ Données horaires manquantes pour cette heure.")
 

@@ -1,11 +1,14 @@
 template:
   - binary_sensor:
-      - name: "Cycle Frigo"
-        device_class: running
-        unique_id: cycle_frigo
-        state: "{{ is_state('input_boolean.frigo', 'on') }}"
-
       - name: DNS Resolution
         device_class: running
         unique_id: dns_resolution
         state: "{{ states('sensor.dns_resolution_time') != '-10' }}"
+
+      - name: "Communication Batterie"
+        unique_id: communication_batterie
+        device_class: problem
+        state: >
+          {% set last = as_timestamp(states.sensor.esphome_web_a92940_marstek_ac_voltage.last_updated) %}
+          {% set now = now().timestamp() %}
+          {{ (now - last) >= 60 }}  # Problème si pas mis à jour depuis 60s

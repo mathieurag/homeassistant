@@ -327,6 +327,14 @@ binary_sensor:
     name: "WiFi Status"
     id: wifi_status
 
+  - platform: template
+    name: "Batterie Injoignable"
+    id: rs485_lost
+    device_class: connectivity
+    lambda: |-
+      return !id(modbus_status).has_state();
+
+
 # Sensoren
 sensor:
   - name: "Marstek Internal State"
@@ -426,6 +434,7 @@ sensor:
       return NAN;
 
   - name: "Marstek AC Voltage"
+    id: marstek_ac_voltage  # 👈 Ajout nécessaire ici
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -434,10 +443,10 @@ sensor:
     unit_of_measurement: "V"
     device_class: voltage
     state_class: measurement
-    accuracy_decimals: 1
+    accuracy_decimals: 2
     filters:
       - multiply: 0.1
-    skip_updates: 60 # 5 minutes
+    skip_updates: 2 # 10 seconds
 
   - name: "Marstek AC Current"
     platform: modbus_controller
@@ -863,7 +872,7 @@ number:
     skip_updates: 6 # 30 seconds
 
 
-###############################################################################
+##############################################################################
 # LED
 ###############################################################################
 globals:
@@ -871,6 +880,11 @@ globals:
     type: bool
     restore_value: no
     initial_value: 'true'
+
+  - id: last_modbus_update
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
 
 light:
   - platform: neopixelbus
@@ -886,34 +900,46 @@ interval:
   - interval: 1s
     then:
       - lambda: |-
+          bool rs485_lost = !id(modbus_status).has_state();
+
+          // 🔴 RS485 perdu → LED rouge
+          if (rs485_lost) {
+            auto call = id(status_led).turn_on();
+            call.set_brightness(0.25);
+            call.set_rgb(1.0, 0.0, 0.0);
+            call.perform();
+            return;
+          }
+
           int state = id(inverter_state).state;
 
-          // Standby (clignotement vert)
+          // 🟢 Standby : clignotement vert
           if (state == 1) {
-            if (id(standby_led_on)) {
+            static bool led_on = true;
+            if (led_on) {
               auto call = id(status_led).turn_on();
               call.set_brightness(0.25);
-              call.set_rgb(0.0, 1.0, 0.0);  // 🟢 Vert
+              call.set_rgb(0.0, 1.0, 0.0);
               call.perform();
             } else {
               id(status_led).turn_off();
             }
-            id(standby_led_on) = !id(standby_led_on);  // toggle
+            led_on = !led_on;
           }
 
-          // Charge (bleu)
+          // 🔵 Charge
           else if (state == 2) {
             auto call = id(status_led).turn_on();
             call.set_brightness(0.25);
-            call.set_rgb(0.0, 0.0, 1.0);  // 🔵 Bleu
+            call.set_rgb(0.0, 0.0, 1.0);
             call.perform();
           }
 
-          // Décharge (orange)
+          // 🟠 Décharge
           else if (state == 3) {
             auto call = id(status_led).turn_on();
             call.set_brightness(0.25);
-            call.set_rgb(1.0, 0.5, 0.0);  // 🟠 Orange
+            call.set_rgb(1.0, 0.5, 0.0);
             call.perform();
           }
 

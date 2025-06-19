@@ -42,10 +42,10 @@ serial:
   adapter: ember
 device_options: {}
 devices:
-  "0xa4c138682a772531":
+  '0xa4c138682a772531':
     friendly_name: Rain Sensor
     icon: device_icons/221b4637010e8943e2d5dd911079b5d8.png
-  "0x70b3d52b6005f633":
+  '0x70b3d52b6005f633':
     friendly_name: Prise Zigbee 1
     measurement_poll_interval: 20
     power_precision: 3
@@ -53,29 +53,35 @@ devices:
     voltage_precision: 3
     energy_precision: 3
     icon: device_icons/08a9016bbc0657cf5f581ae9c19c31a5.png
-  "0x3c6a2cfffed4a7de":
+  '0x3c6a2cfffed4a7de':
     friendly_name: Sonde température OWON
     temperature_precision: 2
     icon: device_icons/873132dd4ffdaedcdafc34cf99dfb2b2.png
-  "0xa4c138d9a41bd98f":
+  '0xa4c138d9a41bd98f':
     friendly_name: Télécommande Zigbee
     icon: device_icons/cb062f1a14f964f90d6df43799d4bbd3.png
     homeassistant: {}
     optimistic: true
-  "0xa4c138da3f8fc34f":
+  '0xa4c138da3f8fc34f':
     friendly_name: Répéteur Zigbee 1
-  "0xa4c138077ed1f7b8":
+  '0xa4c138077ed1f7b8':
     friendly_name: Prise Zigbee 2
     current_precision: 2
     voltage_precision: 2
     power_precision: 2
     energy_precision: 2
-  "0x70b3d52b60103b94":
+  '0x70b3d52b60103b94':
     friendly_name: Prise Zigbee 3
     measurement_poll_interval: 20
     state_action: true
     power_precision: 3
     energy_precision: 3
+  '0xe0798dfffe42767c':
+    friendly_name: LED Strip 1
+  '0x8c65a3fffed80a9b':
+    friendly_name: Disjoncteur Zigbee 1
+  '0x70b3d52b6017f2dd':
+    friendly_name: Prise Zigbee 4
 availability:
   enabled: true
   active:

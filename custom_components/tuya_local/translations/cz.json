@@ -162,6 +162,7 @@
         },
         "climate": {
             "aircon_extra": {
+                "name": "Klimatizace",
                 "state_attributes": {
                     "fan_mode": {
                         "state": {
@@ -676,7 +677,12 @@
                     "starting": "Začíná",
                     "emptying": "Vyprazdňování",
                     "resetting": "Resetování",
-                    "reverse": "Obrácený"
+                    "reverse": "Obrácený",
+                    "full": "Plný",
+                    "empty": "Prázdný",
+                    "missing": "Chybí",
+                    "formatting": "Formátování",
+                    "unformatted": "Neformátováno"
                 }
             },
             "time_remaining": {
@@ -757,6 +763,40 @@
         "text": {
             "scene": {
                 "name": "Scéna"
+            }
+        },
+        "water_heater": {
+            "water_air": {
+                "name": "Ohřívač vody",
+                "state_attributes": {
+                    "operation_mode": {
+                        "state": {
+                            "heat": "Ohřátí",
+                            "cool": "Chlazení",
+                            "auto": "Auto",
+                            "off": "Vypnuto",
+                            "hotwater": "Horká voda",
+                            "hotwater_cool": "Horká voda chlazení",
+                            "hotwater_heat": "Horká voda ohřátí",
+                            "hotwater_auto": "Horká voda auto"
+                        }
+                    }
+                }
+            },
+            "kettle": {
+                "name": "Konvice",
+                "state_attributes": {
+                    "operation_mode": {
+                        "state": {
+                            "off": "Vypnuto",
+                            "heat": "Ohřátí",
+                            "boil": "Vaření",
+                            "quick_heat": "Rychlé ohřátí",
+                            "quick_boil": "Rychlé vaření",
+                            "keep_warm": "Udržování tepla"
+                        }
+                    }
+                }
             }
         }
     }

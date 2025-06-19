@@ -82,7 +82,8 @@
           "serial": "序号：",
           "host": "本地打印机 IP 地址：",
           "access_code": "访问码",
-          "usage_hours": "当前使用时间（可选）："
+          "usage_hours": "当前使用时间（可选）：",
+          "developer_lan_mode": "启用了开发人员LAN模式："
         },
         "sections": {
           "advanced": {
@@ -161,7 +162,8 @@
         "data": {
           "host": "本地打印机 IP 地址：",
           "access_code": "访问码",
-          "usage_hours": "当前使用时间（可选）："
+          "usage_hours": "当前使用时间（可选）：",
+          "developer_lan_mode": "启用了开发人员LAN模式："
         },
         "sections": {
           "advanced": {
@@ -198,6 +200,15 @@
       },
       "extruder_filament_state": {
         "name": "挤出机耗材状态"
+      },
+      "developer_lan_mode": {
+        "name": "开发人员LAN模式"
+      },
+      "mqtt_encryption": {
+        "name": "MQTT加密固件"
+      },
+      "active_ams": {
+        "name": "积极的"
       }
     },
     "button": {
@@ -267,6 +278,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "工具模块",
+        "state": {
+          "none": "未安装",
+          "laser": "激光器",
+          "cutter": "切割器"
+        }
+      },
       "wifi_signal": {
         "name": "Wi-Fi 信号"
       },
@@ -429,9 +448,6 @@
       },
       "active_tray": {
         "name": "激活料盘"
-      },
-      "active_tray_index": {
-        "name": "激活料盘索引"
       },
       "nozzle_diameter": {
         "name": "喷嘴直径"
@@ -686,6 +702,27 @@
       },
       "humidity": {
         "name": "湿度"
+      },
+      "left_nozzle_temp": {
+        "name": "左喷嘴温度"
+      },
+      "left_target_nozzle_temp": {
+        "name": "左喷嘴目标温度"
+      },
+      "right_nozzle_temp": {
+        "name": "右喷嘴温度"
+      },
+      "right_target_nozzle_temp": {
+        "name": "右喷嘴目标温度"
+      },
+      "sdcard_status": {
+        "name": "SD卡状态",
+        "state": {
+          "missing": "丢失的",
+          "normal": "普通的",
+          "abnormal": "异常",
+          "readonly": "只读"
+        }
       }
     },
     "camera": {
@@ -694,9 +731,6 @@
       }
     },
     "switch": {
-      "manual": {
-        "name": "手动刷新模式"
-      },
       "camera": {
         "name": "启用相机"
       },
