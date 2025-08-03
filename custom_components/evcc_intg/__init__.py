@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any, Final
 
+from aiohttp import ClientConnectorError
 from packaging.version import Version
 
 from custom_components.evcc_intg.pyevcc_ha import EvccApiBridge, TRANSLATIONS
@@ -21,7 +22,7 @@ from custom_components.evcc_intg.pyevcc_ha.const import (
     ADDITIONAL_ENDPOINTS_DATA_TARIFF,
 )
 from custom_components.evcc_intg.pyevcc_ha.keys import Tag, EP_TYPE, camel_to_snake
-from homeassistant.config_entries import ConfigEntry, ConfigEntryState
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_SCAN_INTERVAL, EVENT_HOMEASSISTANT_STARTED
 from homeassistant.core import HomeAssistant, Event, SupportsResponse, CoreState
 from homeassistant.exceptions import ConfigEntryNotReady
@@ -42,7 +43,8 @@ from .const import (
     SERVICE_SET_LOADPOINT_PLAN,
     SERVICE_SET_VEHICLE_PLAN,
     CONF_INCLUDE_EVCC,
-    CONF_USE_WS
+    CONF_USE_WS,
+    CONFIG_VERSION, CONFIG_MINOR_VERSION
 )
 from .service import EvccService
 
@@ -54,6 +56,20 @@ WEBSOCKET_WATCHDOG_INTERVAL: Final = timedelta(seconds=60)
 CONFIG_SCHEMA = config_val.removed(DOMAIN, raise_if_present=False)
 
 DEVICE_REG_CLEANUP_RUNNING = False
+
+
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
+    if config_entry.version < CONFIG_VERSION:
+        if config_entry.data is not None and len(config_entry.data) > 0:
+            _LOGGER.debug(f"Migrating configuration from version {config_entry.version}.{config_entry.minor_version}")
+            if config_entry.options is not None and len(config_entry.options):
+                new_data = {**config_entry.data, **config_entry.options}
+            else:
+                new_data = config_entry.data
+            hass.config_entries.async_update_entry(config_entry, data=new_data, options={}, version=CONFIG_VERSION, minor_version=CONFIG_MINOR_VERSION)
+            _LOGGER.debug(f"Migration to configuration version {config_entry.version}.{config_entry.minor_version} successful")
+    return True
+
 
 async def async_setup(hass: HomeAssistant, config: dict):  # pylint: disable=unused-argument
     """Set up this integration using YAML is not supported."""
@@ -89,9 +105,6 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     hass.data[DOMAIN][config_entry.entry_id] = coordinator
     await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
 
-    if config_entry.state != ConfigEntryState.LOADED:
-        config_entry.add_update_listener(async_reload_entry)
-
     # initialize our service...
     evcc_services = EvccService(hass, config_entry, coordinator)
     hass.services.async_register(DOMAIN, SERVICE_SET_LOADPOINT_PLAN, evcc_services.set_loadpoint_plan,
@@ -106,11 +119,13 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     # yes - hurray! we can now cleanup the device registry...
     asyncio.create_task(check_device_registry(hass))
 
+    config_entry.async_on_unload(config_entry.add_update_listener(entry_update_listener))
     # ok we are done...
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    _LOGGER.debug(f"async_unload_entry() called for entry: {config_entry.entry_id}")
     unload_ok = await hass.config_entries.async_unload_platforms(config_entry, PLATFORMS)
 
     if unload_ok:
@@ -126,11 +141,10 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> 
     return unload_ok
 
 
-async def async_reload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
-    """Reload config entry."""
-    if await async_unload_entry(hass, config_entry):
-        await asyncio.sleep(2)
-        await async_setup_entry(hass, config_entry)
+async def entry_update_listener(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
+    """Update the configuration of the host entity."""
+    _LOGGER.debug(f"entry_update_listener() called for entry: {config_entry.entry_id}")
+    await hass.config_entries.async_reload(config_entry.entry_id)
 
 
 @staticmethod
@@ -163,24 +177,23 @@ async def check_device_registry(hass: HomeAssistant):
 
         DEVICE_REG_CLEANUP_RUNNING = completed
 
+
 class EvccDataUpdateCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, config_entry):
-        _LOGGER.debug(f"starting evcc_intg for: options: {config_entry.options}\n data:{config_entry.data}")
+        _LOGGER.debug(f"starting evcc_intg for: data:{config_entry.data}")
         lang = hass.config.language.lower()
         self.name = config_entry.title
-        self.use_ws = config_entry.options.get(CONF_USE_WS, config_entry.data.get(CONF_USE_WS, True))
+        self.use_ws = config_entry.data.get(CONF_USE_WS, True)
 
-        self.bridge = EvccApiBridge(host=config_entry.options.get(CONF_HOST, config_entry.data.get(CONF_HOST)),
+        self.bridge = EvccApiBridge(host=config_entry.data.get(CONF_HOST),
                                     web_session=async_get_clientsession(hass),
                                     coordinator=self,
                                     lang=lang)
 
         global SCAN_INTERVAL
-        SCAN_INTERVAL = timedelta(seconds=config_entry.options.get(CONF_SCAN_INTERVAL,
-                                                                   config_entry.data.get(CONF_SCAN_INTERVAL, 5)))
+        SCAN_INTERVAL = timedelta(seconds=config_entry.data.get(CONF_SCAN_INTERVAL, 5))
 
-        self.include_evcc_prefix = config_entry.options.get(CONF_INCLUDE_EVCC,
-                                                            config_entry.data.get(CONF_INCLUDE_EVCC, False))
+        self.include_evcc_prefix = config_entry.data.get(CONF_INCLUDE_EVCC, False)
 
         # we want a some sort of unique identifier that can be selected by the user
         # during the initial configuration phase
@@ -278,43 +291,60 @@ class EvccDataUpdateCoordinator(DataUpdateCoordinator):
             "sw_version": self._version
         }
 
-        for a_veh_name in initdata[JSONKEY_VEHICLES]:
-            a_veh = initdata[JSONKEY_VEHICLES][a_veh_name]
-            if "capacity" in a_veh:
-                self._vehicle[a_veh_name] = {
-                    "name": a_veh["title"],
-                    "capacity": a_veh["capacity"]
-                }
-            else:
-                self._vehicle[a_veh_name] = {
-                    "name": a_veh["title"],
-                    "capacity": None
-                }
+        if JSONKEY_VEHICLES in initdata:
+            for a_veh_name in initdata[JSONKEY_VEHICLES]:
+                a_veh = initdata[JSONKEY_VEHICLES][a_veh_name]
+                if "capacity" in a_veh:
+                    self._vehicle[a_veh_name] = {
+                        "name": a_veh["title"],
+                        "capacity": a_veh["capacity"]
+                    }
+                else:
+                    self._vehicle[a_veh_name] = {
+                        "name": a_veh["title"],
+                        "capacity": None
+                    }
+        else:
+            _LOGGER.warning(f"NO vehicles found [{JSONKEY_VEHICLES}] in the evcc data: {initdata}")
 
         api_index = 1
-        for a_loadpoint in initdata[JSONKEY_LOADPOINTS]:
-            phase_switching_supported = False
-            if "chargerPhases1p3p" in a_loadpoint:
-                phase_switching_supported = a_loadpoint["chargerPhases1p3p"]
-            elif "chargerPhaseSwitching" in a_loadpoint:
-                phase_switching_supported = a_loadpoint["chargerPhaseSwitching"]
+        if JSONKEY_LOADPOINTS in initdata:
+            for a_loadpoint in initdata[JSONKEY_LOADPOINTS]:
+                single_phase_only = False
+                if "chargerSinglePhase" in a_loadpoint:
+                    single_phase_only = a_loadpoint["chargerSinglePhase"]
 
-            # we need to check if the charger is a heater or not...
-            # effective_limit_soc, vehicle_soc, effective_plan_soc and others
-            # currently only used in sensor.py
-            is_heating = False
-            if "chargerFeatureHeating" in a_loadpoint:
-                is_heating = a_loadpoint["chargerFeatureHeating"]
+                phase_switching_supported = False
+                if "chargerPhases1p3p" in a_loadpoint:
+                    phase_switching_supported = a_loadpoint["chargerPhases1p3p"]
+                elif "chargerPhaseSwitching" in a_loadpoint:
+                    phase_switching_supported = a_loadpoint["chargerPhaseSwitching"]
 
-            self._loadpoint[f"{api_index}"] = {
-                "name": a_loadpoint["title"],
-                "id": slugify(a_loadpoint["title"]),
-                "has_phase_auto_option": phase_switching_supported,
-                "is_heating": is_heating,
-                "vehicle_key": a_loadpoint["vehicleName"],
-                "obj": a_loadpoint
-            }
-            api_index += 1
+                # we need to check if the charger is a heater or not...
+                # effective_limit_soc, vehicle_soc, effective_plan_soc and others
+                # currently only used in sensor.py
+                is_heating = False
+                if "chargerFeatureHeating" in a_loadpoint:
+                    is_heating = a_loadpoint["chargerFeatureHeating"]
+
+                is_integrated = False
+                if "chargerFeatureIntegratedDevice" in a_loadpoint:
+                    is_integrated = a_loadpoint["chargerFeatureIntegratedDevice"]
+
+                self._loadpoint[f"{api_index}"] = {
+                    "name": a_loadpoint["title"],
+                    "id": slugify(a_loadpoint["title"]),
+                    "has_phase_auto_option": phase_switching_supported,
+                    "only_single_phase": single_phase_only,
+                    "is_heating": is_heating,
+                    "is_integrated": is_integrated,
+                    "vehicle_key": a_loadpoint["vehicleName"],
+                    "obj": a_loadpoint
+                }
+
+                api_index += 1
+        else:
+            _LOGGER.warning(f"NO loadpoints found [{JSONKEY_LOADPOINTS}] in the evcc data: {initdata}")
 
         if "smartCostType" in initdata:
             self._cost_type = initdata["smartCostType"]
@@ -409,8 +439,11 @@ class EvccDataUpdateCoordinator(DataUpdateCoordinator):
         except UpdateFailed as exception:
             _LOGGER.warning(f"UpdateFailed: {exception}")
             raise UpdateFailed() from exception
+        except ClientConnectorError as exception:
+            _LOGGER.warning(f"UpdateFailed cause of ClientConnectorError: {exception}")
+            raise UpdateFailed() from exception
         except Exception as other:
-            _LOGGER.warning(f"UpdateFailed unexpected: {other}")
+            _LOGGER.warning(f"UpdateFailed unexpected: {type(other)} - {other}")
             raise UpdateFailed() from other
 
     def read_tag(self, tag: Tag, idx: int = None):
@@ -675,8 +708,7 @@ class EvccBaseEntity(Entity):
 
         if hasattr(description, "native_unit_of_measurement") and description.native_unit_of_measurement is not None:
             if "@@@" in description.native_unit_of_measurement:
-                description.native_unit_of_measurement = description.native_unit_of_measurement.replace("@@@",
-                                                                                                        coordinator.currency)
+                description.native_unit_of_measurement = description.native_unit_of_measurement.replace("@@@", coordinator.currency)
 
         self.entity_description = description
         self.coordinator = coordinator

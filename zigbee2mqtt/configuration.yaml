@@ -80,8 +80,17 @@ devices:
     friendly_name: LED Strip 1
   '0x8c65a3fffed80a9b':
     friendly_name: Disjoncteur Zigbee 1
-  '0x70b3d52b6017f2dd':
-    friendly_name: Prise Zigbee 4
+    temperature_precision: ''
+    power_precision: ''
+    current_precision: ''
+    voltage_precision: ''
+    energy_precision: ''
+  '0xa4c13801c27dffff':
+    friendly_name: Prise Zigbee 5
+  '0x6c5cb1fffe1ce3fe':
+    friendly_name: Disjoncteur Zigbee 2
+  '0x94b216fffee65577':
+    friendly_name: Disjoncteur Zigbee 3
 availability:
   enabled: true
   active:

@@ -218,6 +218,7 @@
                 }
             },
             "swing_as_powerlevel": {
+                "name": "Нагревател",
                 "state_attributes": {
                     "swing_mode": {
                         "name": "Ниво на отопление",
@@ -320,7 +321,7 @@
             },
             "dehumidifier": {
                 "name": "Обезвлажнител",
-                "state_attributes": {
+                "state_attributes": {
                     "preset_mode": {
                         "state": {
                             "purify": "Пречистете",
@@ -419,12 +420,45 @@
                     "gbp": "GBP"
                 }
             },
+            "heat_pump_mode": {
+                "name": "Режим на топлинна помпа",
+                "state": {
+                    "heat": "Нагряване",
+                    "cool": "Охлаждане",
+                    "auto": "Автоматично",
+                    "floor_heat": "Подово отопление",
+                    "off": "Изключено",
+                    "hotwater": "Гореща вода",
+                    "hotwater_cool": "Гореща вода и охлаждане",
+                    "hotwater_heat": "Гореща вода и отопление",
+                    "hotwater_auto": "Гореща вода и автоматично",
+                    "hotwater_floor_heat": "Гореща вода и подово отопление"
+                }
+            },
             "initial_state": {
                 "name": "Начално състояние",
                 "state": {
                     "off": "Изключено",
                     "on": "Включено",
                     "memory": "Памет"
+                }
+            },
+            "kettle_mode": {
+                "name": "Режим на чайник",
+                "state": {
+                    "off": "Изключено",
+                    "heat": "Нагряване",
+                    "boil": "Кипене",
+                    "quick_heat": "Бързо загряване",
+                    "quick_boil": "Бързо кипене",
+                    "keep_warm": "Поддържайте топло",
+                    "custom": "Потребителски",
+                    "dechlorinate": "Дехлориране",
+                    "black_tea": "Черно чай",
+                    "green_tea": "Зелен чай",
+                    "coffee": "Кафе",
+                    "honey_water": "Меден вода",
+                    "infant_formula": "Бебешка формула"
                 }
             },
             "language": {
@@ -443,6 +477,15 @@
                     "russian": "Русский",
                     "spanish": "Español",
                     "turkish": "Türkçe"
+                }
+            },
+            "light_mode": {
+                "name": "Режим на светлина",
+                "state": {
+                    "off": "Изключено",
+                    "on": "Включено",
+                    "state": "Състояние",
+                    "locator": "Локатор"
                 }
             },
             "mopping": {
@@ -766,38 +809,20 @@
                 "name": "Сцена"
             }
         },
+        "time": {
+            "timer": {
+                "name": "Таймер"
+            },
+            "timer_x": {
+                "name": "Таймер {x}"
+            }
+        },
         "water_heater": {
             "water_air": {
-                "name": "Нагревател на вода",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "heat": "Нагряване",
-                            "cool": "Охлаждане",
-                            "auto": "Автоматично",
-                            "off": "Изключено",
-                            "hotwater": "Гореща вода",
-                            "hotwater_cool": "Гореща вода и охлаждане",
-                            "hotwater_heat": "Гореща вода и отопление",
-                            "hotwater_auto": "Гореща вода и автоматично"
-                        }
-                    }
-                }
+                "name": "Нагревател на вода"
             },
             "kettle": {
-                "name": "Кана",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "off": "Изключено",
-                            "heat": "Нагряване",
-                            "boil": "Кипене",
-                            "quick_heat": "Бързо загряване",
-                            "quick_boil": "Бързо кипене",
-                            "keep_warm": "Поддържайте топло"
-                        }
-                    }
-                }
+                "name": "Кана"
             }
         }
     }

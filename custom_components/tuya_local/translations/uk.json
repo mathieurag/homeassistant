@@ -220,6 +220,7 @@
                 }
             },
             "swing_as_powerlevel": {
+                "name": "Обігрівач",
                 "state_attributes": {
                     "swing_mode": {
                         "name": "Рівень нагріву",
@@ -422,12 +423,45 @@
                     "gbp": "GBP"
                 }
             },
+            "heat_pump_mode": {
+                "name": "Режим теплового насоса",
+                "state": {
+                    "heat": "Нагрівання",
+                    "cool": "Охолодження",
+                    "auto": "Авто",
+                    "floor_heat": "Тепла підлога",
+                    "off": "Вимк",
+                    "hotwater": "Гаряча вода",
+                    "hotwater_cool": "Гаряча вода та охолодження",
+                    "hotwater_heat": "Гаряча вода та нагрівання",
+                    "hotwater_auto": "Гаряча вода та авто",
+                    "hotwater_floor_heat": "Гаряча вода та тепла підлога"
+                }
+            },
             "initial_state": {
                 "name": "Початковий стан",
                 "state": {
                     "off": "Вимк",
                     "on": "Увімк",
                     "memory": "Пам'ять"
+                }
+            },
+            "kettle_mode": {
+                "name": "Режим чайника",
+                "state": {
+                    "off": "Вимк",
+                    "heat": "Нагрівання",
+                    "boil": "Кип'ятіння",
+                    "quick_heat": "Швидке нагрівання",
+                    "quick_boil": "Швидке кип'ятіння",
+                    "keep_warm": "Підтримувати тепло",
+                    "custom": "Користувацький",
+                    "dechlorinate": "Дехлорування",
+                    "black_tea": "Чорний чай",
+                    "green_tea": "Зелений чай",
+                    "coffee": "Кава",
+                    "honey_water": "Медова вода",
+                    "infant_formula": "Дитяча суміш"
                 }
             },
             "language": {
@@ -446,6 +480,15 @@
                     "russian": "Русский",
                     "spanish": "Español",
                     "turkish": "Türkçe"
+                }
+            },
+            "light_mode": {
+                "name": "Режим світла",
+                "state": {
+                    "off": "Вимк",
+                    "on": "Увімк",
+                    "state": "Стан",
+                    "locator": "Локатор"
                 }
             },
             "mopping": {
@@ -768,38 +811,20 @@
                 "name": "Сцена"
             }
         },
+        "time": {
+            "timer": {
+                "name": "Таймер"
+            },
+            "timer_x": {
+                "name": "Таймер {x}"
+            }
+        },
         "water_heater": {
             "water_air": {
-                "name": "Водонагрівач",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "heat": "Нагрівання",
-                            "cool": "Охолодження",
-                            "auto": "Авто",
-                            "off": "Вимк",
-                            "hotwater": "Гаряча вода",
-                            "hotwater_cool": "Гаряча вода та охолодження",
-                            "hotwater_heat": "Гаряча вода та нагрівання",
-                            "hotwater_auto": "Гаряча вода та авто"
-                        }
-                    }
-                }
+                "name": "Водонагрівач"
             },
             "kettle": {
-                "name": "Чайник",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "off": "Вимк",
-                            "heat": "Нагрівання",
-                            "boil": "Кип'ятіння",
-                            "quick_heat": "Швидке нагрівання",
-                            "quick_boil": "Швидке кип'ятіння",
-                            "keep_warm": "Підтримувати тепло"
-                        }
-                    }
-                }
+                "name": "Чайник"
             }
         }
     }

@@ -218,6 +218,7 @@
                 }
             },
             "swing_as_powerlevel": {
+                "name": "Escalfador",
                 "state_attributes": {
                     "swing_mode": {
                         "name": "Nivell de calefacció",
@@ -554,12 +555,45 @@
                     "gbp": "GBP"
                 }
             },
+            "heat_pump_mode": {
+                "name": "Mode de bomba de calor",
+                "state": {
+                    "heat": "Escalfament",
+                    "cool": "Refredament",
+                    "auto": "Automàtic",
+                    "floor_heat": "Escalfament de terra",
+                    "off": "Apagat",
+                    "hotwater": "Aigua calenta",
+                    "hotwater_cool": "Aigua calenta i refredament",
+                    "hotwater_heat": "Aigua calenta i escalfament",
+                    "hotwater_auto": "Aigua calenta i automàtic",
+                    "hotwater_floor_heat": "Aigua calenta i escalfament de terra"
+                }
+            },
             "initial_state": {
                 "name": "Estat inicial",
                 "state": {
                     "off": "Desactivat",
                     "on": "Activat",
                     "memory": "Memòria"
+                }
+            },
+            "kettle_mode": {
+                "name": "Mode de bullidor",
+                "state": {
+                    "off": "Apagat",
+                    "heat": "Escalfament",
+                    "boil": "Ebullició",
+                    "quick_heat": "Calor ràpida",
+                    "quick_boil": "Ebullició ràpida",
+                    "keep_warm": "Conserva l'escalfor",
+                    "custom": "Personalitzat",
+                    "dechlorinate": "Descloració",
+                    "black_tea": "Te negre",
+                    "green_tea": "Te verd",
+                    "coffee": "Cafè",
+                    "honey_water": "Aigua amb mel",
+                    "infant_formula": "Fórmula infantil"
                 }
             },
             "language": {
@@ -578,6 +612,15 @@
                     "japanese": "日本語",
                     "korean": "한국어",
                     "russian": "Русский"
+                }
+            },
+            "light_mode": {
+                "name": "Mode de llum",
+                "state": {
+                    "off": "Apagat",
+                    "on": "Activat",
+                    "state": "Estat",
+                    "locator": "Localitzador"
                 }
             },
             "mopping": {
@@ -765,38 +808,20 @@
                 "name": "Escena"
             }
         },
+        "time": {
+            "timer": {
+                "name": "Temporitzador"
+            },
+            "timer_x": {
+                "name": "Temporitzador {x}"
+            }
+        },
         "water_heater": {
             "water_air": {
-                "name": "Escalfador d'aigua",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "heat": "Escalfament",
-                            "cool": "Refredament",
-                            "auto": "Automàtic",
-                            "off": "Apagat",
-                            "hotwater": "Aigua calenta",
-                            "hotwater_cool": "Aigua calenta i refredament",
-                            "hotwater_heat": "Aigua calenta i escalfament",
-                            "hotwater_auto": "Aigua calenta i automàtic"
-                        }
-                    }
-                }
+                "name": "Escalfador d'aigua"
             },
             "kettle": {
-                "name": "Bullidor d'aigua",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "off": "Apagat",
-                            "heat": "Escalfament",
-                            "boil": "Ebullició",
-                            "quick_heat": "Calor ràpida",
-                            "quick_boil": "Ebullició ràpida",
-                            "keep_warm": "Conserva l'escalfor"
-                        }
-                    }
-                }
+                "name": "Bullidor d'aigua"
             }
         }
     }

@@ -218,6 +218,7 @@
                 }
             },
             "swing_as_powerlevel": {
+                "name": "Chauffage",
                 "state_attributes": {
                     "swing_mode": {
                         "name": "Niveau de chauffage",
@@ -419,12 +420,45 @@
                     "gbp": "GBP"
                 }
             },
+            "heat_pump_mode": {
+                "name": "Mode de pompe à chaleur",
+                "state": {
+                    "heat": "Chauffage",
+                    "cool": "Refroidissement",
+                    "auto": "Auto",
+                    "floor_heat": "Chauffage de sol",
+                    "off": "Éteint",
+                    "hotwater": "Eau chaude",
+                    "hotwater_cool": "Eau chaude et refroidissement",
+                    "hotwater_heat": "Eau chaude et chauffage",
+                    "hotwater_auto": "Eau chaude et auto",
+                    "hotwater_floor_heat": "Eau chaude et chauffage de sol"
+                }
+            },
             "initial_state": {
                 "name": "État initial",
                 "state": {
                     "off": "Désactivé",
                     "on": "Activé",
                     "memory": "Mémoire"
+                }
+            },
+            "kettle_mode": {
+                "name": "Mode Bouilloire",
+                "state": {
+                    "off": "Éteint",
+                    "heat": "Chauffage",
+                    "boil": "Ébullition",
+                    "quick_heat": "Chauffage rapide",
+                    "quick_boil": "Ébullition rapide",
+                    "keep_warm": "Garder au chaud",
+                    "custom": "Personnalisé",
+                    "dechlorinate": "Déschlorination",
+                    "black_tea": "Thé noir",
+                    "green_tea": "Thé vert",
+                    "coffee": "Café",
+                    "honey_water": "Eau au miel",
+                    "infant_formula": "Lait infantile"
                 }
             },
             "language": {
@@ -443,6 +477,15 @@
                     "russian": "Русский",
                     "spanish": "Español",
                     "turkish": "Türkçe"
+                }
+            },
+            "light_mode": {
+                "name": "Mode d'éclairage",
+                "state": {
+                    "off": "Éteint",
+                    "on": "Allumé",
+                    "state": "État",
+                    "locator": "Localisateur"
                 }
             },
             "mopping": {
@@ -765,38 +808,20 @@
                 "name": "Scène"
             }
         },
+        "time": {
+            "timer": {
+                "name": "Minuteur"
+            },
+            "timer_x": {
+                "name": "Minuteur {x}"
+            }
+        },
         "water_heater": {
             "water_air": {
-                "name": "Chauffe-eau",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "heat": "Chauffage",
-                            "cool": "Refroidissement",
-                            "auto": "Auto",
-                            "off": "Éteint",
-                            "hotwater": "Eau chaude",
-                            "hotwater_cool": "Eau chaude et refroidissement",
-                            "hotwater_heat": "Eau chaude et chauffage",
-                            "hotwater_auto": "Eau chaude et auto"
-                        }
-                    }
-                }
+                "name": "Chauffe-eau"
             },
             "kettle": {
-                "name": "Bouilloire",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "off": "Éteint",
-                            "heat": "Chauffage",
-                            "boil": "Ébullition",
-                            "quick_heat": "Chauffage rapide",
-                            "quick_boil": "Ébullition rapide",
-                            "keep_warm": "Garder au chaud"
-                        }
-                    }
-                }
+                "name": "Bouilloire"
             }
         }
     }

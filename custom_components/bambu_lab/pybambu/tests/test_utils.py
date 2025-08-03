@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 import json
 import os
+import asyncio
 from typing import Dict, Any, Callable, Optional
 
 from ..const import (
@@ -29,11 +30,15 @@ class MockMQTTClient:
         self._username = None
         self._password = None
         self._mid = 1
+        self._test_payload = {}
+        self._mock = mock
         self.load_mock_payload(mock)
-
+    
     def load_mock_payload(self, mock: str):
+        """Load test payload asynchronously."""
+        file_path = os.path.join(os.path.dirname(__file__), f"{mock}.json")
         LOGGER.debug(f"Loading test payload from {mock}.json")
-        with open(os.path.join(os.path.dirname(__file__), f"{mock}.json"), 'r') as f:
+        with open(file_path, 'r') as f:
             self._test_payload = json.load(f)
                 
     def connect(self, host: str, port: int = 1883, keepalive: int = 60) -> None:

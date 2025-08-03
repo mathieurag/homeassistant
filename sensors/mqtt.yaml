@@ -99,6 +99,30 @@ mqtt:
         unit_of_measurement: "W" # ← mets "W", "lux", etc. selon ton capteur
         value_template: "{{ value | int }}"
 
+      - name: "Consommation Mois"
+        unique_id: mqtt_consommation_mois
+        state_topic: "homeassistant/consommation/mois"
+        value_template: "{{ now().timestamp() | int }}"
+        json_attributes_topic: "homeassistant/consommation/mois"
+
+      - name: "Consommation Jour"
+        unique_id: mqtt_consommation_jour
+        state_topic: "homeassistant/consommation/jour"
+        value_template: "{{ now().timestamp() | int }}"
+        json_attributes_topic: "homeassistant/consommation/jour"
+
+      - name: "Consommation Semaine"
+        unique_id: mqtt_consommation_semaine
+        state_topic: "homeassistant/consommation/semaine"
+        value_template: "{{ now().timestamp() | int }}"
+        json_attributes_topic: "homeassistant/consommation/semaine"
+
+      - name: "Consommation Année"
+        unique_id: mqtt_consommation_annee
+        state_topic: "homeassistant/consommation/annee"
+        value_template: "{{ now().timestamp() | int }}"
+        json_attributes_topic: "homeassistant/consommation/annee"
+
   - switch:
       - name: "Shelly Pro Em Switch (Mqtt)"
         unique_id: shelly_pro_em_switch

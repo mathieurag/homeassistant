@@ -72,8 +72,9 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
             name=DOMAIN
         )
 
-        self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self._async_shutdown)
-        self.hass.bus.async_listen(SERVICE_CALL_EVENT, self._handle_service_call_event)
+        # Store event listener removal callbacks
+        self._ha_stop_listener = self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self._async_shutdown)
+        self._service_call_listener = self.hass.bus.async_listen(SERVICE_CALL_EVENT, self._handle_service_call_event)
 
     @callback
     def _async_shutdown(self, event: Event) -> None:
@@ -158,6 +159,12 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
     def shutdown(self) -> None:
         """ Halt the MQTT listener thread """
         self._shutdown = True
+        
+        # Remove event listeners
+        self._ha_stop_listener()
+        self._service_call_listener()
+        
+        # Disconnect client - this will handle its own thread cleanup
         self.client.disconnect()
 
     async def _publish(self, msg):
@@ -204,7 +211,7 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
 
         return device_entry  # Returns a DeviceEntry object or None
 
-    def _handle_service_call_event(self, event: Event):
+    def _handle_service_call_event(self, event: Event) -> Any:
         data = event.data
 
         if not self._is_service_call_for_me(data):
@@ -276,18 +283,20 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         command['print']['param'] = gcode
         self.client.publish(command)
 
-    def _service_call_extrude_retract(self, data: dict):
+    def _service_call_extrude_retract(self, data: dict) -> dict:
         move = data.get('type').upper()
         force = data.get('force')
 
         if move not in ['EXTRUDE', 'RETRACT']:
             LOGGER.error(f"Invalid extrusion move '{move}'")
-            return False
+            return { "Success": False,
+                     "Error": "Invalid type specified: '{move}'." }
 
         nozzle_temp = self.get_model().temperature.nozzle_temp
         if force is not True and nozzle_temp < 170:
             LOGGER.error(f"Nozzle temperature too low to perform extrusion: {nozzle_temp}ºC")
-            return False
+            return { "Success": False,
+                     "Error": f"Nozzle temperature too low to perform extrusion: {nozzle_temp}ºC" }
 
         command = SEND_GCODE_TEMPLATE
         gcode = EXTRUDER_GCODE
@@ -297,6 +306,8 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
 
         command['print']['param'] = gcode
         self.client.publish(command)
+
+        return { "Success": True }
 
     def _get_ams_and_tray_index_from_entity_entry(self, ams_device, entity_entry):
         match = re.search(r"tray_([1-4])$", entity_entry.unique_id)
@@ -374,6 +385,15 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
             LOGGER.error(f"An AMS tray or external spool is required")
             return False
         
+        tray_color = data.get('tray_color', '')
+        # Allow them to include the preceding # in the provided color string.
+        tray_color = tray_color.replace('#', '')
+        if len(tray_color) == 6:
+            # If the provided string is RRGGBB, we need to add the AA value to make it an opaque RRGGBBAA
+            tray_color = f"{tray_color}FF"
+        # String must be upper case
+        tray_color = tray_color.upper()
+
         command = AMS_FILAMENT_SETTING_TEMPLATE
         command['print']['ams_id'] = ams_index
         command['print']['tray_info_idx'] = data.get('tray_info_idx', '')
@@ -685,13 +705,13 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
             sw_version=self.get_model().ams.data[index].sw_version
         )
 
-    def get_virtual_tray_device(self):
+    def get_virtual_tray_device(self, index: int):
         printer_serial = self.config_entry.data["serial"]
         device_type = self.config_entry.data["device_type"]
-        device_name=f"{device_type}_{printer_serial}_ExternalSpool"
+        device_name=f"{device_type}_{printer_serial}_ExternalSpool{'2' if index==1 else ''}"
 
         return DeviceInfo(
-            identifiers={(DOMAIN, f"{printer_serial}_ExternalSpool")},
+            identifiers={(DOMAIN, f"{printer_serial}_ExternalSpool{'2' if index==1 else ''}")},
             via_device=(DOMAIN, printer_serial),
             name=device_name,
             model="External Spool",

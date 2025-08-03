@@ -218,6 +218,7 @@
                 }
             },
             "swing_as_powerlevel": {
+                "name": "Обогреватель",
                 "state_attributes": {
                     "swing_mode": {
                         "name": "Уровень нагрева",
@@ -419,12 +420,45 @@
                     "gbp": "GBP"
                 }
             },
+            "heat_pump_mode": {
+                "name": "Режим теплового насоса",
+                "state": {
+                    "heat": "Нагрев",
+                    "cool": "Охлаждение",
+                    "auto": "Авто",
+                    "floor_heat": "Теплый пол",
+                    "off": "Выкл",
+                    "hotwater": "Горячая вода",
+                    "hotwater_cool": "Горячая вода и охлаждение",
+                    "hotwater_heat": "Горячая вода и нагрев",
+                    "hotwater_auto": "Горячая вода и авто",
+                    "hotwater_floor_heat": "Горячая вода и теплый пол"
+                }
+            },
             "initial_state": {
                 "name": "Начальное состояние",
                 "state": {
                     "off": "Выкл",
                     "on": "Вкл",
                     "memory": "Память"
+                }
+            },
+            "kettle_mode": {
+                "name": "Режим чайника",
+                "state": {
+                    "off": "Выкл",
+                    "heat": "Нагрев",
+                    "boil": "Кипячение",
+                    "quick_heat": "Быстрый нагрев",
+                    "quick_boil": "Быстрое кипячение",
+                    "keep_warm": "Поддержание тепла",
+                    "custom": "Пользовательский",
+                    "dechlorinate": "Дехлорирование",
+                    "black_tea": "Черный чай",
+                    "green_tea": "Зеленый чай",
+                    "coffee": "Кофе",
+                    "honey_water": "Медовая вода",
+                    "infant_formula": "Детская смесь"
                 }
             },
             "language": {
@@ -443,6 +477,15 @@
                     "russian": "Русский",
                     "spanish": "Español",
                     "turkish": "Türkçe"
+                }
+            },
+            "light_mode": {
+                "name": "Режим освещения",
+                "state": {
+                    "off": "Выкл",
+                    "on": "Вкл",
+                    "state": "Состояние",
+                    "locator": "Локатор"
                 }
             },
             "mopping": {
@@ -765,38 +808,20 @@
                 "name": "Сцена"
             }
         },
+        "time": {
+            "timer": {
+                "name": "Таймер"
+            },
+            "timer_x": {
+                "name": "Таймер {x}"
+            }
+        },
         "water_heater": {
             "water_air": {
-                "name": "Водонагреватель",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "heat": "Нагрев",
-                            "cool": "Охлаждение",
-                            "auto": "Авто",
-                            "off": "Выкл",
-                            "hotwater": "Горячая вода",
-                            "hotwater_cool": "Горячая вода и охлаждение",
-                            "hotwater_heat": "Горячая вода и нагрев",
-                            "hotwater_auto": "Горячая вода и авто"
-                        }
-                    }
-                }
+                "name": "Водонагреватель"
             },
             "kettle": {
-                "name": "Чайник",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "off": "Выкл",
-                            "heat": "Нагрев",
-                            "boil": "Кипячение",
-                            "quick_heat": "Быстрый нагрев",
-                            "quick_boil": "Быстрое кипячение",
-                            "keep_warm": "Поддержание тепла"
-                        }
-                    }
-                }
+                "name": "Чайник"
             }
         }
     }

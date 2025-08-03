@@ -219,6 +219,7 @@
                 }
             },
             "swing_as_powerlevel": {
+                "name": "Stufa",
                 "state_attributes": {
                     "swing_mode": {
                         "name": "Livello di riscaldamento",
@@ -420,12 +421,45 @@
                     "gbp": "GBP"
                 }
             },
+            "heat_pump_mode": {
+                "name": "Modalità pompa di calore",
+                "state": {
+                    "heat": "Riscaldamento",
+                    "cool": "Raffreddamento",
+                    "auto": "Auto",
+                    "floor_heat": "Riscaldamento pavimento",
+                    "off": "Spento",
+                    "hotwater": "Acqua calda",
+                    "hotwater_cool": "Acqua calda e raffreddamento",
+                    "hotwater_heat": "Acqua calda e riscaldamento",
+                    "hotwater_auto": "Acqua calda e auto",
+                    "hotwater_floor_heat": "Acqua calda e riscaldamento pavimento"
+                }
+            },
             "initial_state": {
                 "name": "Stato iniziale",
                 "state": {
                     "off": "Spento",
                     "on": "Acceso",
                     "memory": "Memoria"
+                }
+            },
+            "kettle_mode": {
+                "name": "Modalità bollitore",
+                "state": {
+                    "off": "Spento",
+                    "heat": "Riscaldamento",
+                    "boil": "Bollire",
+                    "quick_heat": "Riscaldamento rapido",
+                    "quick_boil": "Bollitura rapida",
+                    "keep_warm": "Mantenere caldo",
+                    "custom": "Personalizzato",
+                    "dechlorinate": "Decalcificazione",
+                    "black_tea": "Tè nero",
+                    "green_tea": "Tè verde",
+                    "coffee": "Caffè",
+                    "honey_water": "Acqua al miele",
+                    "infant_formula": "Formula per neonati"
                 }
             },
             "language": {
@@ -444,6 +478,15 @@
                     "russian": "Русский",
                     "spanish": "Español",
                     "turkish": "Türkçe"
+                }
+            },
+            "light_mode": {
+                "name": "Modalità luce",
+                "state": {
+                    "off": "Spento",
+                    "on": "Acceso",
+                    "state": "Stato",
+                    "locator": "Localizzatore"
                 }
             },
             "mopping": {
@@ -766,38 +809,20 @@
                 "name": "Scena"
             }
         },
+        "time": {
+            "timer": {
+                "name": "Timer"
+            },
+            "timer_x": {
+                "name": "Timer {x}"
+            }
+        },            
         "water_heater": {
             "water_air": {
-                "name": "Scaldabagno",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "heat": "Riscaldamento",
-                            "cool": "Raffreddamento",
-                            "auto": "Auto",
-                            "off": "Spento",
-                            "hotwater": "Acqua calda",
-                            "hotwater_cool": "Acqua calda e raffreddamento",
-                            "hotwater_heat": "Acqua calda e riscaldamento",
-                            "hotwater_auto": "Acqua calda e auto"
-                        }
-                    }
-                }
+                "name": "Scaldabagno"
             },
             "kettle": {
-                "name": "Bollitore",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "off": "Spento",
-                            "heat": "Riscaldamento",
-                            "boil": "Bollire",
-                            "quick_heat": "Riscaldamento rapido",
-                            "quick_boil": "Bollitura rapida",
-                            "keep_warm": "Mantenere caldo"
-                        }
-                    }
-                }
+                "name": "Bollitore"
             }
         }
     }

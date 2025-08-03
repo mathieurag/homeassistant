@@ -107,8 +107,12 @@
   triggers:
   - entity_id:
     - sensor.system_monitor_charge_5m
-    above: 1
+    above: 1.1
     trigger: numeric_state
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
   conditions: []
   actions:
   - metadata: {}
@@ -662,7 +666,10 @@
       minutes: 0
       seconds: 0
     trigger: state
-  conditions: []
+  conditions:
+  - condition: state
+    entity_id: input_boolean.frigo
+    state: 'off'
   actions:
   - data:
       message: Pas de démarrage du Frigo pendant 4h !
@@ -809,52 +816,6 @@
       - input_boolean.prises_etage
     data: {}
   mode: single
-- id: '1727100872708'
-  alias: Passage HC
-  description: ''
-  trigger:
-  - platform: time
-    at: '21:08:00'
-  action:
-  - data:
-      option: HC
-    action: select.select_option
-    target:
-      entity_id:
-      - select.energie_consommee_h
-      - select.energie_consommee_j
-      - select.energie_consommee_s
-      - select.energie_consommee_m
-      - select.energie_consommee_a
-  - action: input_boolean.turn_on
-    target:
-      entity_id: input_boolean.hp_hc
-    data: {}
-  initial_state: true
-- id: '1727101009222'
-  alias: Passage HP
-  description: ''
-  trigger:
-  - platform: time
-    at: 05:08:00
-  condition: []
-  action:
-  - data:
-      option: HP
-    action: select.select_option
-    target:
-      entity_id:
-      - select.energie_consommee_h
-      - select.energie_consommee_j
-      - select.energie_consommee_s
-      - select.energie_consommee_m
-      - select.energie_consommee_a
-  - action: input_boolean.turn_off
-    target:
-      entity_id: input_boolean.hp_hc
-    data: {}
-  mode: single
-  initial_state: true
 - id: '1727103070490'
   alias: Energie - Notification
   description: ''
@@ -3026,8 +2987,8 @@
 
       '
     for:
-      hours: 0
-      minutes: 1
+      hours: 1
+      minutes: 0
       seconds: 0
     trigger: template
     id: alerte
@@ -3089,6 +3050,10 @@
     from: 'off'
     to:
     trigger: state
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
   conditions: []
   actions:
   - data:
@@ -3115,8 +3080,13 @@
   actions:
   - variables:
       puissance_reseau: '{{ states(''sensor.em06_02_b1_power'') | float(0) }}'
-      puissance_batterie: '{{ states(''sensor.em06_02_b2_power'') | float(0) }}'
-      consigne_batterie: '{{ puissance_reseau + puissance_batterie }}'
+      puissance_batterie: '{{ states(''sensor.em06_02_b2_power'') | float(0) + 15
+        }}'
+      switch_fan: '{{ states(''switch.prise_zigbee_5'') | float(0) }}'
+      conso_fan: '{{ states(''sensor.prise_zigbee_5_power'') | float(0) }}'
+      consigne_batterie: '{{ puissance_reseau + puissance_batterie}}
+
+        '
       puissance_charge_max: '{{ states(''number.esphome_web_a92940_marstek_max_charge_power'')
         | float(0) }}'
       puissance_decharge_max: '{{ states(''number.esphome_web_a92940_marstek_max_discharge_power'')
@@ -3515,6 +3485,8 @@
     - sensor.solcast_pv_forecast_derniere_interrogation_de_l_api
   conditions: []
   actions:
+  - action: shell_command.simulation_pv
+    data: {}
   - action: shell_command.suivi_pv
     data: {}
   - action: shell_command.comparaison_pv
@@ -4169,3 +4141,51 @@
       target:
         entity_id: input_number.duree_cycle_frigo
   mode: single
+- id: '1751743723002'
+  alias: Passage HP/HC
+  description: ''
+  triggers:
+  - at: 05:08:00
+    trigger: time
+    id: hp
+  - at: '21:08:00'
+    trigger: time
+    id: hc
+  conditions: []
+  actions:
+  - if:
+    - condition: trigger
+      id:
+      - hp
+    then:
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.hp_hc
+      data: {}
+    - data:
+        option: HP
+      action: select.select_option
+      target:
+        entity_id:
+        - select.energie_consommee_h
+        - select.energie_consommee_j
+        - select.energie_consommee_s
+        - select.energie_consommee_m
+        - select.energie_consommee_a
+    else:
+    - data:
+        option: HC
+      action: select.select_option
+      target:
+        entity_id:
+        - select.energie_consommee_h
+        - select.energie_consommee_j
+        - select.energie_consommee_s
+        - select.energie_consommee_m
+        - select.energie_consommee_a
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.hp_hc
+      data: {}
+  mode: single
+  initial_state: true

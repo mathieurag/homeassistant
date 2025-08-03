@@ -218,6 +218,7 @@
                 }
             },
             "swing_as_powerlevel": {
+                "name": "Podgrzewacz",
                 "state_attributes": {
                     "swing_mode": {
                         "name": "Poziom ogrzewania",
@@ -419,12 +420,45 @@
                     "gbp": "GBP"
                 }
             },
+            "heat_pump_mode": {
+                "name": "Tryb pompy ciepła",
+                "state": {
+                    "heat": "Ogrzewanie",
+                    "cool": "Chłodzenie",
+                    "auto": "Auto",
+                    "floor_heat": "Ogrzewanie podłogi",
+                    "off": "Wyłączony",
+                    "hotwater": "Podgrzewanie wody",
+                    "hotwater_cool": "Podgrzewanie wody i chłodzenie",
+                    "hotwater_heat": "Podgrzewanie wody i ogrzewanie",
+                    "hotwater_auto": "Podgrzewanie wody i auto",
+                    "hotwater_floor_heat": "Podgrzewanie wody i ogrzewanie podłogi"
+                }
+            },
             "initial_state": {
                 "name": "Stan początkowy",
                 "state": {
                     "off": "Wyłączony",
                     "on": "Włączony",
                     "memory": "Pamięć"
+                }
+            },
+            "kettle_mode": {
+                "name": "Tryb czajnika",
+                "state": {
+                    "off": "Wyłączony",
+                    "heat": "Ogrzewanie",
+                    "boil": "Gotowanie",
+                    "quick_heat": "Szybkie ogrzewanie",
+                    "quick_boil": "Szybkie gotowanie",
+                    "keep_warm": "Podgrzewanie",
+                    "custom": "Niestandardowy",
+                    "dechlorinate": "Odchlorowanie",
+                    "black_tea": "Czarna herbata",
+                    "green_tea": "Zielona herbata",
+                    "coffee": "Kawa",
+                    "honey_water": "Woda z miodem",
+                    "infant_formula": "Mleko dla niemowląt"
                 }
             },
             "language": {
@@ -443,6 +477,15 @@
                     "russian": "Русский",
                     "spanish": "Español",
                     "turkish": "Türkçe"
+                }
+            },
+            "light_mode": {
+                "name": "Tryb światła",
+                "state": {
+                    "off": "Wyłączony",
+                    "on": "Włączony",
+                    "state": "Stan",
+                    "locator": "Lokalizator"
                 }
             },
             "mopping": {
@@ -766,38 +809,20 @@
                 "name": "Scena"
             }
         },
+        "time": {
+            "timer": {
+                "name": "Regulator czasowy"
+            },
+            "timer_x": {
+                "name": "Regulator czasowy {x}"
+            }
+        },
         "water_heater": {
             "water_air": {
-                "name": "Podgrzewacz wody",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "heat": "Ogrzewanie",
-                            "cool": "Chłodzenie",
-                            "auto": "Auto",
-                            "off": "Wyłączony",
-                            "hotwater": "Podgrzewanie wody",
-                            "hotwater_cool": "Podgrzewanie wody i chłodzenie",
-                            "hotwater_heat": "Podgrzewanie wody i ogrzewanie",
-                            "hotwater_auto": "Podgrzewanie wody i auto"
-                        }
-                    }
-                }
+                "name": "Podgrzewacz wody"
             },
             "kettle": {
-                "name": "Czajnik",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "off": "Wyłączony",
-                            "heat": "Ogrzewanie",
-                            "boil": "Gotowanie",
-                            "quick_heat": "Szybkie ogrzewanie",
-                            "quick_boil": "Szybkie gotowanie",
-                            "keep_warm": "Podgrzewanie"
-                        }
-                    }
-                }
+                "name": "Czajnik"
             }
         }
     }

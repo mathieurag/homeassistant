@@ -218,6 +218,7 @@
                 }
             },
             "swing_as_powerlevel": {
+                "name": "加热器",
                 "state_attributes": {
                     "swing_mode": {
                         "name": "加热水平",
@@ -419,12 +420,45 @@
                     "gbp": "英镑"
                 }
             },
+            "heat_pump_mode": {
+                "name": "热泵模式",
+                "state": {
+                    "heat": "加热",
+                    "cool": "制冷",
+                    "auto": "自动",
+                    "floor_heat": "地板加热",
+                    "off": "关闭",
+                    "hotwater": "热水",
+                    "hotwater_cool": "热水制冷",
+                    "hotwater_heat": "热水加热",
+                    "hotwater_auto": "热水自动",
+                    "hotwater_floor_heat": "热水地板加热"
+                }
+            },
             "initial_state": {
                 "name": "初始状态",
                 "state": {
                     "off": "关闭",
                     "on": "打开",
                     "memory": "记忆"
+                }
+            },
+            "kettle_mode": {
+                "name": "电热水壶模式",
+                "state": {
+                    "off": "关闭",
+                    "heat": "加热",
+                    "boil": "煮沸",
+                    "quick_heat": "快速加热",
+                    "quick_boil": "快速煮沸",
+                    "keep_warm": "保温",
+                    "custom": "自定义",
+                    "dechlorinate": "除氯",
+                    "black_tea": "红茶",
+                    "green_tea": "绿茶",
+                    "coffee": "咖啡",
+                    "honey_water": "蜂蜜水",
+                    "infant_formula": "婴儿配方"
                 }
             },
             "language": {
@@ -443,6 +477,15 @@
                     "russian": "Русский",
                     "spanish": "Español",
                     "turkish": "Türkçe"
+                }
+            },
+            "light_mode": {
+                "name": "灯光模式",
+                "state": {
+                    "off": "关闭",
+                    "on": "打开",
+                    "state": "状态",
+                    "locator": "定位"
                 }
             },
             "mopping": {
@@ -765,38 +808,20 @@
                 "name": "场景"
             }
         },
+        "time": {
+            "timer": {
+                "name": "计时器"
+            },
+            "timer_x": {
+                "name": "计时器{x}"
+            }
+        },
         "water_heater": {
             "water_air": {
-                "name": "热水器",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "heat": "加热",
-                            "cool": "制冷",
-                            "auto": "自动",
-                            "off": "关闭",
-                            "hotwater": "热水",
-                            "hotwater_cool": "热水制冷",
-                            "hotwater_heat": "热水加热",
-                            "hotwater_auto": "热水自动"
-                        }
-                    }
-                }
+                "name": "热水器"
             },
             "kettle": {
-                "name": "电热水壶",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "off": "关闭",
-                            "heat": "加热",
-                            "boil": "煮沸",
-                            "quick_heat": "快速加热",
-                            "quick_boil": "快速煮沸",
-                            "keep_warm": "保温"
-                        }
-                    }
-                }
+                "name": "电热水壶"
             }
         }
     }

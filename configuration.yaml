@@ -32,7 +32,7 @@ mqtt_statestream:
       - sensor.soc_estime_batterie
       - sensor.em06_02_b1_power
       - sensor.esphome_web_a92940_marstek_inverter_state
-      
+
 logbook:
   exclude:
     domains:
@@ -56,8 +56,8 @@ logbook:
       - input_number.*frigo*
       - input_number.*frigo*
       - sensor.*frigo*
-      - number.esphome_web_a92940_marstek_forcible_charge_power
-
+      - number.esphome_web_a92940_marstek_forcible_*
+      
 # Purge de la base
 recorder:
   purge_keep_days: 7
@@ -114,5 +114,6 @@ shell_command:
   comparaison_pv: "python3 /config/python_scripts/comparaison_pv.py"
   refoss: "python3 /config/packages/refoss_ha/script.py"
   taux_hc: "python3 /config/python_scripts/taux_hc.py"
+  conso: "python3 /config/python_scripts/conso.py"
 
 my:

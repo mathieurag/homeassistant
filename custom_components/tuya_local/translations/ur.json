@@ -221,6 +221,7 @@
                 }
             },
             "swing_as_powerlevel": {
+                "name": "ہیٹر",
                 "state_attributes": {
                     "swing_mode": {
                         "name": "حرارت کی سطح",
@@ -422,12 +423,45 @@
                     "gbp": "برطانوی پاؤنڈ"
                 }
             },
+            "heat_pump_mode": {
+                "name": "ہیٹ پمپ موڈ",
+                "state": {
+                    "heat": "گرم",
+                    "cool": "ٹھنڈا",
+                    "auto": "خود کار",
+                    "floor_heat": "فرش گرم",
+                    "off": "آف",
+                    "hotwater": "گرم پانی",
+                    "hotwater_cool": "گرم پانی اور ٹھنڈا",
+                    "hotwater_heat": "گرم پانی اور گرم",
+                    "hotwater_auto": "گرم پانی اور خود کار",
+                    "hotwater_floor_heat": "گرم پانی اور فرش گرم"
+                }
+            },
             "initial_state": {
                 "name": "ابتدائی حالت",
                 "state": {
                     "off": "آف",
                     "on": "آن",
                     "memory": "یاد"
+                }
+            },
+            "kettle_mode": {
+                "name": "کیٹل موڈ",
+                "state": {
+                    "off": "آف",
+                    "heat": "گرم",
+                    "boil": "ابالنا",
+                    "quick_heat": "فوری گرم",
+                    "quick_boil": "فوری ابالنا",
+                    "keep_warm": "گرم رکھنا",
+                    "custom": "اپنی مرضی",
+                    "dechlorinate": "ڈی کلورینیٹ",
+                    "black_tea": "کالی چائے",
+                    "green_tea": "سبز چائے",
+                    "coffee": "کافی",
+                    "honey_water": "شہد پانی",
+                    "infant_formula": "بچہ فارمولا"
                 }
             },
             "language": {
@@ -446,6 +480,15 @@
                     "russian": "Русский",
                     "spanish": "Español",
                     "turkish": "Türkçe"
+                }
+            },
+            "light_mode": {
+                "name": "روشنی کا موڈ",
+                "state": {
+                    "off": "آف",
+                    "on": "آن",
+                    "state": "حالت",
+                    "locator": "لوکیٹر"
                 }
             },
             "mopping": {
@@ -768,38 +811,20 @@
                 "name": "منظر"
             }
         },
+        "time": {
+            "timer": {
+                "name": "ٹائمر"
+            },
+            "timer_x": {
+                "name": "ٹائمر {x}"
+            }
+        },
         "water_heater": {
             "water_air": {
-                "name": "پانی کا ہیٹر",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "heat": "گرم",
-                            "cool": "ٹھنڈا",
-                            "auto": "خود کار",
-                            "off": "آف",
-                            "hotwater": "گرم پانی",
-                            "hotwater_cool": "گرم پانی اور ٹھنڈا",
-                            "hotwater_heat": "گرم پانی اور گرم",
-                            "hotwater_auto": "گرم پانی اور خود کار"
-                        }
-                    }
-                }
+                "name": "پانی کا ہیٹر"
             },
             "kettle": {
-                "name": "کیٹل",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "off": "آف",
-                            "heat": "گرم",
-                            "boil": "ابالنا",
-                            "quick_heat": "فوری گرم",
-                            "quick_boil": "فوری ابالنا",
-                            "keep_warm": "گرم رکھنا"
-                        }
-                    }
-                }
+                "name": "کیٹل"
             }
         }
     }

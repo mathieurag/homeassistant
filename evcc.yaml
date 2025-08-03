@@ -87,6 +87,32 @@ chargers:
       source: mqtt
       topic: ha2evcc/charger/maxcurrent/set
 
+  - name: ECS
+    type: custom
+    icon: waterheater
+    integrateddevice: true
+    heating: true
+    status:
+      source: mqtt
+      topic: ha2evcc/charger/status # Valeurs : A, B, C
+    enabled: # <- état actuel (lu)
+      source: mqtt
+      topic: ha2evcc/charger/enabled # Valeur "true" ou "false"
+    enable: # <- commande (envoyée)
+      source: mqtt
+      topic: ha2evcc/charger/enable/set # EVCC publiera ici "true" ou "false"
+    power:
+      source: mqtt
+      topic: ha2evcc/sensor/consommation_cumulus/state # en watts
+    maxcurrent:
+      source: mqtt
+      topic: ha2evcc/charger/maxcurrent/set
+    powersource:
+      source: mqtt
+      topic: ha2evcc/sensor/consommation_cumulus/state # en watts
+    tempsource:
+      source: mqtt
+      topic: ha2evcc/sensor/consommation_cumulus/state # en watts
 site:
   title: Test
   meters:

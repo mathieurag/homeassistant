@@ -218,6 +218,7 @@
                 }
             },
             "swing_as_powerlevel": {
+                "name": "Pemanas",
                 "state_attributes": {
                     "swing_mode": {
                         "name": "Level Pemanasan",
@@ -419,12 +420,45 @@
                     "gbp": "GBP"
                 }
             },
+            "heat_pump_mode": {
+                "name": "Mode pompa panas",
+                "state": {
+                    "heat": "Pemanas",
+                    "cool": "Pendingin",
+                    "auto": "Otomatis",
+                    "floor_heat": "Pemanas lantai",
+                    "off": "Mati",
+                    "hotwater": "Air panas",
+                    "hotwater_cool": "Pendingin air panas",
+                    "hotwater_heat": "Pemanas air panas",
+                    "hotwater_auto": "Otomatis air panas",
+                    "hotwater_floor_heat": "Pemanas lantai air panas"
+                }
+            },
             "initial_state": {
                 "name": "Status awal",
                 "state": {
                     "off": "Mati",
                     "on": "Hidup",
                     "memory": "Memori"
+                }
+            },
+            "kettle_mode": {
+                "name": "Mode ketel",
+                "state": {
+                    "off": "Mati",
+                    "heat": "Pemanas",
+                    "boil": "Mendidih",
+                    "quick_heat": "Pemanasan cepat",
+                    "quick_boil": "Mendidih cepat",
+                    "keep_warm": "Tetap hangat",
+                    "custom": "Kustom",
+                    "dechlorinate": "Deklorinasi",
+                    "black_tea": "Teh hitam",
+                    "green_tea": "Teh hijau",
+                    "coffee": "Kopi",
+                    "honey_water": "Air madu",
+                    "infant_formula": "Susu formula bayi"
                 }
             },
             "language": {
@@ -443,6 +477,15 @@
                     "russian": "Русский",
                     "spanish": "Español",
                     "turkish": "Türkçe"
+                }
+            },
+            "light_mode": {
+                "name": "Mode lampu",
+                "state": {
+                    "off": "Mati",
+                    "on": "Hidup",
+                    "state": "Status",
+                    "locator": "Penanda"
                 }
             },
             "mopping": {
@@ -765,38 +808,20 @@
                 "name": "Adegan"
             }
         },
+        "time": {
+            "timer": {
+                "name": "Pengatur waktu"
+            },
+            "timer_x": {
+                "name": "Pengatur waktu {x}"
+            }
+        },
         "water_heater": {
             "water_air": {
-                "name": "Pemanas air",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "heat": "Pemanas",
-                            "cool": "Pendingin",
-                            "auto": "Otomatis",
-                            "off": "Mati",
-                            "hotwater": "Air panas",
-                            "hotwater_cool": "Pendingin air panas",
-                            "hotwater_heat": "Pemanas air panas",
-                            "hotwater_auto": "Otomatis air panas"
-                        }
-                    }
-                }
+                "name": "Pemanas air"
             },
             "kettle": {
-                "name": "Ketel",
-                "state_attributes": {
-                    "operation_mode": {
-                        "state": {
-                            "off": "Mati",
-                            "heat": "Pemanas",
-                            "boil": "Mendidih",
-                            "quick_heat": "Pemanasan cepat",
-                            "quicl_boil": "Mendidih cepat",
-                            "keep_warm": "Tetap hangat"
-                        }
-                    }
-                }
+                "name": "Ketel"
             }
         }
     }
