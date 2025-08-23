@@ -1,0 +1,385 @@
+template:
+  - sensor:
+      - name: "Estar Energie Totale"
+        unique_id: estar_energie_totale
+        state: "{{ state_attr('sensor.estar_data_details', 'total_energie') | float(0) }}"
+        unit_of_measurement: "Wh"
+        device_class: energy
+        state_class: measurement
+
+      - name: "Estar Puissance Totale"
+        unique_id: estar_puissance_totale
+        state: "{{ state_attr('sensor.estar_data_details', 'total_puissance') | float(0) }}"
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+
+      - name: "Estar Efficacité"
+        unique_id: estar_efficacite
+        state: "{% if float(states('sensor.estar_data_details'),0)>0 -%} {{ (float(states('sensor.estar_centrale_power'),0) / float(states('sensor.estar_data_details'),0) * 100 )|round(2) }} {%- else-%} {{0}} {%- endif-%}"
+        unit_of_measurement: "%"
+        state_class: measurement
+
+      - name: "Estar Panneau 1 Puissance"
+        unique_id: estar_puissance_panneau_1
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[0].puissance if panels|length > 0 and 'puissance' in panels[0] else None) | float(0) }}
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+
+      - name: "Estar Panneau 1 Température"
+        unique_id: estar_temperature_panneau_1
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {% set temp = (panels[0].temperature if panels|length > 0 else None) | float(default=0) %}
+          {{ [0, [temp, 100] | min] | max }}
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+
+      - name: "Estar Panneau 1 Énergie"
+        unique_id: estar_energie_panneau_1
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[0].energie if panels|length > 0 and 'energie' in panels[0] else None) | float(0) }}
+        unit_of_measurement: "Wh"
+        device_class: energy
+        state_class: total_increasing
+
+      - name: "Estar Panneau 1 Tension"
+        unique_id: estar_tension_panneau_1
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[0].tension if panels|length > 0 else None) | float(0) }}
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+
+      - name: "Estar Panneau 1 Courant"
+        unique_id: estar_courant_panneau_1
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[0].courant if panels|length > 0 else None) | float(0) }}
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+
+      - name: "Estar Panneau 2 Puissance"
+        unique_id: estar_puissance_panneau_2
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[1].puissance if panels|length > 0 and 'puissance' in panels[1] else None) | float(0) }}
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+
+      - name: "Estar Panneau 2 Température"
+        unique_id: estar_temperature_panneau_2
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {% set temp = (panels[1].temperature if panels|length > 0 else None) | float(default=0) %}
+          {{ [0, [temp, 100] | min] | max }}
+      - name: "Estar Panneau 2 Énergie"
+        unique_id: estar_energie_panneau_2
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[1].energie if panels|length > 0 and 'energie' in panels[1] else None) | float(0) }}
+        unit_of_measurement: "Wh"
+        device_class: energy
+        state_class: total_increasing
+
+      - name: "Estar Panneau 2 Tension"
+        unique_id: estar_tension_panneau_2
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[1].tension if panels|length > 0 else None) | float(0) }}
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+
+      - name: "Estar Panneau 2 Courant"
+        unique_id: estar_courant_panneau_2
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[1].courant if panels|length > 0 else None) | float(0) }}
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+
+      - name: "Estar Panneau 3 Puissance"
+        unique_id: estar_puissance_panneau_3
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[2].puissance if panels|length > 0 and 'puissance' in panels[2] else None) | float(0) }}
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+
+      - name: "Estar Panneau 3 Température"
+        unique_id: estar_temperature_panneau_3
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {% set temp = (panels[2].temperature if panels|length > 0 else None) | float(default=0) %}
+          {{ [0, [temp, 100] | min] | max }}
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+
+      - name: "Estar Panneau 3 Énergie"
+        unique_id: estar_energie_panneau_3
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[2].energie if panels|length > 0 and 'energie' in panels[2] else None) | float(0) }}
+        unit_of_measurement: "Wh"
+        device_class: energy
+        state_class: total_increasing
+
+      - name: "Estar Panneau 3 Tension"
+        unique_id: estar_tension_panneau_3
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[2].tension if panels|length > 0 else None) | float(0) }}
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+
+      - name: "Estar Panneau 3 Courant"
+        unique_id: estar_courant_panneau_3
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[2].courant if panels|length > 0 else None) | float(0) }}
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+
+      - name: "Estar Panneau 4 Puissance"
+        unique_id: estar_puissance_panneau_4
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[3].puissance if panels|length > 0 and 'puissance' in panels[3] else None) | float(0) }}
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+
+      - name: "Estar Panneau 4 Température"
+        unique_id: estar_temperature_panneau_4
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {% set temp = (panels[3].temperature if panels|length > 0 else None) | float(default=0) %}
+          {{ [0, [temp, 100] | min] | max }}
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+
+      - name: "Estar Panneau 4 Énergie"
+        unique_id: estar_energie_panneau_4
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[3].energie if panels|length > 0 and 'energie' in panels[3] else None) | float(0) }}
+        unit_of_measurement: "Wh"
+        device_class: energy
+        state_class: total_increasing
+
+      - name: "Estar Panneau 4 Tension"
+        unique_id: estar_tension_panneau_4
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[3].tension if panels|length > 0 else None) | float(0) }}
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+
+      - name: "Estar Panneau 4 Courant"
+        unique_id: estar_courant_panneau_4
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[3].courant if panels|length > 0 else None) | float(0) }}
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+
+      - name: "Estar Panneau 5 Puissance"
+        unique_id: estar_puissance_panneau_5
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[4].puissance if panels|length > 0 and 'puissance' in panels[4] else None) | float(0) }}
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+
+      - name: "Estar Panneau 5 Température"
+        unique_id: estar_temperature_panneau_5
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {% set temp = (panels[4].temperature if panels|length > 0 else None) | float(default=0) %}
+          {{ [0, [temp, 100] | min] | max }}
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+
+      - name: "Estar Panneau 5 Énergie"
+        unique_id: estar_energie_panneau_5
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[4].energie if panels|length > 0 and 'energie' in panels[4] else None) | float(0) }}
+        unit_of_measurement: "Wh"
+        device_class: energy
+        state_class: total_increasing
+
+      - name: "Estar Panneau 5 Tension"
+        unique_id: estar_tension_panneau_5
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[4].tension if panels|length > 0 else None) | float(0) }}
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+
+      - name: "Estar Panneau 5 Courant"
+        unique_id: estar_courant_panneau_5
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[4].courant if panels|length > 0 else None) | float(0) }}
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+
+      - name: "Estar Panneau 6 Puissance"
+        unique_id: estar_puissance_panneau_6
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[5].puissance if panels|length > 0 and 'puissance' in panels[5] else None) | float(0) }}
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+
+      - name: "Estar Panneau 6 Température"
+        unique_id: estar_temperature_panneau_6
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {% set temp = (panels[5].temperature if panels|length > 0 else None) | float(default=0) %}
+          {{ [0, [temp, 100] | min] | max }}
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+
+      - name: "Estar Panneau 6 Énergie"
+        unique_id: estar_energie_panneau_6
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[5].energie if panels|length > 0 and 'energie' in panels[5] else None) | float(0) }}
+        unit_of_measurement: "Wh"
+        device_class: energy
+        state_class: total_increasing
+
+      - name: "Estar Panneau 6 Tension"
+        unique_id: estar_tension_panneau_6
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[5].tension if panels|length > 0 else None) | float(0) }}
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+
+      - name: "Estar Panneau 6 Courant"
+        unique_id: estar_courant_panneau_6
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[5].courant if panels|length > 0 else None) | float(0) }}
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+
+      - name: "Estar Panneau 7 Puissance"
+        unique_id: estar_puissance_panneau_7
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[6].puissance if panels|length > 0 and 'puissance' in panels[6] else None) | float(0) }}
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+
+      - name: "Estar Panneau 7 Température"
+        unique_id: estar_temperature_panneau_7
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {% set temp = (panels[6].temperature if panels|length > 0 else None) | float(default=0) %}
+          {{ [0, [temp, 100] | min] | max }}
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+
+      - name: "Estar Panneau 7 Énergie"
+        unique_id: estar_energie_panneau_7
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[6].energie if panels|length > 0 and 'energie' in panels[6] else None) | float(0) }}
+        unit_of_measurement: "Wh"
+        device_class: energy
+        state_class: total_increasing
+
+      - name: "Estar Panneau 7 Tension"
+        unique_id: estar_tension_panneau_7
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[6].tension if panels|length > 0 else None) | float(0) }}
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+
+      - name: "Estar Panneau 7 Courant"
+        unique_id: estar_courant_panneau_7
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[6].courant if panels|length > 0 else None) | float(0) }}
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+
+      - name: "Estar Panneau 8 Puissance"
+        unique_id: estar_puissance_panneau_8
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[7].puissance if panels|length > 0 and 'puissance' in panels[7] else None) | float(0) }}
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+
+      - name: "Estar Panneau 8 Température"
+        unique_id: estar_temperature_panneau_8
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {% set temp = (panels[7].temperature if panels|length > 0 else None) | float(default=0) %}
+          {{ [0, [temp, 100] | min] | max }}
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+
+      - name: "Estar Panneau 8 Énergie"
+        unique_id: estar_energie_panneau_8
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[7].energie if panels|length > 0 and 'energie' in panels[7] else None) | float(0) }}
+        unit_of_measurement: "Wh"
+        device_class: energy
+        state_class: total_increasing
+
+      - name: "Estar Panneau 8 Tension"
+        unique_id: estar_tension_panneau_8
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[7].tension if panels|length > 0 else None) | float(0) }}
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+
+      - name: "Estar Panneau 8 Courant"
+        unique_id: estar_courant_panneau_8
+        state: >
+          {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
+          {{ (panels[7].courant if panels|length > 0 else None) | float(0) }}
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement

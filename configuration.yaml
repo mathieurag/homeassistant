@@ -57,7 +57,7 @@ logbook:
       - input_number.*frigo*
       - sensor.*frigo*
       - number.esphome_web_a92940_marstek_forcible_*
-      
+
 # Purge de la base
 recorder:
   purge_keep_days: 7
@@ -108,12 +108,12 @@ shell_command:
   energie_solar: python3 /config/python_scripts/energie_solar.py
   maj_hp_hc: python3 /config/python_scripts/update_hp_hc.py
   maj_surplus_eco: python3 /config/python_scripts/update_surplus.py
-  migration: python3 /config/python_scripts/migration.py
   simulation_pv: "python3 /config/python_scripts/simulation_pv.py"
   suivi_pv: "python3 /config/python_scripts/suivi_pv.py"
   comparaison_pv: "python3 /config/python_scripts/comparaison_pv.py"
   refoss: "python3 /config/packages/refoss_ha/script.py"
   taux_hc: "python3 /config/python_scripts/taux_hc.py"
   conso: "python3 /config/python_scripts/conso.py"
+  estar: "python3 /config/python_scripts/estar.py"
 
 my:

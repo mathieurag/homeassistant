@@ -392,25 +392,27 @@
 - id: '1725223267378'
   alias: Alerte TV non éteinte
   description: ''
-  trigger:
-  - platform: time
-    at: 00:30:00
-  condition:
+  triggers:
+  - at: 00:30:00
+    trigger: time
+  conditions:
   - condition: numeric_state
     entity_id: sensor.prise_tv_puissance
     above: 1
-  - condition: numeric_state
-    entity_id: sensor.prise_tv_cloud_puissance
-    above: 1
-  action:
+  actions:
   - data:
       message: 'TV non éteinte : {{states(''sensor.prise_tv_puissance'')}}W'
     action: notify.notify
-  - action: switch.turn_off
-    target:
-      device_id:
-      - ccfd320c2ae171b9cbca0e8d97e04e9d
-    data: {}
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.prise_tv_puissance
+      below: 40
+    then:
+    - action: switch.turn_off
+      target:
+        device_id:
+        - ccfd320c2ae171b9cbca0e8d97e04e9d
+      data: {}
   mode: single
 - id: '1725794082259'
   alias: Début Plaque
@@ -1295,14 +1297,14 @@
   triggers:
   - trigger: state
     entity_id:
-    - sensor.tp_link_router_cpu_used
+    - sensor.deco_m5_cpu_used
     for:
       hours: 0
       minutes: 4
       seconds: 0
   - trigger: state
     entity_id:
-    - sensor.tp_link_router_cpu_used
+    - sensor.deco_m5_cpu_used
     to: unavailable
     for:
       hours: 0
@@ -1310,7 +1312,7 @@
       seconds: 0
   - trigger: state
     entity_id:
-    - sensor.tp_link_router_cpu_used
+    - sensor.deco_m5_cpu_used
     to: unknown
     for:
       hours: 0
@@ -1327,8 +1329,7 @@
           device_id: 9b77fab7a9aa7b4577e7cfe2d53e7375
       - wait_for_trigger:
         - trigger: template
-          value_template: '{{ float(states(''sensor.tp_link_router_cpu_used''),0)
-            > 0 }}'
+          value_template: '{{ float(states(''sensor.deco_m5_cpu_used''),0) > 0 }}'
         timeout:
           hours: 0
           minutes: 5
@@ -1336,17 +1337,17 @@
           milliseconds: 0
       while:
       - condition: template
-        value_template: '{{ (is_state(''sensor.tp_link_router_cpu_used'', ''unavailable'')
-          or is_state(''sensor.tp_link_router_cpu_used'', ''unknown'')) and repeat.index
+        value_template: '{{ (is_state(''sensor.deco_m5_cpu_used'', ''unavailable'')
+          or is_state(''sensor.deco_m5_cpu_used'', ''unknown'')) and repeat.index
           < 6 }}'
   - if:
     - condition: or
       conditions:
       - condition: state
-        entity_id: sensor.tp_link_router_cpu_used
+        entity_id: sensor.deco_m5_cpu_used
         state: unavailable
       - condition: state
-        entity_id: sensor.tp_link_router_cpu_used
+        entity_id: sensor.deco_m5_cpu_used
         state: unknown
     then:
     - action: notify.persistent_notification
@@ -1395,15 +1396,15 @@
   triggers:
   - trigger: state
     entity_id:
-    - sensor.estar_url
-    to: token verify error.
+    - sensor.estar_centrale
+    to: unavailable
     for:
       hours: 0
       minutes: 5
       seconds: 0
   - trigger: state
     entity_id:
-    - sensor.estar_centrale
+    - sensor.estar_token
     to: unavailable
     for:
       hours: 0
@@ -1427,7 +1428,7 @@
       entity_id: input_text.estar_token_input
   - if:
     - condition: state
-      entity_id: sensor.estar_url
+      entity_id: sensor.estar_token
       state: success
     then: []
     else:
@@ -1435,6 +1436,7 @@
       metadata: {}
       data:
         message: MAJ Token Estar NOK
+    enabled: false
   mode: single
 - id: '1731443950550'
   alias: 'Activation routeur solaire '
@@ -3110,7 +3112,6 @@
         conditions:
         - condition: trigger
           id:
-          - redemarrage_ha
           - desactivation_gestion
       sequence:
       - alias: Mode Stop
@@ -3206,9 +3207,10 @@
           - alias: Comparaison SOC MIN
             choose:
             - conditions:
-              - alias: SOC = MIN
+              - alias: SOC = MIN or Tension < 48V
                 condition: template
-                value_template: '{{ soc_batterie <= soc_min}}'
+                value_template: '{{ soc_batterie <= soc_min or float(states(''sensor.soc_estime_batterie''),10)<-10
+                  or float(states(''sensor.esphome_web_a92940_marstek_battery_voltage_average''),0)<48}}'
                 enabled: true
               sequence:
               - alias: Mode Stop
@@ -3243,6 +3245,19 @@
                     option: enable
                   action: select.select_option
                 alias: Mode Enable
+              - alias: Mode Manuel
+                if:
+                - condition: not
+                  conditions:
+                  - condition: state
+                    entity_id: select.esphome_web_a92940_marstek_user_work_mode
+                    state: manual
+                then:
+                - data:
+                    option: manual
+                  action: select.select_option
+                  target:
+                    entity_id: select.esphome_web_a92940_marstek_user_work_mode
             - conditions:
               - alias: SOC > MIN
                 condition: template
@@ -4189,3 +4204,20 @@
       data: {}
   mode: single
   initial_state: true
+- id: '1754811894299'
+  alias: Estar
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.estar_centrale_power
+  conditions:
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: sensor.estar_centrale_power
+      state: unavailable
+  actions:
+  - action: shell_command.estar
+    data: {}
+  mode: single

@@ -50,7 +50,7 @@ template:
         device_class: power # Exemples de valeurs possibles
         state_class: measurement
         unit_of_measurement: "W"
-        state: "{% if float(states('sensor.em06_02_a1_power'),0) > float(states('sensor.em06_02_a2_power'),0) -%} {{(float(states('sensor.em06_02_a1_power'),0) - float(states('sensor.em06_02_a2_power'),0)) }} {%- else -%} 0 {%- endif %}"
+        state: "{% if float(states('sensor.em06_02_b1_power'),0) < 0 %} {{ - float(states('sensor.em06_02_b1_power'),0)}} {% else %} 0 {% endif %}"
 
       - name: "Production Solaire"
         unique_id: "production_solaire"

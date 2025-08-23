@@ -116,6 +116,22 @@ rest:
           - "hard_ver"
           - "warn_data"
           - "extend_data"
+      - name: "Estar MO5"
+        unique_id: "estar_mo5_data"
+        icon: mdi:solar-panel
+        json_attributes_path: "$.data[0].children[4]"
+        value_template: "{{ value_json.data[0].children[4].warn_data.connect}}"
+        json_attributes:
+          - "id"
+          - "sn"
+          - "vc"
+          - "dtu_sn"
+          - "type"
+          - "model_no"
+          - "soft_ver"
+          - "hard_ver"
+          - "warn_data"
+          - "extend_data"
     binary_sensor:
       - name: "Estar DCU"
         unique_id: "estar_dcu_binary"
@@ -137,48 +153,10 @@ rest:
         unique_id: "estar_mo4_binary"
         device_class: connectivity
         value_template: "{{ value_json.data[0].children[3].warn_data.connect}}"
-
-  #URL DONNEES DU JOUR
-
-  - authentication: basic
-    username: !secret login_estar
-    password: !secret password_estar
-    scan_interval: 60
-    method: POST
-    payload_template: >
-      {{ {'sid':6886470,'date':states('sensor.date'), 'day_num':1} | to_json }}
-    resource: "https://monitor.estarpower.com/platform/api/gateway/pvm-data/data_select_module_day_data"
-    headers:
-      Content-Type: application/json;charset=UTF-8
-      Cookie: "{{ states('input_text.estar_token_input')}}"
-    sensor:
-      - name: "Estar URL"
-        unique_id: "estar_url"
-        icon: mdi:file-chart-outline
-        value_template: "{{ value_json.message}}"
-        json_attributes_path: "$.data[0]"
-        json_attributes:
-          - "sid"
-          - "date"
-          - "url"
-          - "method"
-
-  #DATA DONNEES DU JOUR
-
-  - scan_interval: 3600
-    method: POST
-    payload_template: >
-      {{ {'sid':6886470,'date':states('sensor.date')} | to_json }}
-    resource_template: >
-      {{ "https://neapi.hoymiles.com/pvm-data" + states('input_text.estar_url') | to_json }}
-    headers:
-      Content-Type: application/json
-      Authorization: "{{ states('input_text.estar_token_input')[:12]}}"
-    sensor:
-      - name: "Estar DATA"
-        unique_id: "estar_data"
-        icon: mdi:file-chart-outline
-        value_template: "success"
+      - name: "Estar MO5"
+        unique_id: "estar_mo5_binary"
+        device_class: connectivity
+        value_template: "{{ value_json.data[0].children[4].warn_data.connect}}"
 
   #DONNEES CENTRALE
 

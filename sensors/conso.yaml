@@ -86,7 +86,7 @@ template:
           + float(states('sensor.prise_lave_linge_local_puissance'),0)
           + float(states('sensor.bidirectional_energy_meter_power_a'),0)
           + float(states('sensor.bidirectional_energy_meter_power_b'),0)
-          ) | round(1) }}"
+          ) | round(0) }}"
 
       - name: "Conso mini"
         unique_id: "conso_mini"

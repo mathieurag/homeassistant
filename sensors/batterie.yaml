@@ -32,7 +32,8 @@ template:
           {% set energie_actuelle = states('sensor.energie_estimee_batterie_dc') | float(0) %}
           {% set energie_reference = states('input_number.energie_batterie_a_100') | float(0) %}
           {% set capacite = 5.12 %}
-          {% set soc = 100 + ((energie_actuelle - energie_reference) / capacite * 100) %}
+          {% set soc_estime = 100 + ((energie_actuelle - energie_reference) / capacite * 100) %}
+          {% set soc=max(min(100,soc_estime),0) %}
           {{ soc | round(1) }}
 
       - name: "Energie restante Batterie"
@@ -130,7 +131,8 @@ template:
           {% set capacity_now = states('sensor.esphome_web_a92940_marstek_battery_remaining_capacity') | float(0) %}
           {% set soc = states('sensor.soc_estime_batterie') | float(0) %}
           {% set cutoff_charge_pct = states('number.esphome_web_a92940_marstek_charging_cutoff_capacity') | float(0) %}
-          {% set cutoff_discharge_pct = states('number.esphome_web_a92940_marstek_discharging_cutoff_capacity') | float(0) %}
+          {% set cutoff_discharge_pct_old = states('number.esphome_web_a92940_marstek_discharging_cutoff_capacity') | float(0) %}
+          {% set cutoff_discharge_pct = 0 %}
 
           {% set power = 0.0 %}
           {% if inverter == 'Charge' %}

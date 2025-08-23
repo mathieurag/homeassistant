@@ -1,5 +1,12 @@
 mqtt:
   - sensor:
+      # ESTAR
+      - name: "Estar Data"
+        unique_id: estar_data_details
+        state_topic: "estar/production"
+        value_template: "{{ value_json.total_puissance | default(0) }}"
+        json_attributes_topic: "estar/production"
+
       - name: "Taux HC jour"
         unique_id: taux_hc_day
         state_topic: "homeassistant/sensor/taux_hc_day/state"

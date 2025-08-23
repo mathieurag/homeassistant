@@ -89,6 +89,12 @@ devices:
     friendly_name: Prise Zigbee 5
   '0x6c5cb1fffe1ce3fe':
     friendly_name: Disjoncteur Zigbee 2
+    voltage_precision: 1
+    power_precision: 1
+    energy_precision: 2
+    temperature_precision: 1
+    current_precision: 1
+    voltage_calibration: ''
   '0x94b216fffee65577':
     friendly_name: Disjoncteur Zigbee 3
 availability:

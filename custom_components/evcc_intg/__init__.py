@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any, Final
 
+import aiohttp
 from aiohttp import ClientConnectorError
 from packaging.version import Version
 
@@ -32,6 +33,7 @@ from homeassistant.helpers.entity import Entity, EntityDescription
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.typing import UNDEFINED, UndefinedType
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.loader import async_get_integration
 from homeassistant.util import slugify
 from .const import (
     NAME,
@@ -77,51 +79,55 @@ async def async_setup(hass: HomeAssistant, config: dict):  # pylint: disable=unu
 
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
-    if DOMAIN not in hass.data:
-        value = "UNKOWN"
-        _LOGGER.info(STARTUP_MESSAGE)
-        hass.data.setdefault(DOMAIN, {"manifest_version": value})
+    _LOGGER.debug(f"async_setup_entry(): called")
 
-    coordinator = EvccDataUpdateCoordinator(hass, config_entry)
+    if DOMAIN not in hass.data:
+        the_integration = await async_get_integration(hass, DOMAIN)
+        intg_version = the_integration.version if the_integration is not None else "UNKNOWN"
+        _LOGGER.info(STARTUP_MESSAGE % intg_version)
+        hass.data.setdefault(DOMAIN, {"manifest_version": intg_version})
+
+    # using the same http client for test and final integration...
+    http_session = async_get_clientsession(hass)
+
+    # simple check, IF the evcc serve is up and running ... raise an 'ConfigEntryNotReady' if
+    # the configured backend could not be reached - then let HA deal with an optional retry
+    await check_evcc_is_available(http_session, config_entry)
+
+    coordinator = EvccDataUpdateCoordinator(hass, http_session, config_entry)
     await coordinator.async_refresh()
     if not coordinator.last_update_success:
         raise ConfigEntryNotReady
     else:
-        pass
-        # ok we could initially connect to the evcc...
+        # If Home Assistant is already in a running state, start the watchdog
+        # immediately, else trigger it after Home Assistant has finished starting.
+        if coordinator.use_ws:
+            if hass.state is CoreState.running:
+                await coordinator.start_watchdog()
+            else:
+                hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, coordinator.start_watchdog)
 
-    # If Home Assistant is already in a running state, start the watchdog
-    # immediately, else trigger it after Home Assistant has finished starting.
-    if(coordinator.use_ws):
-        if hass.state is CoreState.running:
-            await coordinator.start_watchdog()
-        else:
-            hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, coordinator.start_watchdog)
+        # now we can attempt to initialize our coordinator with the data already read...
+        if not await coordinator.read_evcc_config_on_startup(hass):
+            _LOGGER.warning(f"coordinator.read_evcc_config_on_startup() was not completed successfully - please enable debug-log option in order to find a posiible root cause.")
 
-    # now we can initialize our coordinator with the data already read...
-    await coordinator.read_evcc_config_on_startup(hass)
+        # then we can start the entity registrations...
+        hass.data[DOMAIN][config_entry.entry_id] = coordinator
+        await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
 
-    # then we can start the entity registrations...
-    hass.data[DOMAIN][config_entry.entry_id] = coordinator
-    await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
+        # initialize our service...
+        evcc_services = EvccService(hass, config_entry, coordinator)
+        hass.services.async_register(DOMAIN, SERVICE_SET_LOADPOINT_PLAN, evcc_services.set_loadpoint_plan,
+                                     supports_response=SupportsResponse.OPTIONAL)
+        hass.services.async_register(DOMAIN, SERVICE_SET_VEHICLE_PLAN, evcc_services.set_vehicle_plan,
+                                     supports_response=SupportsResponse.OPTIONAL)
 
-    # initialize our service...
-    evcc_services = EvccService(hass, config_entry, coordinator)
-    hass.services.async_register(DOMAIN, SERVICE_SET_LOADPOINT_PLAN, evcc_services.set_loadpoint_plan,
-                                 supports_response=SupportsResponse.OPTIONAL)
-    hass.services.async_register(DOMAIN, SERVICE_SET_VEHICLE_PLAN, evcc_services.set_vehicle_plan,
-                                 supports_response=SupportsResponse.OPTIONAL)
+        # yes - hurray! we can now cleanup the device registry...
+        asyncio.create_task(check_device_registry(hass))
 
-    # Do we need to patch something?!
-    # if coordinator.check_for_max_of_16a:
-    #     asyncio.create_task(coordinator.check_for_16a_limit(hass, config_entry.entry_id))
-
-    # yes - hurray! we can now cleanup the device registry...
-    asyncio.create_task(check_device_registry(hass))
-
-    config_entry.async_on_unload(config_entry.add_update_listener(entry_update_listener))
-    # ok we are done...
-    return True
+        config_entry.async_on_unload(config_entry.add_update_listener(entry_update_listener))
+        # ok we are done...
+        return True
 
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
@@ -145,6 +151,18 @@ async def entry_update_listener(hass: HomeAssistant, config_entry: ConfigEntry) 
     """Update the configuration of the host entity."""
     _LOGGER.debug(f"entry_update_listener() called for entry: {config_entry.entry_id}")
     await hass.config_entries.async_reload(config_entry.entry_id)
+
+
+@staticmethod
+async def check_evcc_is_available(http_session: aiohttp.ClientSession, config_entry: ConfigEntry) -> None:
+    a_host = config_entry.data.get(CONF_HOST, "NOT-CONFIGURED")
+    try:
+        bridge = EvccApiBridge(host=a_host, web_session = http_session)
+        await bridge.is_evcc_available()
+        return True
+
+    except Exception as err:
+        raise ConfigEntryNotReady(f"evcc instance '{a_host}' not available (yet) - HA will keep trying") from err
 
 
 @staticmethod
@@ -179,14 +197,14 @@ async def check_device_registry(hass: HomeAssistant):
 
 
 class EvccDataUpdateCoordinator(DataUpdateCoordinator):
-    def __init__(self, hass: HomeAssistant, config_entry):
+    def __init__(self, hass: HomeAssistant, http_session: aiohttp.ClientSession, config_entry):
         _LOGGER.debug(f"starting evcc_intg for: data:{config_entry.data}")
         lang = hass.config.language.lower()
         self.name = config_entry.title
         self.use_ws = config_entry.data.get(CONF_USE_WS, True)
 
-        self.bridge = EvccApiBridge(host=config_entry.data.get(CONF_HOST),
-                                    web_session=async_get_clientsession(hass),
+        self.bridge = EvccApiBridge(host=config_entry.data.get(CONF_HOST, "NOT-CONFIGURED"),
+                                    web_session=http_session,
                                     coordinator=self,
                                     lang=lang)
 
@@ -245,15 +263,21 @@ class EvccDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def _async_watchdog_check(self, *_):
         """Reconnect the websocket if it fails."""
-        if not self.bridge.ws_connected:
-            _LOGGER.info(f"Watchdog: websocket connect required")
-            self._config_entry.async_create_background_task(self.hass, self.bridge.connect_ws(), "ws_connection")
+        if len(self._device_info_dict) == 0:
+            # when 'self._device_info_dict' is still {}, then the integration was started, but the
+            # evcc server was not yet available and the read_evcc_config_on_startup function was
+            # not called yet...
+            _LOGGER.info(f"Watchdog: Integration not READY - no device info available yet")
         else:
-            if self.bridge.request_tariff_endpoints:
-                _LOGGER.debug(f"Watchdog: websocket is connected - check for optional required 'tariffs' updates")
-                await self.bridge.ws_update_tariffs_if_required()
+            if not self.bridge.ws_connected:
+                _LOGGER.info(f"Watchdog: websocket connect required")
+                self._config_entry.async_create_background_task(self.hass, self.bridge.connect_ws(), "ws_connection")
             else:
-                _LOGGER.debug(f"Watchdog: websocket is connected")
+                if self.bridge.request_tariff_endpoints:
+                    _LOGGER.debug(f"Watchdog: websocket is connected - check for optional required 'tariffs' updates")
+                    await self.bridge.ws_update_tariffs_if_required()
+                else:
+                    _LOGGER.debug(f"Watchdog: websocket is connected")
 
     def clear_data(self):
         _LOGGER.debug(f"clear_data called...")
@@ -265,13 +289,18 @@ class EvccDataUpdateCoordinator(DataUpdateCoordinator):
         # b) vehicles
         # a) how many loadpoints
         # c) load point configuration (like 1/3 phase options)
-        if (len(self.bridge._data) == 0 or
+        if self.bridge._data is None or (len(self.bridge._data) == 0 or
                 Tag.VERSION.key not in self.bridge._data or
                 JSONKEY_LOADPOINTS not in self.bridge._data or
                 JSONKEY_VEHICLES not in self.bridge._data):
             await self.bridge.read_all_data()
 
         initdata = self.bridge._data
+
+        if initdata is None or len(initdata) == 0:
+            _LOGGER.warning("read_evcc_config_on_startup(): could not init evcc_intg - no data available from evcc!")
+            return False
+
         if Tag.VERSION.key in initdata:
             self._version = initdata[Tag.VERSION.key]
         elif Tag.AVAILABLEVERSION.key in initdata:
@@ -294,16 +323,14 @@ class EvccDataUpdateCoordinator(DataUpdateCoordinator):
         if JSONKEY_VEHICLES in initdata:
             for a_veh_name in initdata[JSONKEY_VEHICLES]:
                 a_veh = initdata[JSONKEY_VEHICLES][a_veh_name]
-                if "capacity" in a_veh:
-                    self._vehicle[a_veh_name] = {
-                        "name": a_veh["title"],
-                        "capacity": a_veh["capacity"]
-                    }
-                else:
-                    self._vehicle[a_veh_name] = {
-                        "name": a_veh["title"],
-                        "capacity": None
-                    }
+                self._vehicle[a_veh_name] = {
+                    "name": a_veh["title"],
+                    #"id": slugify(f"vid_{a_veh_name}"),
+                    "id": slugify(a_veh["title"]),
+                    "capacity": a_veh["capacity"] if "capacity" in a_veh else None,
+                    "minSoc": a_veh["minSoc"] if "minSoc" in a_veh else None,
+                    "limitSoc": a_veh["limitSoc"] if "limitSoc" in a_veh else None
+                }
         else:
             _LOGGER.warning(f"NO vehicles found [{JSONKEY_VEHICLES}] in the evcc data: {initdata}")
 
@@ -344,7 +371,7 @@ class EvccDataUpdateCoordinator(DataUpdateCoordinator):
 
                 api_index += 1
         else:
-            _LOGGER.warning(f"NO loadpoints found [{JSONKEY_LOADPOINTS}] in the evcc data: {initdata}")
+            _LOGGER.warning(f"read_evcc_config_on_startup(): NO loadpoints found [{JSONKEY_LOADPOINTS}] in the evcc data: {initdata}")
 
         if "smartCostType" in initdata:
             self._cost_type = initdata["smartCostType"]
@@ -406,8 +433,11 @@ class EvccDataUpdateCoordinator(DataUpdateCoordinator):
         #     for a_key in initdata:
         #         _LOGGER.error(f"key: {a_key}")
 
-        _LOGGER.debug(
-            f"read_evcc_config: Use Websocket: {self.use_ws} (already started? {self.bridge.ws_connected}) LPs: {len(self._loadpoint)} VEHs: {len(self._vehicle)} CT: '{self._cost_type}' CUR: {self._currency} GAO: {self._grid_data_as_object}")
+        _LOGGER.debug(f"read_evcc_config_on_startup(): Use Websocket: {self.use_ws} (already started? {self.bridge.ws_connected}) LPs: {len(self._loadpoint)} VEHs: {len(self._vehicle)} CT: '{self._cost_type}' CUR: {self._currency} GAO: {self._grid_data_as_object}")
+        return True
+
+        # Return True if we made it.
+        return True
 
     async def _async_update_data(self) -> dict:
         """Update data via library."""
