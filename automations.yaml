@@ -234,6 +234,8 @@
     data: {}
     response_variable: Count
     enabled: false
+  - action: shell_command.conso
+    data: {}
   mode: single
 - id: '1720780669285'
   alias: Suppression données (purge recorder)
@@ -1379,6 +1381,7 @@
       message: Pas de réponse de {{ trigger.to_state.name | replace(' Linkquality','')
         }} !
     action: notify.persistent_notification
+    enabled: false
   - action: notify.notify
     metadata: {}
     data:
@@ -4220,4 +4223,78 @@
   actions:
   - action: shell_command.estar
     data: {}
+  mode: single
+- id: '1756561377881'
+  alias: Alerte Eaton
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.eaton_etat
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+    trigger: state
+    to: unavailable
+    id: Indispo
+  - entity_id:
+    - sensor.eaton_etat
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+    trigger: state
+    to: unknown
+    id: Indispo
+  - trigger: numeric_state
+    entity_id:
+    - sensor.eaton_autonomie_de_la_batterie
+    below: 600
+    id: Autonomie
+  - trigger: state
+    entity_id:
+    - sensor.eaton_etat
+    id: Coupure
+    to: On Battery
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - Autonomie
+      sequence:
+      - data:
+          message: Autonomie Eaton de moins de 10minutes
+        action: notify.notify
+    - conditions:
+      - condition: trigger
+        id:
+        - Coupure
+      sequence:
+      - data:
+          message: Coupure de courant !
+        action: notify.notify
+    - conditions:
+      - condition: trigger
+        id:
+        - Indispo
+      sequence:
+      - action: homeassistant.reload_config_entry
+        metadata: {}
+        data:
+          entry_id: 01K3VMP716VYCJY3TQKCBAS33B
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 30
+          milliseconds: 0
+      - action: homeassistant.reload_config_entry
+        metadata: {}
+        data: {}
+        target:
+          device_id: c939d252feb1b79badc77e31f214b63e
+      - data:
+          message: Eaton indisponible !
+        action: notify.notify
   mode: single

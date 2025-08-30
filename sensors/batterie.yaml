@@ -29,11 +29,18 @@ template:
         device_class: battery
         state_class: measurement
         state: >
-          {% set energie_actuelle = states('sensor.energie_estimee_batterie_dc') | float(0) %}
+          {% set etat = states('sensor.energie_estimee_batterie_dc') %}
           {% set energie_reference = states('input_number.energie_batterie_a_100') | float(0) %}
           {% set capacite = 5.12 %}
-          {% set soc_estime = 100 + ((energie_actuelle - energie_reference) / capacite * 100) %}
-          {% set soc=max(min(100,soc_estime),0) %}
+
+          {% if etat in ['unknown', 'unavailable', 'none'] %}
+            {% set soc = 0 %}
+          {% else %}
+            {% set energie_actuelle = etat | float(0) %}
+            {% set soc_estime = 100 + ((energie_actuelle - energie_reference) / capacite * 100) %}
+            {% set soc = max(min(100, soc_estime), 0) %}
+          {% endif %}
+
           {{ soc | round(1) }}
 
       - name: "Energie restante Batterie"

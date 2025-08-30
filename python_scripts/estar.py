@@ -78,6 +78,7 @@ def detect_blocs(hexdata: str):
     """
     1) Premier bloc = premier '1205'
     2) Bloc suivant = premier '1205' trouvé APRÈS un '42..01' rencontré depuis le début du bloc.
+       (S’il n’y a pas de '42..01' tôt le matin, on aura quand même au moins un bloc : le premier.)
     """
     blocs = []
     first_1205 = hexdata.find("1205")
@@ -105,42 +106,15 @@ def earliest_marker_in_range(hexdata: str, start_idx: int, end_idx: int) -> int:
     c = [i for i in (i1, i2) if i != -1]
     return min(c) if c else -1
 
-def split_panels(hex_str: str):
-    """
-    Découpe la zone 'panneaux' en 1..N segments selon les séparateurs observés.
-    Variantes vues : 28 01/82, 0122/22 ... 080212 ... 0a..
-    """
-    if not hex_str:
-        return []
-    sep_re = re.compile(
-        r"(?:(?:28(?:01|82))?)"         # préfixe optionnel
-        r"(?:(?:0122)|(?:22))"          # 0122 ou 22
-        r"[0-9a-fA-F]{4}"               # xxxx
-        r"080212"
-        r"[0-9a-fA-F]{4}"               # yyyy
-        r"0a[0-9a-fA-F]{2}",            # 0a zz
-        re.IGNORECASE
-    )
-    parts = []
-    last = 0
-    for m in sep_re.finditer(hex_str):
-        parts.append(hex_str[last:m.start()])
-        last = m.end()
-    parts.append(hex_str[last:])
-    return [p for p in parts if p]
-
 # --- Parsing des "générales" (robuste & auto) ---
 def parse_generales_stream(general_hex: str, expected_slots: int = 0):
     """
-    Parsage ROBUSTE des 'générales' dans la *QUEUE* d’un bloc :
-    - Cherche un run de fréquences ~50Hz (48..52)
-    - Puis N températures (-40..130°C)
-    - Puis N tensions (60..400V)
-    - Ré-aligne au besoin en glissant d’1 octet
+    Cherche un run de fréquences (~50Hz) pour s’aligner (48..52),
+    puis N températures (-40..130°C), puis N tensions (60..400V).
+    S’aligne au besoin en décalant d’1 octet.
     """
     gb = bytes.fromhex(general_hex)
 
-    # Helper : lire floats alignés avec offset
     def floats_from_bytes_with_offset(b: bytes, offset: int):
         out = []
         i = offset
@@ -153,7 +127,6 @@ def parse_generales_stream(general_hex: str, expected_slots: int = 0):
             i += 4
         return out
 
-    # Cherche le plus long run de ~50Hz
     best = (None, None, 0)  # (offset, start_byte, length)
     lo, hi = 48.0, 52.0
     for off in range(4):
@@ -178,7 +151,7 @@ def parse_generales_stream(general_hex: str, expected_slots: int = 0):
     if expected_slots and abs(freq_len - expected_slots) <= 2:
         freq_len = expected_slots
 
-    # Récupérer les fréquences
+    # fréquences alignées
     freqs = []
     freqs_bytes = gb[freq_start_byte: freq_start_byte + 4*freq_len]
     for i in range(0, len(freqs_bytes), 4):
@@ -187,7 +160,7 @@ def parse_generales_stream(general_hex: str, expected_slots: int = 0):
         except Exception:
             pass
 
-    # Ensuite : températures puis tensions (plausibilités)
+    # températures puis tensions avec contrôle de plausibilité + réalignement
     def next_n_plausible_floats(b: bytes, start_byte: int, n: int, rng):
         vals, p = [], start_byte
         count = 0
@@ -201,7 +174,7 @@ def parse_generales_stream(general_hex: str, expected_slots: int = 0):
                 p += 4
                 count += 1
             else:
-                p += 1  # glissement pour se réaligner
+                p += 1
         return vals, p
 
     p_after = freq_start_byte + 4*freq_len
@@ -224,6 +197,7 @@ def parse_latest_values(bin_path: str):
     panneaux = []
     global_panel_id = 1
 
+    # motif d'un slot panneau : V, I, P, [E]
     slot_re = re.compile(
         r"0d([0-9a-fA-F]{8})"        # V
         r"15([0-9a-fA-F]{8})"        # I
@@ -236,65 +210,81 @@ def parse_latest_values(bin_path: str):
     total_e_global = 0.0
 
     for i, b_pos in enumerate(blocs, start=1):
-        # Fin "dure" du bloc
+        # borne de fin utilisable même sans 42..01
         m_end = re.search(r"42..01", hexdata[b_pos:], re.IGNORECASE)
-        if not m_end:
-            print(f"[DBG] Bloc {i}: ignoré (pas de fin 42..01).")
-            continue
-        bloc_end_abs = b_pos + m_end.end()
+        if m_end:
+            bloc_end_abs = b_pos + m_end.end()
+            mode = ""
+        else:
+            next_block_pos = blocs[i] if i < len(blocs) else len(hexdata)
+            bloc_end_abs = next_block_pos
+            mode = " (sans 42..01)"
 
-        # Premier séparateur de créneaux dans ce bloc
+        # début des données (après 080112/080212)
         idx_sep = earliest_marker_in_range(hexdata, b_pos, bloc_end_abs)
         if idx_sep == -1:
-            print(f"[DBG] Bloc {i}: ignoré (pas de 080112/080212).")
+            print(f"[DBG] Bloc {i}{mode}: ignoré (pas de 080112/080212).")
             continue
 
-        # Fenêtre hex du bloc (jusqu’au début du bloc suivant)
         data_start = idx_sep + 6
         next_block_pos = blocs[i] if i < len(blocs) else len(hexdata)
         bloc_hex = hexdata[data_start:next_block_pos]
 
-        # Nombre de créneaux pour caler les générales
+        # Nombre de créneaux (sert d’« attendu » pour chaque panneau)
         creneaux = re.findall(r"1205([0-9a-fA-F]{10})", hexdata[b_pos:idx_sep])
         nb_slots = len(creneaux)
 
-        # --- Trouver la FIN des slots panneaux, puis séparer PANNEAUX vs GÉNÉRALES ---
+        # 1) On localise la fin des slots panneaux (dernier match slot_re)
         last_slot_end = 0
-        for m in slot_re.finditer(bloc_hex):
+        slots_iter_for_end = list(slot_re.finditer(bloc_hex))
+        for m in slots_iter_for_end:
             last_slot_end = max(last_slot_end, m.end())
-
         if last_slot_end == 0:
-            # pas de slots -> rien à faire
-            print(f"[DBG] Bloc {i}: pas de slots panneaux trouvés.")
+            print(f"[DBG] Bloc {i}{mode}: pas de slots panneaux trouvés.")
             continue
 
-        panels_area_hex  = bloc_hex[:last_slot_end]     # tout ce qui contient les slots
-        general_area_hex = bloc_hex[last_slot_end:]     # queue = données générales
+        panels_area_hex  = bloc_hex[:last_slot_end]
+        general_area_hex = bloc_hex[last_slot_end:]
 
-        # --- Générales (sur la queue uniquement)
+        # 2) Générales à partir de la queue
         freqs, temps, tens = parse_generales_stream(general_area_hex, expected_slots=nb_slots)
         block_last_temp = temps[-1] if temps else None
         if freqs is not None:
-            print(f"[DBG] Bloc {i} générales (auto): f={len(freqs)} t={len(temps)} v={len(tens)} | T° last={block_last_temp}")
+            print(f"[DBG] Bloc {i} générales (auto){mode}: f={len(freqs)} t={len(temps)} v={len(tens)} | T° last={block_last_temp}")
 
-        # --- Découpe des panneaux sur *toute* la zone panneaux
-        pane_hexes = split_panels(panels_area_hex)
+        # 3) DÉMULTIPLEXAGE DES PANNEAUX **SANS séparateurs**
+        #    – on récupère tous les matches slots dans panels_area_hex
+        all_matches = list(slot_re.finditer(panels_area_hex))
+        total_slots_found = len(all_matches)
 
-        # Lecture des dernières mesures de chaque panneau du bloc
+        pane_hexes = []
+        if nb_slots > 0 and total_slots_found >= nb_slots:
+            # on coupe en paquets de nb_slots en partant de la fin
+            # chaque paquet = un panneau
+            nb_panneaux_estime = total_slots_found // nb_slots
+            idx = total_slots_found
+            for _ in range(nb_panneaux_estime):
+                start_m = all_matches[idx - nb_slots]
+                end_m   = all_matches[idx - 1]
+                pane_hexes.append(panels_area_hex[start_m.start(): end_m.end()])
+                idx -= nb_slots
+            pane_hexes.reverse()  # remet dans l’ordre naturel
+        else:
+            # fallback : un seul panneau (au cas où nb_slots == 0 très tôt le matin)
+            pane_hexes = [panels_area_hex] if panels_area_hex else []
+
+        # 4) Lecture des dernières valeurs par panneau
         added = 0
         bloc_p_sum = 0.0
         bloc_e_sum = 0.0
-
         for p_hex in pane_hexes:
             last_v = last_i = last_p = last_e = None
-            slots_count = 0
             for m in slot_re.finditer(p_hex or ""):
                 v_hex, i_hex, p_hexv, e_hex = m.groups()
                 last_v = f32le_from_hex(v_hex)
                 last_i = f32le_from_hex(i_hex)
                 last_p = f32le_from_hex(p_hexv)
                 last_e = f32le_from_hex(e_hex) if e_hex else 0.0
-                slots_count += 1
 
             if last_v is not None:
                 panneaux.append({
@@ -314,7 +304,7 @@ def parse_latest_values(bin_path: str):
                     bloc_e_sum += last_e
                     total_e_global += last_e
 
-        print(f"[DBG] Bloc {i}: créneaux OK | panneaux détectés={added} | générales={'oui' if (freqs is not None) else 'non'}")
+        print(f"[DBG] Bloc {i}{mode}: créneaux OK | panneaux détectés={added} | générales={'oui' if (freqs is not None) else 'non'}")
         if added:
             print(f"   Totaux bloc — Puissance: {round(bloc_p_sum,1)} W | Énergie: {round(bloc_e_sum,2)} kWh")
 
