@@ -182,7 +182,24 @@
                             "top": "Връх",
                             "middle": "Среден",
                             "down": "Надолу",
-                            "downmost": "Най-долу"
+                            "downmost": "Най-долу",
+                            "upper_half": "Горна половина",
+                            "lower_half": "Долна половина",
+                            "surround": "Около"
+                        }
+                    },
+                    "swing_horizontal_mode": {
+                        "state": {
+                            "leftmost": "Най-вляво",
+                            "left": "Ляво",
+                            "center": "Среден",
+                            "right": "Право",
+                            "rightmost": "Най-вдясно",
+                            "left_swing": "Ляв люлеене",
+                            "right_swing": "Дясно люлеене",
+                            "center_swing": "Център люлеене",
+                            "surround": "Около",
+                            "direct": "Директно"
                         }
                     }
                 }
@@ -322,7 +339,7 @@
             },
             "dehumidifier": {
                 "name": "Обезвлажнител",
-                "state_attributes": {
+                "state_attributes": {
                     "preset_mode": {
                         "state": {
                             "purify": "Пречистете",
@@ -411,6 +428,9 @@
             },
             "timer_x": {
                 "name": "Таймер {x}"
+            },
+            "sensor_threshold": {
+                "name": "{sensor} праг"
             }
         },
         "select": {
@@ -501,7 +521,8 @@
                     "auto": "Автоматично",
                     "low": "Ниско",
                     "medium": "Средно",
-                    "high": "Високо"
+                    "high": "Високо",
+                    "very_high": "Много високо"
                 }
             },
             "recipe": {
@@ -614,6 +635,14 @@
                 "state": {
                     "celsius": "Целзий",
                     "fahrenheit": "Фаренхайт"
+                }
+            },
+            "breaker_trigger_action": {
+                "name": "{trigger} действие",
+                "state": {
+                    "ignore": "Игнориране",
+                    "alarm": "Аларма",
+                    "trip_breaker": "Прекъсвач"
                 }
             },
             "oven_built_in_recipe": {
@@ -796,6 +825,13 @@
         "switch": {
             "anti_frost": {
                 "name": "Анти-замръзване"
+            },
+            "breaker": {
+                "name": "Прекъсвач",
+                "state": {
+                    "off": "Отворен",
+                    "on": "Затворен"
+                }
             },
             "evaporator_cleaning": {
                 "name": "Почистване изпарител"

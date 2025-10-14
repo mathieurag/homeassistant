@@ -62,7 +62,9 @@
           "local_mqtt": "直接连接到打印机，而不是通过 Bambu Lab 云：",
           "host": "本地打印机 IP 地址：",
           "access_code": "访问码",
-          "usage_hours": "当前使用时间（可选）："
+          "usage_hours": "当前使用时间（可选）：",
+          "print_cache_count": "缓存到家庭助理的模型数量（无限的-1）：",
+          "timelapse_cache_count": "缓存到家庭助理的及时视频数量（-1用于无限）："
         },
         "sections": {
           "advanced": {
@@ -83,7 +85,8 @@
           "host": "本地打印机 IP 地址：",
           "access_code": "访问码",
           "usage_hours": "当前使用时间（可选）：",
-          "developer_lan_mode": "启用了开发人员LAN模式："
+          "print_cache_count": "缓存到家庭助理的模型数量（无限的-1）：",
+          "timelapse_cache_count": "缓存到家庭助理的及时视频数量（-1用于无限）："
         },
         "sections": {
           "advanced": {
@@ -143,7 +146,9 @@
           "host": "本地打印机 IP 地址：",
           "access_code": "访问码",
           "local_mqtt": "直接连接到打印机，而不是通过 Bambu Lab 云：",
-          "usage_hours": "当前使用时间（可选）："
+          "usage_hours": "当前使用时间（可选）：",
+          "print_cache_count": "缓存到家庭助理的模型数量（无限的-1）：",
+          "timelapse_cache_count": "缓存到家庭助理的及时视频数量（-1用于无限）："
         },
         "sections": {
           "advanced": {
@@ -163,7 +168,8 @@
           "host": "本地打印机 IP 地址：",
           "access_code": "访问码",
           "usage_hours": "当前使用时间（可选）：",
-          "developer_lan_mode": "启用了开发人员LAN模式："
+          "print_cache_count": "缓存到家庭助理的模型数量（无限的-1）：",
+          "timelapse_cache_count": "缓存到家庭助理的及时视频数量（-1用于无限）："
         },
         "sections": {
           "advanced": {
@@ -226,6 +232,15 @@
       },
       "dev": {
         "name": "调试"
+      },
+      "buzzer_silence": {
+        "name": "蜂鸣器 - 沉默"
+      },
+      "buzzer_fire_alarm": {
+        "name": "蜂鸣器 - 火警警报"
+      },
+      "buzzer_beeping": {
+        "name": "蜂鸣器 - 蜂鸣器"
       }
     },
     "fan": {
@@ -256,6 +271,9 @@
       },
       "camera_light": {
         "name": "摄像头灯"
+      },
+      "heatbed_light": {
+        "name": "加热灯"
       }
     },
     "number": {
@@ -474,7 +492,11 @@
         "name": "喷嘴类型",
         "state": {
           "hardened_steel": "硬化钢喷嘴",
-          "stainless_steel": "不锈钢喷嘴"
+          "stainless_steel": "不锈钢喷嘴",
+          "tungsten_carbide": "碳化钨",
+          "high_flow_hardened_steel": "硬化钢",
+          "high_flow_stainless_steel": "不锈钢有大流动",
+          "high_flow_tungsten_carbide": "碳化氢碳化物含量大"
         }
       },
       "humidity_index": {
@@ -741,6 +763,34 @@
           "abnormal": "异常",
           "readonly": "只读"
         }
+      },
+      "left_nozzle_diameter": {
+        "name": "左喷嘴大小"
+      },
+      "left_nozzle_type": {
+        "name": "左喷嘴类型",
+        "state": {
+          "hardened_steel": "硬化钢",
+          "stainless_steel": "不锈钢",
+          "tungsten_carbide": "碳化钨",
+          "high_flow_hardened_steel": "硬化钢",
+          "high_flow_stainless_steel": "不锈钢有大流动",
+          "high_flow_tungsten_carbide": "碳化氢碳化物含量大"
+        }
+      },
+      "right_nozzle_diameter": {
+        "name": "正确的喷嘴大小"
+      },
+      "right_nozzle_type": {
+        "name": "正确的喷嘴类型",
+        "state": {
+          "hardened_steel": "硬化钢",
+          "stainless_steel": "不锈钢",
+          "tungsten_carbide": "碳化钨",
+          "high_flow_hardened_steel": "硬化钢",
+          "high_flow_stainless_steel": "不锈钢有大流动",
+          "high_flow_tungsten_carbide": "碳化氢碳化物含量大"
+        }
       }
     },
     "camera": {
@@ -760,12 +810,6 @@
       },
       "ftp": {
         "name": "打印机加载模型数据"
-      },
-      "timelapse": {
-        "name": "从打印机加载最新的时间段"
-      },
-      "download_gcode_file": {
-        "name": "将GCODE文件保存在HA中"
       }
     },
     "update": {

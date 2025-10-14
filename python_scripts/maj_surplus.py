@@ -36,6 +36,7 @@ print("entité =",entity,"/ id=",id_entity_linky)
 
 # Calcul de la date choisie à partir de jours:
 target_date = datetime.date.today() - datetime.timedelta(days=jours)
+print("Date=",target_date)
 
 # Fuseau horaire local
 local_tz = pytz.timezone("Europe/Paris")

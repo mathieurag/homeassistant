@@ -15,7 +15,8 @@ esphome:
 esp32:
   board: esp32dev
   framework:
-    type: arduino
+    type: esp-idf
+    
 
 bluetooth_proxy:
     active: True
@@ -44,10 +45,6 @@ wifi:
 # In combination with the `ap` this allows the user
 # to provision wifi credentials to the device via WiFi AP.
 captive_portal:
-
-dashboard_import:
-  package_import_url: github://esphome/example-configs/esphome-web/esp32.yaml@main
-  import_full_config: true
 
 # Sets up Bluetooth LE (Only on ESP32) to allow the user
 # to provision wifi credentials to the device.

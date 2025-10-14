@@ -30,31 +30,43 @@ dt_end_naive = datetime.datetime.combine(target_date, datetime.time(23, 00, 00))
 dt_end_local = local_tz.localize(dt_end_naive, is_dst=None)
 tsmax = dt_end_local.timestamp()
 
-liste=['sensor.double_clamp_meter_total_energy_a',
-'sensor.lave_vaisselle',
-'sensor.cumulus_kwh',
-'sensor.frigo_kwh',
-'sensor.prise_tv',
-'sensor.lave_linge',
-'sensor.bidirectional_energy_meter_energy_consumed_a',
-'sensor.bidirectional_energy_meter_energy_consumed_b',
-'sensor.sonnette',
-'sensor.em06_b2_this_month_energy',
-'sensor.double_clamp_meter_today_energy_b',
-'sensor.em06_a2_this_month_energy',
-'sensor.disjoncteur_3',
-'sensor.em06_a1_this_month_energy',
-'sensor.lampe_salon_2',
-'sensor.em06_c2_this_month_energy',
-'sensor.prises_rdc_2',
-'sensor.disjoncteur_4',
-'sensor.prise_5_energie',
-'sensor.prise_zigbee_3_energy']
 
-energie=['sensor.energie_consommee_j_hp','sensor.energie_consommee_j_hc','sensor.energie_solar_j']
-surplus=['sensor.surplus_production_compteur']
-charge_batterie=['sensor.esphome_web_a92940_marstek_daily_charging_energy']
-decharge_batterie=['sensor.esphome_web_a92940_marstek_daily_discharging_energy']
+print(target_date.strftime("%d/%m/%Y"))
+
+# ---------- Listes d'entités ----------
+liste = [
+    'sensor.double_clamp_meter_total_energy_a',
+    'sensor.lave_vaisselle',
+    'sensor.cumulus_kwh',
+    'sensor.frigo_kwh',
+    'sensor.prise_tv',
+    'sensor.lave_linge',
+    'sensor.bidirectional_energy_meter_energy_consumed_a',
+    'sensor.bidirectional_energy_meter_energy_consumed_b',
+    'sensor.sonnette',
+    'sensor.em06_b2_this_month_energy',
+    'sensor.double_clamp_meter_today_energy_b',
+    'sensor.em06_a2_this_month_energy',
+    'sensor.disjoncteur_3',
+    'sensor.em06_a1_this_month_energy',
+    'sensor.lampe_salon_2',
+    'sensor.em06_c2_this_month_energy',
+    'sensor.prises_rdc_2',
+    'sensor.disjoncteur_4',
+    #'sensor.prise_5_energie',
+    'sensor.energie_borne',
+    'sensor.prise_zigbee_3_energy',
+]
+
+energie = [
+    'sensor.energie_consommee_j_hp',
+    'sensor.energie_consommee_j_hc',
+    'sensor.em06_02_a1_this_month_energy',
+]
+
+surplus = ['sensor.surplus_production_compteur']
+charge_batterie = ['sensor.charge_marstek']
+decharge_batterie = ['sensor.decharge_marstek']
 
 #print("entité =",liste)
 
@@ -344,7 +356,7 @@ conso_max=0
 if error>0:
     print("Consommation négative : ")
     for j in range(0,24):
-        if delta_conso[j]<=0.005:
+        if delta_conso[j]<=0.004:
             print("Consommation non suivie : ",j,"à",j+1,"h : ",round(delta_conso[j],3),"kWh")
             conso_max=0
             for i in range(len(liste)):
@@ -382,12 +394,12 @@ if error>0:
 
             if conso_max > delta_conso[j]+0.01 :
 
-                query1 = "UPDATE 'statistics_short_term' set sum=sum"+str(round((delta_conso[j]-0.02)*factor,3))+" where metadata_id in (" + str(id_entity[range_max_entite]) +") and start_ts >="+str(ts0+(j)*3600)
+                query1 = "UPDATE 'statistics_short_term' set sum=sum"+str(round((delta_conso[j]-0.005)*factor,3))+" where metadata_id in (" + str(id_entity[range_max_entite]) +") and start_ts >="+str(ts0+(j)*3600)
                 data=database.execute(query1)
-                query1 = "UPDATE 'statistics' set sum=sum"+str(round((delta_conso[j]-0.02)*factor,3))+" where metadata_id in (" + str(id_entity[range_max_entite]) +") and start_ts >="+str(ts0+(j)*3600)
+                query1 = "UPDATE 'statistics' set sum=sum"+str(round((delta_conso[j]-0.005)*factor,3))+" where metadata_id in (" + str(id_entity[range_max_entite]) +") and start_ts >="+str(ts0+(j)*3600)
                 data=database.execute(query1)
                 entry = entry + 1
-                print("Conso corrigée:",str(round((delta_conso[j]-0.02),3)),"kWh")
+                print("Conso corrigée:",str(round((delta_conso[j]-0.005),3)),"kWh")
             else:
                 print("Conso max inférieure au delta à corriger !",conso_max,"kWh / Delta:",str(round((delta_conso[j]-0.02)*factor,3)),"kWh")
     print("Fin du script : ",entry," entrée(s) modifiée(s)")

@@ -1,0 +1,30 @@
+template:
+  - sensor:
+      - name: "NUC Proxmox Fréquence"
+        unique_id: nuc_proxmox_freq
+        unit_of_measurement: "MHz"
+        state: "{{ state_attr('sensor.nuc_proxmox','freq_eff')}}"
+        state_class: measurement
+        device_class: frequency
+      - name: "NUC Proxmox Power"
+        unique_id: nuc_proxmox__power_w
+        unit_of_measurement: "W"
+        state: "{{ (state_attr('sensor.nuc_proxmox','power_w') | float(0)) | round(1) }}"
+        state_class: measurement
+        device_class: power
+      - name: "NUC Proxmox CPU Temp"
+        unique_id: nuc_proxmox_cpu_temp
+        unit_of_measurement: "°C"
+        state: "{{ (state_attr('sensor.nuc_proxmox','pkg_temp_c') | float(0)) | round(1) }}"
+        state_class: measurement
+        device_class: temperature
+      - name: "NUC Proxmox CPU %"
+        unique_id: nuc_proxmox_cpu_pct
+        unit_of_measurement: "%"
+        state: "{{ (state_attr('sensor.nuc_proxmox','cpu_pct') | float(0)) | round(1) }}"
+        state_class: measurement
+      - name: "NUC Proxmox Core Temp"
+        unique_id: nuc_proxmox_core_temp
+        unit_of_measurement: "°C"
+        state: "{{ (state_attr('sensor.nuc_proxmox','core_avg_c') | float(0)) | round(1) }}"
+        state_class: measurement

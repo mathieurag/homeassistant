@@ -1,0 +1,22 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Configure TP-Link Switch Monitor",
+                "description": "Enter your TP-Link switch details.",
+                "data": {
+                    "ip": "Switch IP Address",
+                    "username": "Username",
+                    "password": "Password",
+                    "scan_interval": "Polling Interval (Seconds)",
+                    "mtu": "MTU Size"
+                }
+            }
+        },
+        "error": {
+            "auth_failed": "Login failed. Please check your credentials.",
+            "cannot_connect": "Cannot connect to the TP-Link switch.",
+            "unknown": "An unknown error occurred."
+        }
+    }
+}

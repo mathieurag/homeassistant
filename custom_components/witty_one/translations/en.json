@@ -21,6 +21,18 @@
             },
             "current_session_duration": {
                 "name": "Duration of current session"
+            },
+            "state": {
+                "name": "State",
+                "state": {
+                    "idle": "Idle",
+                    "wait": "Wait",
+                    "wait_energy": "Wait energy",
+                    "charging": "Charging",
+                    "finish": "Charge finished",
+                    "reserved": "Reserved",
+                    "error": "Error"
+                }
             }
         }
     }

@@ -198,7 +198,7 @@ forecast_surplus = simu.get("surplus_par_heure", [])
 
 
 # --- PRODUCTION SOLAIRE ---
-result["entites"]["production"] = analyse_entite("sensor.energie_solar_j", forecast_production, "Wh")
+result["entites"]["production"] = analyse_entite("sensor.em06_02_a1_this_month_energy", forecast_production, "Wh")
 
 # --- ECS ---
 result["entites"]["ecs"] = analyse_entite("sensor.cumulus_kwh", forecast_ecs, "kWh")

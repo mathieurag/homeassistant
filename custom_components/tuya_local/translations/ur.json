@@ -91,7 +91,6 @@
                     "local_key": "مقامی کلید",
                     "protocol_version": "پروٹوکول ورژن (اگر معلوم نہ ہو تو خود کار طریقے سے آزمائیں)",
                     "poll_only": "صرف پول (اگر آپ کا آلہ پوری طرح کام نہیں کرتا ہے تو اسے آزمائیں)"
-
                 }
             }
         },
@@ -185,7 +184,24 @@
                             "top": "اوپر",
                             "middle": "درمیانی",
                             "down": "نیچے",
-                            "downmost": "سب سے نیچے"
+                            "downmost": "سب سے نیچے",
+                            "upper_half": "اوپری نصف",
+                            "lower_half": "نچلا نصف",
+                            "surround": "گھیرنا"
+                        }
+                    },
+                    "swing_horizontal_mode": {
+                        "state": {
+                            "leftmost": "سب سے بائیں",
+                            "left": "بائیں",
+                            "center": "مرکز",
+                            "right": "دائیں",
+                            "rightmost": "سب سے دائیں",
+                            "left_swing": "بائیں جھول",
+                            "right_swing": "دائیں جھول",
+                            "center_swing": "مرکز جھول",
+                            "surround": "گھیرنا",
+                            "direct": "براہ راست"
                         }
                     }
                 }
@@ -414,6 +430,9 @@
             },
             "timer_x": {
                 "name": "ٹائمر {x}"
+            },
+            "sensor_threshold": {
+                "name": "{sensor} حد"
             }
         },
         "select": {
@@ -504,7 +523,8 @@
                     "auto": "خود کار",
                     "low": "کم",
                     "medium": "درمیانہ",
-                    "high": "زیادہ"
+                    "high": "زیادہ",
+                    "very_high": "بہت زیادہ"
                 }
             },
             "recipe": {
@@ -616,6 +636,14 @@
                 "state": {
                     "celsius": "سیلسیس",
                     "fahrenheit": "فارن ہائیٹ"
+                }
+            },
+            "breaker_trigger_action": {
+                "name": "{trigger} ایکشن",
+                "state": {
+                    "ignore": "نظر انداز کریں",
+                    "alarm": "الارم",
+                    "trip_breaker": "ٹریپ بریکر"
                 }
             },
             "oven_built_in_recipe": {
@@ -798,6 +826,13 @@
         "switch": {
             "anti_frost": {
                 "name": "اینٹی فراسٹ"
+            },
+            "breaker": {
+                "name": "بریککر",
+                "state": {
+                    "off": "کھلا",
+                    "on": "بند"
+                }
             },
             "evaporator_cleaning": {
                 "name": "بخارات کی صفائی"

@@ -182,7 +182,24 @@
                             "top": "Wysoki",
                             "middle": "Średni",
                             "down": "Niski",
-                            "downmost": "Najniższy"
+                            "downmost": "Najniższy",
+                            "upper_half": "Górna połowa",
+                            "lower_half": "Dolna połowa",
+                            "surround": "Otaczający"
+                        }
+                    },
+                    "swing_horizontal_mode": {
+                        "state": {
+                            "leftmost": "Najbardziej w lewo",
+                            "left": "W lewo",
+                            "center": "Środek",
+                            "right": "W prawo",
+                            "rightmost": "Najbardziej w prawo",
+                            "left_swing": "Huśtawka w lewo",
+                            "right_swing": "Huśtawka w prawo",
+                            "center_swing": "Huśtawka w środek",
+                            "surround": "Otaczający",
+                            "direct": "Bezpośredni"
                         }
                     }
                 }
@@ -411,6 +428,9 @@
             },
             "timer_x": {
                 "name": "Regulator czasowy {x}"
+            },
+            "sensor_threshold": {
+                "name": "{sensor} próg"
             }
         },
         "select": {
@@ -501,7 +521,8 @@
                     "auto": "Automatyczny",
                     "low": "Niski",
                     "medium": "Średni",
-                    "high": "Wysoki"
+                    "high": "Wysoki",
+                    "very_high": "Bardzo wysoki"
                 }
             },
             "recipe": {
@@ -613,6 +634,14 @@
                 "state": {
                     "celsius": "Celsjusz",
                     "fahrenheit": "Fahrenheita"
+                }
+            },
+            "breaker_trigger_action": {
+                "name": "{trigger} Akcja",
+                "state": {
+                    "ignore": "Ignoruj",
+                    "alarm": "Alarm",
+                    "trip_breaker": "Wyłącznik awaryjny"
                 }
             },
             "oven_built_in_recipe": {
@@ -796,6 +825,13 @@
         "switch": {
             "anti_frost": {
                 "name": "Ochrona przed zamarzaniem"
+            },
+            "breaker": {
+                "name": "Wyłącznik",
+                "state": {
+                    "off": "Otwarty",
+                    "on": "Zamknięty"
+                }
             },
             "evaporator_cleaning": {
                 "name": "Czyszczenie parownika"

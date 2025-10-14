@@ -7,6 +7,15 @@ mqtt:
         value_template: "{{ value_json.total_puissance | default(0) }}"
         json_attributes_topic: "estar/production"
 
+  - sensor:
+      - name: "NUC Proxmox"
+        unique_id: "nuc_proxmox"
+        unit_of_measurement: "MHz"
+        device_class: frequency
+        state_topic: "proxmox/telemetry"
+        value_template: "{{ value_json.freq_eff }}"
+        json_attributes_topic: "proxmox/telemetry"
+
       - name: "Taux HC jour"
         unique_id: taux_hc_day
         state_topic: "homeassistant/sensor/taux_hc_day/state"
@@ -98,14 +107,6 @@ mqtt:
         value_template: "{{ value_json.bat_ok }}"
         unique_id: simulation_bat_ok
 
-      - name: "Valeur CT001"
-        state_topic: "CT001/"
-        unique_id: valeur_ct001
-        device_class: power
-        state_class: measurement
-        unit_of_measurement: "W" # ← mets "W", "lux", etc. selon ton capteur
-        value_template: "{{ value | int }}"
-
       - name: "Consommation Mois"
         unique_id: mqtt_consommation_mois
         state_topic: "homeassistant/consommation/mois"
@@ -129,18 +130,3 @@ mqtt:
         state_topic: "homeassistant/consommation/annee"
         value_template: "{{ now().timestamp() | int }}"
         json_attributes_topic: "homeassistant/consommation/annee"
-
-  - switch:
-      - name: "Shelly Pro Em Switch (Mqtt)"
-        unique_id: shelly_pro_em_switch
-        state_topic: "shellyproem50-08f9e0e69644/status/switch:0/output"
-        command_topic: "shellyproem50-08f9e0e69644/status/switch:0/set"
-        availability:
-          - topic: "shellyproem50-08f9e0e69644/online"
-        payload_on: "true"
-        payload_off: "false"
-        state_on: "true"
-        state_off: "false"
-        optimistic: false
-        qos: 0
-        retain: true

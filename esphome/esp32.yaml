@@ -1,30 +1,20 @@
 esphome:
-  name: esp32
-  friendly_name: ESP32-1
-  min_version: 2024.6.0
-  name_add_mac_suffix: false
-  project:
-    name: esphome.web
-    version: dev
+  name: bluetooth-proxy
+  friendly_name: bluetooth-proxy
 
 esp32:
   board: esp32dev
   framework:
-    type: arduino
+    type: esp-idf
 
-
-#Bluetooth proxy
-
-bluetooth_proxy:
-    active: True
-    
-# Enable logging
-logger:
-
-# Enable Home Assistant API
 api:
   encryption:
     key: !secret encryption_key
+
+bluetooth_proxy:
+  active: true
+
+logger:
 
 ota:
   - platform: esphome
@@ -33,78 +23,54 @@ ota:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
-
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: !secret wifi_ssid_fallback
     password: !secret wifi_password_fallback
 
 captive_portal:
 
-# Allow provisioning Wi-Fi via serial
-improv_serial:
-
-dashboard_import:
-  package_import_url: github://esphome/example-configs/esphome-web/esp32.yaml@main
-  import_full_config: true
-
-# Sets up Bluetooth LE (Only on ESP32) to allow the user
-# to provision wifi credentials to the device.
-esp32_improv:
-  authorizer: none
-
-# To have a "next url" for improv serial
 web_server:
 
-sensor:
-  - platform: adc
-    pin: GPIO32
-    name: "Test Tension ESP32 32"
-    update_interval: 60s
+esp32_ble_tracker:
+  on_ble_advertise:
+    - then:
+        - lambda: |-
+            static std::vector<std::string> devices;
+            std::string mac = x.address_str();
+            std::string name = x.get_name().c_str();
+            int rssi = x.get_rssi();
 
-  - platform: adc
-    pin: GPIO33
-    name: "Test Tension ESP32 33"
-    update_interval: 60s
-    
-  - platform: adc
-    pin: GPIO34
-    name: "Test Tension ESP32 34"
-    update_interval: 60s
-    
-  - platform: adc
-    pin: GPIO35
-    name: "Test Tension ESP32 35"
-    update_interval: 60s
+            // Ignore si déjà connu
+            for (auto &entry : devices) {
+              if (entry.find(mac) == 0) return;
+            }
 
-  - platform: adc
-    pin: GPIO36
-    name: "Test Tension ESP32 36"
-    update_interval: 60s
+            // Construire une ligne "MAC | Nom | RSSI"
+            char buffer[128];
+            snprintf(buffer, sizeof(buffer), "%s | %s | %d dBm",
+                     mac.c_str(),
+                     name.empty() ? "(sans nom)" : name.c_str(),
+                     rssi);
 
-  - platform: adc
-    pin: GPIO37
-    name: "Test Tension ESP32 37"
-    update_interval: 60s
-    
-output:
-  - platform: ledc
-    pin: GPIO19
-    frequency: 1 Hz
-    id: pwm
+            devices.push_back(buffer);
 
-fan:
-  - platform: speed
-    output: pwm
-    name: "PWM"
-    restore_mode: ALWAYS_OFF
-    on_turn_on:
-    - logger.log: "PWM activé"
-    on_turn_off:
-    - logger.log: "PWM désactivé"
-    on_speed_set:
-    - logger.log:
-        format: "PWM speed was changed to %d %"
-        args: [ x ]
+            // Sauvegarde pointeur pour le timer
+            id(ble_devices) = &devices;
 
-    
+globals:
+  - id: ble_devices
+    type: void*
+    restore_value: no
+
+interval:
+  - interval: 60s
+    then:
+      - lambda: |-
+          auto devices = static_cast<std::vector<std::string>*>(id(ble_devices));
+          if (devices == nullptr) return;
+
+          ESP_LOGI("ble_summary", "=== Synthèse BLE (%d périphériques) ===", devices->size());
+          for (auto &entry : *devices) {
+            ESP_LOGI("ble_summary", "  %s", entry.c_str());
+          }
+          ESP_LOGI("ble_summary", "======================================");

@@ -62,7 +62,9 @@
           "local_mqtt": "Connectez-vous directement à l’imprimante au lieu de passer par Bambu Cloud :",
           "host": "Adresse IP de l’imprimante locale :",
           "access_code": "Code d'accès",
-          "usage_hours": "Heures d'utilisation actuelles (facultatif) :"
+          "usage_hours": "Heures d'utilisation actuelles (facultatif) :",
+          "print_cache_count": "Nombre de modèles à cache à l'assistant à domicile (-1 pour illimité):",
+          "timelapse_cache_count": "Nombre de vidéos timelapse à cache à l'assistant à domicile (-1 pour illimité):"
         },
         "sections": {
           "advanced": {
@@ -83,7 +85,8 @@
           "host": "Adresse IP de l’imprimante locale :",
           "access_code": "Code d'accès",
           "usage_hours": "Heures d'utilisation actuelles (facultatif) :",
-          "developer_lan_mode": "Mode LAN développeur activé:"
+          "print_cache_count": "Nombre de modèles à cache à l'assistant à domicile (-1 pour illimité):",
+          "timelapse_cache_count": "Nombre de vidéos timelapse à cache à l'assistant à domicile (-1 pour illimité):"
         },
         "sections": {
           "advanced": {
@@ -143,7 +146,9 @@
           "host": "Adresse IP de l’imprimante locale :",
           "access_code": "Code d'accès :",
           "local_mqtt": "Connectez-vous directement à l'imprimante plutôt que via le Cloud Bambu Lab :",
-          "usage_hours": "Heures d'utilisation actuelles (facultatif) :"
+          "usage_hours": "Heures d'utilisation actuelles (facultatif) :",
+          "print_cache_count": "Nombre de modèles à cache à l'assistant à domicile (-1 pour illimité):",
+          "timelapse_cache_count": "Nombre de vidéos timelapse à cache à l'assistant à domicile (-1 pour illimité):"
         },
         "sections": {
           "advanced": {
@@ -163,7 +168,8 @@
           "host": "Adresse IP de l’imprimante locale :",
           "access_code": "Code d'accès",
           "usage_hours": "Heures d'utilisation actuelles (facultatif) :",
-          "developer_lan_mode": "Mode LAN développeur activé:"
+          "print_cache_count": "Nombre de modèles à cache à l'assistant à domicile (-1 pour illimité):",
+          "timelapse_cache_count": "Nombre de vidéos timelapse à cache à l'assistant à domicile (-1 pour illimité):"
         },
         "sections": {
           "advanced": {
@@ -226,6 +232,15 @@
       },
       "dev": {
         "name": "Déboguer"
+      },
+      "buzzer_silence": {
+        "name": "Buzzer - silence"
+      },
+      "buzzer_fire_alarm": {
+        "name": "Buzzer - Alarme incendie"
+      },
+      "buzzer_beeping": {
+        "name": "Buzzer - bip"
       }
     },
     "fan": {
@@ -256,6 +271,9 @@
       },
       "camera_light": {
         "name": "Lumière de la caméra"
+      },
+      "heatbed_light": {
+        "name": "Léger"
       }
     },
     "number": {
@@ -474,7 +492,11 @@
         "name": "Type de buse",
         "state": {
           "hardened_steel": "Acier trempé",
-          "stainless_steel": "Acier inoxydable"
+          "stainless_steel": "Acier inoxydable",
+          "tungsten_carbide": "Carbure de tungstène",
+          "high_flow_hardened_steel": "Acier durci avec un grand débit",
+          "high_flow_stainless_steel": "acier inoxydable avec un grand débit",
+          "high_flow_tungsten_carbide": "carbure de tungstène avec un grand débit"
         }
       },
       "humidity_index": {
@@ -741,6 +763,34 @@
           "abnormal": "Anormal",
           "readonly": "Lire uniquement"
         }
+      },
+      "left_nozzle_diameter": {
+        "name": "Taille de la buse gauche"
+      },
+      "left_nozzle_type": {
+        "name": "Type de buse gauche",
+        "state": {
+          "hardened_steel": "Acier durci",
+          "stainless_steel": "Acier inoxydable",
+          "tungsten_carbide": "Carbure de tungstène",
+          "high_flow_hardened_steel": "Acier durci avec un grand débit",
+          "high_flow_stainless_steel": "acier inoxydable avec un grand débit",
+          "high_flow_tungsten_carbide": "carbure de tungstène avec un grand débit"
+        }
+      },
+      "right_nozzle_diameter": {
+        "name": "Taille de la buse droite"
+      },
+      "right_nozzle_type": {
+        "name": "Type de buse droit",
+        "state": {
+          "hardened_steel": "Acier durci",
+          "stainless_steel": "Acier inoxydable",
+          "tungsten_carbide": "Carbure de tungstène",
+          "high_flow_hardened_steel": "Acier durci avec un grand débit",
+          "high_flow_stainless_steel": "acier inoxydable avec un grand débit",
+          "high_flow_tungsten_carbide": "carbure de tungstène avec un grand débit"
+        }
       }
     },
     "camera": {
@@ -760,12 +810,6 @@
       },
       "ftp": {
         "name": "Charger le modèle depuis l'imprimante"
-      },
-      "timelapse": {
-        "name": "Charger le dernier timelapse depuis l'imprimante"
-      },
-      "download_gcode_file": {
-        "name": "Enregistrer le fichier GCode dans HA"
       }
     },
     "update": {

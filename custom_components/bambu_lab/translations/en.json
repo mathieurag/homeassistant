@@ -62,6 +62,8 @@
           "local_mqtt": "Connect locally to the printer:",
           "host": "Local Printer IP Address:",
           "access_code": "Access Code:",
+          "print_cache_count": "Number of models to cache to home assistant (-1 for unlimited):",
+          "timelapse_cache_count": "Number of timelapse videos to cache to home assistant (-1 for unlimited):",
           "usage_hours": "Current usage hours (optional):"
         },
         "sections": {
@@ -82,7 +84,8 @@
           "serial": "Serial Number:",
           "host": "Local Printer IP Address:",
           "access_code": "Access Code:",
-          "developer_lan_mode": "Developer Lan Mode Enabled:",
+          "print_cache_count": "Number of models to cache to home assistant (-1 for unlimited):",
+          "timelapse_cache_count": "Number of timelapse videos to cache to home assistant (-1 for unlimited):",
           "usage_hours": "Current usage hours (optional):"
         },
         "sections": {
@@ -143,6 +146,8 @@
           "host": "Local Printer IP Address:",
           "access_code": "Access Code:",
           "local_mqtt": "Connect directly to printer instead of by Bambu Lab cloud:",
+          "print_cache_count": "Number of models to cache to home assistant (-1 for unlimited):",
+          "timelapse_cache_count": "Number of timelapse videos to cache to home assistant (-1 for unlimited):",
           "usage_hours": "Current usage hours (optional):"
         },
         "sections": {
@@ -162,7 +167,8 @@
         "data": {
           "host": "Local Printer IP Address:",
           "access_code": "Access Code:",
-          "developer_lan_mode": "Developer Lan Mode Enabled:",
+          "print_cache_count": "Number of models to cache to home assistant (-1 for unlimited):",
+          "timelapse_cache_count": "Number of timelapse videos to cache to home assistant (-1 for unlimited):",
           "usage_hours": "Current usage hours (optional):"
         },
         "sections": {
@@ -226,6 +232,15 @@
       },
       "dev": {
         "name": "Debug"
+      },
+      "buzzer_silence": {
+        "name": "Buzzer - Silence"
+      },
+      "buzzer_fire_alarm": {
+        "name": "Buzzer - Fire alarm"
+      },
+      "buzzer_beeping": {
+        "name": "Buzzer - Beeping"
       }
     },
     "fan": {
@@ -256,6 +271,9 @@
       },
       "camera_light": {
         "name": "Camera light"
+      },
+      "heatbed_light": {
+        "name": "Heatbed light"
       }
     },
     "number": {
@@ -513,7 +531,39 @@
         "name": "Nozzle type",
         "state": {
           "hardened_steel": "Hardened steel",
-          "stainless_steel": "Stainless steel"
+          "stainless_steel": "Stainless steel",
+          "tungsten_carbide": "Tungsten carbide",
+          "high_flow_hardened_steel": "High flow hardened steel",
+          "high_flow_stainless_steel": "High flow stainless steel",
+          "high_flow_tungsten_carbide": "High flow tungsten carbide"
+        }
+      },
+      "left_nozzle_diameter": {
+        "name": "Left nozzle size"
+      },
+      "left_nozzle_type": {
+        "name": "Left nozzle type",
+        "state": {
+          "hardened_steel": "Hardened steel",
+          "stainless_steel": "Stainless steel",
+          "tungsten_carbide": "Tungsten carbide",
+          "high_flow_hardened_steel": "High flow hardened steel",
+          "high_flow_stainless_steel": "High flow stainless steel",
+          "high_flow_tungsten_carbide": "High flow tungsten carbide"
+        }
+      },
+      "right_nozzle_diameter": {
+        "name": "Right nozzle size"
+      },
+      "right_nozzle_type": {
+        "name": "Right nozzle type",
+        "state": {
+          "hardened_steel": "Hardened steel",
+          "stainless_steel": "Stainless steel",
+          "tungsten_carbide": "Tungsten carbide",
+          "high_flow_hardened_steel": "High flow hardened steel",
+          "high_flow_stainless_steel": "High flow stainless steel",
+          "high_flow_tungsten_carbide": "High flow tungsten carbide"
         }
       },
       "ip_address": {
@@ -760,12 +810,6 @@
       },
       "prompt_sound": {
         "name": "Allow Prompt Sound"
-      },
-      "timelapse": {
-        "name": "Load latest timelapse from printer"
-      },
-      "download_gcode_file": {
-        "name": "Save GCode file in HA"
       }
     },
     "update": {

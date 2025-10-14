@@ -36,6 +36,16 @@ class WittyOneSensorEntityDescription(SensorEntityDescription):
     value_fn: Callable[[WittyOneDevice], datetime | StateType]
 
 
+GENERAL_STATES = {
+    1: "idle",  # 256
+    2: "wait",  # 512
+    4: "wait_energy",  # 1024
+    6: "charging",  # 1536
+    8: "finish",  # 2048
+    16: "reserved",  # 4096
+    15728640: "error",
+}
+
 ENTITY_DESCRIPTIONS: tuple[WittyOneSensorEntityDescription, ...] = (
     WittyOneSensorEntityDescription(
         key="total_energy",
@@ -90,6 +100,13 @@ ENTITY_DESCRIPTIONS: tuple[WittyOneSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTime.SECONDS,
         device_class=SensorDeviceClass.DURATION,
         value_fn=lambda device: device.current_session.duration,
+    ),
+    WittyOneSensorEntityDescription(
+        key="state",
+        translation_key="state",
+        device_class=SensorDeviceClass.ENUM,
+        options=list(GENERAL_STATES.values()),
+        value_fn=lambda device: GENERAL_STATES[device.general.mainstate],
     ),
 )
 

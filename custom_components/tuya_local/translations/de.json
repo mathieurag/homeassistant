@@ -182,7 +182,24 @@
                             "top": "Oben",
                             "middle": "Mitte",
                             "down": "Unten",
-                            "downmost": "Ganz unten"
+                            "downmost": "Ganz unten",
+                            "upper_half": "Obere Hälfte",
+                            "lower_half": "Untere Hälfte",
+                            "surround": "Umgebung"
+                        }
+                    },
+                    "swing_horizontal_mode": {
+                        "state": {
+                            "leftmost": "Ganz links",
+                            "left": "Links",
+                            "center": "Mitte",
+                            "right": "Rechts",
+                            "rightmost": "Ganz rechts",
+                            "left_swing": "Links schwingen",
+                            "right_swing": "Rechts schwingen",
+                            "center_swing": "Mitte schwingen",
+                            "surround": "Umgebung",
+                            "direct": "Direkt"
                         }
                     }
                 }
@@ -287,7 +304,8 @@
                             "low_steaming": "Niedriges Dämpfen",
                             "medium_steaming": "Mittleres Dämpfen",
                             "high_steaming": "Hohes Dämpfen"
-                        }                    }
+                        }
+                    }
                 }
             }
         },
@@ -410,6 +428,9 @@
             },
             "timer_x": {
                 "name": "Timer {x}"
+            },
+            "sensor_threshold": {
+                "name": "{sensor} Schwellenwert"
             }
         },
         "select": {
@@ -500,7 +521,8 @@
                     "auto": "Automatisch",
                     "low": "Niedrig",
                     "medium": "Mittel",
-                    "high": "Hoch"
+                    "high": "Hoch",
+                    "very_high": "Sehr hoch"
                 }
             },
             "recipe": {
@@ -612,6 +634,14 @@
                 "state": {
                     "celsius": "Celsius",
                     "fahrenheit": "Fahrenheit"
+                }
+            },
+            "breaker_trigger_action": {
+                "name": "{trigger} Aktion",
+                "state": {
+                    "ignore": "Ignorieren",
+                    "alarm": "Alarm",
+                    "trip_breaker": "Leistungsschalter auslösen"
                 }
             },
             "oven_built_in_recipe": {
@@ -795,6 +825,13 @@
         "switch": {
             "anti_frost": {
                 "name": "Anti-Frost"
+            },
+            "breaker": {
+                "name": "Leistungsschalter",
+                "state": {
+                    "off": "Offen",
+                    "on": "Geschlossen"
+                }
             },
             "evaporator_cleaning": {
                 "name": "Verdampferreinigung"

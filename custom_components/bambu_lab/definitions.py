@@ -159,8 +159,8 @@ PRINTER_BINARY_SENSORS: tuple[BambuLabBinarySensorEntityDescription, ...] = (
         translation_key="door_open",
         device_class=BinarySensorDeviceClass.DOOR,
         entity_category=EntityCategory.DIAGNOSTIC,
-        available_fn=lambda self: self.coordinator.get_model().home_flag.door_open_available,
-        is_on_fn=lambda self: self.coordinator.get_model().home_flag.door_open,
+        available_fn=lambda self: self.coordinator.get_model().info.door_open_available,
+        is_on_fn=lambda self: self.coordinator.get_model().info.door_open,
         exists_fn=lambda coordinator: coordinator.get_model().supports_feature(Features.DOOR_SENSOR),
     ),
     BambuLabBinarySensorEntityDescription(
@@ -168,7 +168,8 @@ PRINTER_BINARY_SENSORS: tuple[BambuLabBinarySensorEntityDescription, ...] = (
         translation_key="developer_lan_mode",
         device_class=BinarySensorDeviceClass.RUNNING,
         entity_category=EntityCategory.DIAGNOSTIC,
-        is_on_fn=lambda self: self.coordinator.get_model().info.developer_lan_mode,
+        is_on_fn=lambda self: self.coordinator.get_model().supports_feature(Features.MQTT_ENCRYPTION_FIRMWARE)
+                          and not self.coordinator.get_model().supports_feature(Features.MQTT_ENCRYPTION_ENABLED),
     ),
     BambuLabBinarySensorEntityDescription(
         key="mqtt_encryption",
@@ -193,7 +194,7 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
         translation_key="tool_module",
         icon="mdi:printer-3d-nozzle",
         device_class=SensorDeviceClass.ENUM,
-        options=["none", "laser", "cutter"],
+        options=["none", "laser10", "laser40", "cutter"],
         value_fn=lambda self: self.coordinator.get_model().extruder_tool.state,
         exists_fn=lambda coordinator: coordinator.get_model().supports_feature(Features.EXTRUDER_TOOL),
     ),
@@ -556,13 +557,49 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
         suggested_display_precision=1,
         device_class=SensorDeviceClass.DISTANCE,
         icon="mdi:printer-3d-nozzle",
-        value_fn=lambda self: self.coordinator.get_model().info.nozzle_diameter
+        value_fn=lambda self: self.coordinator.get_model().info.active_nozzle_diameter
     ),
     BambuLabSensorEntityDescription(
         key="nozzle_type",
         translation_key="nozzle_type",
         icon="mdi:printer-3d-nozzle",
-        value_fn=lambda self: self.coordinator.get_model().info.nozzle_type
+        value_fn=lambda self: self.coordinator.get_model().info.active_nozzle_type
+    ),
+    BambuLabSensorEntityDescription(
+        key="left_nozzle_diameter",
+        translation_key="left_nozzle_diameter",
+        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
+        suggested_unit_of_measurement=UnitOfLength.MILLIMETERS,
+        suggested_display_precision=1,
+        device_class=SensorDeviceClass.DISTANCE,
+        icon="mdi:printer-3d-nozzle",
+        value_fn=lambda self: self.coordinator.get_model().info.left_nozzle_diameter,
+        exists_fn=lambda coordinator: coordinator.get_model().supports_feature(Features.DUAL_NOZZLES),
+    ),
+    BambuLabSensorEntityDescription(
+        key="left_nozzle_type",
+        translation_key="left_nozzle_type",
+        icon="mdi:printer-3d-nozzle",
+        value_fn=lambda self: self.coordinator.get_model().info.left_nozzle_type,
+        exists_fn=lambda coordinator: coordinator.get_model().supports_feature(Features.DUAL_NOZZLES),
+    ),
+    BambuLabSensorEntityDescription(
+        key="right_nozzle_diameter",
+        translation_key="right_nozzle_diameter",
+        native_unit_of_measurement=UnitOfLength.MILLIMETERS,
+        suggested_unit_of_measurement=UnitOfLength.MILLIMETERS,
+        suggested_display_precision=1,
+        device_class=SensorDeviceClass.DISTANCE,
+        icon="mdi:printer-3d-nozzle",
+        value_fn=lambda self: self.coordinator.get_model().info.right_nozzle_diameter,
+        exists_fn=lambda coordinator: coordinator.get_model().supports_feature(Features.DUAL_NOZZLES),
+    ),
+    BambuLabSensorEntityDescription(
+        key="right_nozzle_type",
+        translation_key="right_nozzle_type",
+        icon="mdi:printer-3d-nozzle",
+        value_fn=lambda self: self.coordinator.get_model().info.right_nozzle_type,
+        exists_fn=lambda coordinator: coordinator.get_model().supports_feature(Features.DUAL_NOZZLES),
     ),
     BambuLabSensorEntityDescription(
         key="ip_address",

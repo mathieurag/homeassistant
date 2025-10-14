@@ -21,6 +21,7 @@ temp_cible = 60
 soc_depart = 25
 cap_batterie_kwh = 5.12
 puissance_max_ecs = 2000
+puissance_max_batterie = "number.esphome_web_a92940_marstek_max_charge_power"
 rendement_ecs = 0.95
 rendement_bat = 0.95
 surplus_ecs_w = 0
@@ -71,7 +72,7 @@ def get_state(entity_id, default=0.0):
 
 # --- PARAMETRES DYNAMIQUES ---
 
-puissance_max_batt = get_state("number.esphome_web_a92940_marstek_max_charge_power", 2000)
+puissance_max_batt = get_state(puissance_max_batterie, 2000)
 mode_absent = get_state("input_boolean.mode_absent", False)
 
 # --- CHARGEMENT DES PREVISIONS ---

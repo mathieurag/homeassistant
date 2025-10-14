@@ -12,6 +12,12 @@ frontend:
   extra_module_url:
     - /local/card-mod.js
 
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 127.0.0.1
+    - 192.168.68.132
+
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
@@ -57,6 +63,8 @@ logbook:
       - input_number.*frigo*
       - sensor.*frigo*
       - number.esphome_web_a92940_marstek_forcible_*
+      - sensor.*json*
+      - sensor.consommation_jour*
 
 # Purge de la base
 recorder:
@@ -80,21 +88,22 @@ logger:
     homeassistant.components.automation.wled_prod: error
     homeassistant.components.automation.wled*: error
     homeassistant.components.gree.coordinator: error
-    greeclimate.discovery: warning
     homeassistant.components.automation.gestion_radiateur: error
+    homeassistant.components.websocket_api.http.connection: error
+    homeassistant.components.automation.simulation_pv: error
+    greeclimate.discovery: warning
     pyhap.hap_protocol: warning
     root: warning
     aioesphomeapi.reconnect_logic: error
     custom_components.tuya_local.climate: info
     custom_components.aguaiot: info
     py.warnings: error
-    homeassistant.components.websocket_api.http.connection: error
     aioesphomeapi.connection: error
     homeassistant.loader: error
     homeassistant.helpers.frame: error
     custom_components.bambu_lab.pybambu: error
-    homeassistant.components.automation.simulation_pv: error
     custom_components.bbox.coordinator: error
+    homeassistant.components.recorder.db_schema: error
 
 shell_command:
   database: python3 /config/python_scripts/database.py
@@ -115,5 +124,9 @@ shell_command:
   taux_hc: "python3 /config/python_scripts/taux_hc.py"
   conso: "python3 /config/python_scripts/conso.py"
   estar: "python3 /config/python_scripts/estar.py"
+  correction_marstek: "python3 /config/python_scripts/correction_marstek.py"
+  unifi_refresh_sta: "/bin/bash -lc '/config/scripts/unifi/unifi_sta.sh >/dev/null 2>&1 || true'"
+  unifi_refresh_device: "/bin/bash -lc '/config/scripts/unifi/unifi_device.sh >/dev/null 2>&1 || true'"
+  unifi_refresh_sites: "/bin/bash -lc '/config/scripts/unifi/unifi_sites.sh >/dev/null 2>&1 || true'"
 
 my:

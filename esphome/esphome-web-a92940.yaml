@@ -654,7 +654,7 @@ sensor:
     accuracy_decimals: 1
     skip_updates: 6 # 30 seconds
     filters:
-      - multiply: 0.1
+      - multiply: 1
     
   - name: "Marstek Min. Cell Temperature"
     platform: modbus_controller
@@ -668,7 +668,7 @@ sensor:
     accuracy_decimals: 1
     skip_updates: 6 # 30 seconds
     filters:
-      - multiply: 0.1
+      - multiply: 1
     
   - name: "Marstek Battery Charge Voltage Limit"
     platform: modbus_controller
@@ -682,7 +682,7 @@ sensor:
     state_class: measurement
     skip_updates: 6 # 30 seconds
     filters:
-      - multiply: 0.01
+      - multiply: 0.1
 
   - name: "Marstek Battery Charge Current Limit"
     platform: modbus_controller
@@ -749,7 +749,7 @@ select:
       "stop": 0
       "charge": 1
       "discharge": 2
-    skip_updates: 6 # 30 seconds
+    skip_updates: 1 # 30 seconds
 
   - name: "Marstek Backup Function"
     platform: modbus_controller
@@ -787,7 +787,7 @@ number:
     min_value: 0
     max_value: 2500
     step: 1
-    skip_updates: 6 # 30 seconds
+    skip_updates: 1 # 5 seconds
 
   - name: "Marstek Charge To SOC"
     icon: mdi:battery-charging-medium 
@@ -815,7 +815,7 @@ number:
     min_value: 0
     max_value: 2500
     step: 1
-    skip_updates: 6 # 30 seconds
+    skip_updates: 1 # 5 seconds
 
   - name: "Marstek Charging Cutoff Capacity"
     icon: mdi:battery-90

@@ -1,397 +1,256 @@
 import sqlite3
-import time
 import datetime
 import pytz
 
+# ---------- Paramètres ----------
+jours = 1                     # J-1
+DEBUG_HOUR = None             # ex: 11 pour 11h→12h, ou None pour désactiver
+
+# ---------- Connexion ----------
 try:
     database = sqlite3.connect('/homeassistant/home-assistant_v2.db')
 except:
     database = sqlite3.connect('home-assistant_v2.db')
 
-error=0
-jours=1
-row=""
+error = 0
+row = ""
 
-# Calcul de la date choisie à partir de jours:
+# ---------- Date / Heure (locale -> timestamps UTC en secondes) ----------
 target_date = datetime.date.today() - datetime.timedelta(days=jours)
-
-# Fuseau horaire local
 local_tz = pytz.timezone("Europe/Paris")
 
-# Créer datetime à minuit, puis convertir proprement
 dt_naive = datetime.datetime.combine(target_date, datetime.time.min)
-dt_local = local_tz.localize(dt_naive, is_dst=None)  # is_dst=None force une erreur si ambigü
-ts0 = dt_local.timestamp()
-#print(ts0)
+dt_local = local_tz.localize(dt_naive, is_dst=None)
+ts0 = int(dt_local.timestamp())  # 00:00 local -> UTC epoch
 
-# Pour 23h00 locale
-dt_end_naive = datetime.datetime.combine(target_date, datetime.time(23, 00, 00))
+dt_end_naive = datetime.datetime.combine(target_date, datetime.time(23, 0, 0))
 dt_end_local = local_tz.localize(dt_end_naive, is_dst=None)
-tsmax = dt_end_local.timestamp()
+tsmax = int(dt_end_local.timestamp())
 
-liste=['sensor.double_clamp_meter_total_energy_a',
-'sensor.lave_vaisselle',
-'sensor.cumulus_kwh',
-'sensor.frigo_kwh',
-'sensor.prise_tv',
-'sensor.lave_linge',
-'sensor.bidirectional_energy_meter_energy_consumed_a',
-'sensor.bidirectional_energy_meter_energy_consumed_b',
-'sensor.sonnette',
-'sensor.em06_b2_this_month_energy',
-'sensor.double_clamp_meter_today_energy_b',
-'sensor.em06_a2_this_month_energy',
-'sensor.disjoncteur_3',
-'sensor.em06_a1_this_month_energy',
-'sensor.lampe_salon_2',
-'sensor.em06_c2_this_month_energy',
-'sensor.prises_rdc_2',
-'sensor.disjoncteur_4',
-'sensor.prise_5_energie',
-'sensor.prise_zigbee_3_energy']
+print(target_date.strftime("%d/%m/%Y"))
 
-energie=['sensor.energie_consommee_j_hp','sensor.energie_consommee_j_hc','sensor.energie_solar_j']
-surplus=['sensor.surplus_production_compteur']
-charge_batterie=['sensor.esphome_web_a92940_marstek_daily_charging_energy']
-decharge_batterie=['sensor.esphome_web_a92940_marstek_daily_discharging_energy']
+# ---------- Listes d'entités ----------
+liste = [
+    'sensor.double_clamp_meter_total_energy_a',
+    'sensor.lave_vaisselle',
+    'sensor.cumulus_kwh',
+    'sensor.frigo_kwh',
+    'sensor.prise_tv',
+    'sensor.lave_linge',
+    'sensor.bidirectional_energy_meter_energy_consumed_a',
+    'sensor.bidirectional_energy_meter_energy_consumed_b',
+    'sensor.sonnette',
+    'sensor.em06_b2_this_month_energy',
+    'sensor.double_clamp_meter_today_energy_b',
+    'sensor.em06_a2_this_month_energy',
+    'sensor.disjoncteur_3',
+    'sensor.em06_a1_this_month_energy',
+    'sensor.lampe_salon_2',
+    'sensor.em06_c2_this_month_energy',
+    'sensor.prises_rdc_2',
+    'sensor.disjoncteur_4',
+    #'sensor.prise_5_energie',
+    'sensor.energie_borne',
+    'sensor.prise_zigbee_3_energy',
+]
 
-#print("entité =",liste)
+energie = [
+    'sensor.energie_consommee_j_hp',
+    'sensor.energie_consommee_j_hc',
+    'sensor.em06_02_a1_this_month_energy',
+]
 
-i=0
-id_entity=[]
-unite_entity=[]
+surplus = ['sensor.surplus_production_compteur']
+charge_batterie = ['sensor.charge_marstek']
+decharge_batterie = ['sensor.decharge_marstek']
 
-for i in range(len(liste)):
-    #print("entité =",liste[i])
-    query0 = "SELECT id,unit_of_measurement FROM 'statistics_meta' where statistic_id='" + liste[i] +"'"
-    #print("requete=",query0)
-    data=database.execute(query0)
-    rows=data.fetchall()
+# ---------- Helpers ----------
+def normalize_unit(unit):
+    if unit is None:
+        return "kWh"
+    u = str(unit).strip().lower()
+    return "Wh" if u == "wh" else "kWh"
+
+def to_kwh(val, unit):
+    if val is None:
+        return None
+    return round(val / 1000.0, 4) if unit == "Wh" else round(val, 3)
+
+def get_meta(stat_id):
+    q = "SELECT id, unit_of_measurement FROM statistics_meta WHERE statistic_id = ?"
+    rows = database.execute(q, (stat_id,)).fetchall()
     if not rows:
-        #print(f"Aucune donnée retournée pour {liste[i]}")
-        id_entity.append("")
-        unite_entity.append("")
-    else:
-        for row in rows:
-            if row[0] == "":
-                print(f"Erreur, valeur vide pour {liste[i]}")
-                id_entity.append("")
-                unite_entity.append("")
-            else:
-                id_entity.append(row[0])
-                unite_entity.append(row[1])
-                #print("id states =", row[0])
-    row=""
+        return None, "kWh"
+    mid, unit = rows[0][0], normalize_unit(rows[0][1])
+    return mid, unit
 
-#for i in range(len(liste)):
-#    print(liste[i],":",id_entity[i],"/",unite_entity[i])
+def get_sum_exact(metadata_id, ts):
+    if metadata_id is None:
+        return None
+    q = "SELECT sum FROM statistics WHERE metadata_id = ? AND start_ts = ?"
+    r = database.execute(q, (metadata_id, int(ts))).fetchone()
+    return r[0] if (r and r[0] is not None) else None
 
-i=0
-id_energie=[]
-unite_energie=[]
-for i in range(len(energie)):
-    #print("entité =",liste[i])
-    query0 = "SELECT id,unit_of_measurement FROM 'statistics_meta' where statistic_id='" + energie[i] +"'"
-    #print("requete=",query0)
-    data=database.execute(query0)
-    rows=data.fetchall()
-    if not rows:
-        print(f"Aucune donnée retournée pour {energie[i]}")
-        id_energie.append("")
-        unite_energie.append("")
-    else:
-        for row in rows:
-            if row[0] == "":
-                print(f"Erreur, valeur vide pour {energie[i]}")
-                id_energie.append("")
-                unite_energie.append("")
-            else:
-                id_energie.append(row[0])
-                unite_energie.append(row[1])
-                #print("id states =", row[0])
-    row=""
+def get_delta(metadata_id, unit, ts_start, ts_end):
+    s0 = get_sum_exact(metadata_id, ts_start)
+    s1 = get_sum_exact(metadata_id, ts_end)
+    if s0 is None or s1 is None:
+        return 0.0
+    v0 = to_kwh(s0, unit)
+    v1 = to_kwh(s1, unit)
+    return round(v1 - v0, 4)
 
-#for i in range(len(energie)):
-#    print(energie[i],":",id_energie[i],"/",unite_energie[i])
+# ---------- Récupération meta ----------
+id_entity, unite_entity = [], []
+for sid in liste:
+    mid, unit = get_meta(sid)
+    id_entity.append(mid)
+    unite_entity.append(unit)
 
-i=0
-id_surplus=[]
-unite_surplus=[]
-for i in range(len(surplus)):
-    #print("entité =",liste[i])
-    query0 = "SELECT id,unit_of_measurement FROM 'statistics_meta' where statistic_id='" + surplus[i] +"'"
-    #print("requete=",query0)
-    data=database.execute(query0)
-    rows=data.fetchall()
-    if not rows:
-        #print(f"Aucune donnée retournée pour {surplus[i]}")
-        id_surplus.append("")
-        unite_surplus.append("")
-    else:
-        for row in rows:
-            if row[0] == "":
-                #print(f"Erreur, valeur vide pour {surplus[i]}")
-                id_surplus.append("")
-                unite_surplus.append("")
-            else:
-                id_surplus.append(row[0])
-                unite_surplus.append(row[1])
-                #print("id states =", row[0])
-    row=""
+id_energie, unite_energie = [], []
+for sid in energie:
+    mid, unit = get_meta(sid)
+    id_energie.append(mid)
+    unite_energie.append(unit)
 
-i=0
-id_charge_batterie=[]
-unite_charge_batterie=[]
-for i in range(len(charge_batterie)):
-    #print("entité =",liste[i])
-    query0 = "SELECT id,unit_of_measurement FROM 'statistics_meta' where statistic_id='" + charge_batterie[i] +"'"
-    #print("requete=",query0)
-    data=database.execute(query0)
-    rows=data.fetchall()
-    if not rows:
-        #print(f"Aucune donnée retournée pour {charge_batterie[i]}")
-        id_charge_batterie.append("")
-        unite_charge_batterie.append("")
-    else:
-        for row in rows:
-            if row[0] == "":
-                #print(f"Erreur, valeur vide pour {charge_batterie[i]}")
-                id_charge_batterie.append("")
-                unite_charge_batterie.append("")
-            else:
-                id_charge_batterie.append(row[0])
-                unite_charge_batterie.append(row[1])
-                #print("id states =", row[0])
-    row=""
-#for i in range(len(charge_batterie)):
-    #print(charge_batterie[i],":",id_charge_batterie[i],"/",unite_charge_batterie[i])
-    
-i=0
-id_decharge_batterie=[]
-unite_decharge_batterie=[]
-for i in range(len(decharge_batterie)):
-    #print("entité =",liste[i])
-    query0 = "SELECT id,unit_of_measurement FROM 'statistics_meta' where statistic_id='" + decharge_batterie[i] +"'"
-    #print("requete=",query0)
-    data=database.execute(query0)
-    rows=data.fetchall()
-    if not rows:
-        #print(f"Aucune donnée retournée pour {decharge_batterie[i]}")
-        id_decharge_batterie.append("")
-        unite_decharge_batterie.append("")
-    else:
-        for row in rows:
-            if row[0] == "":
-                #print(f"Erreur, valeur vide pour {decharge_batterie[i]}")
-                id_decharge_batterie.append("")
-                unite_decharge_batterie.append("")
-            else:
-                id_decharge_batterie.append(row[0])
-                unite_decharge_batterie.append(row[1])
-                #print("id states =", row[0])
-    row=""
-#for i in range(len(decharge_batterie)):
-    #print(decharge_batterie[i],":",id_decharge_batterie[i],"/",unite_decharge_batterie[i])
+id_surplus, unite_surplus = [], []
+for sid in surplus:
+    mid, unit = get_meta(sid)
+    id_surplus.append(mid)
+    unite_surplus.append(unit)
 
+id_charge_batterie, unite_charge_batterie = [], []
+for sid in charge_batterie:
+    mid, unit = get_meta(sid)
+    id_charge_batterie.append(mid)
+    unite_charge_batterie.append(unit)
 
-conso = [0] * 24    
-conso_linky = [0] * 24
-conso_surplus = [0] * 24
-conso_charge_batterie= [0] * 24
-conso_decharge_batterie= [0] * 24
-delta_conso= [0] * 24
+id_decharge_batterie, unite_decharge_batterie = [], []
+for sid in decharge_batterie:
+    mid, unit = get_meta(sid)
+    id_decharge_batterie.append(mid)
+    unite_decharge_batterie.append(unit)
 
-for j in range(0,24):
+# ---------- Accumulateurs horaires ----------
+conso = [0.0] * 24
+conso_linky = [0.0] * 24
+conso_surplus = [0.0] * 24
+conso_charge_batterie = [0.0] * 24
+conso_decharge_batterie = [0.0] * 24
+delta_conso = [0.0] * 24
+
+# ---------- Calculs par heure ----------
+for j in range(0, 24):
+    ts_start = ts0 + (j - 1) * 3600
+    ts_end   = ts0 + j * 3600
+
     for i in range(len(liste)):
-        query0 = "SELECT sum FROM 'statistics' where metadata_id in (" + str(id_entity[i]) +") and start_ts ="+str(ts0+(j-1)*3600)
-        query1 = "SELECT sum FROM 'statistics' where metadata_id in (" + str(id_entity[i]) +") and start_ts ="+str(ts0+(j)*3600)
-
-        data=database.execute(query0)
-        for row in data.fetchall():
-            if unite_entity[i]=="Wh":
-                sum_entity2=round(row[0]/1000,3)
-            else:
-                sum_entity2=round(row[0],3)
-            #print(id_entity[i]," : ",j,"h : ",sum_entity2,"kWh")
-        row=""
-        
-        data=database.execute(query1)
-        for row in data.fetchall():
-            if unite_entity[i]=="Wh":
-                sum_entity=round(row[0]/1000,3)
-            else:
-                sum_entity=round(row[0],3)
-            #print(id_entity[i]," : ",j+1,"h : ",sum_entity,"kWh")
-        delta=round(sum_entity-sum_entity2,3)
-        #print(id_entity[i]," : ",j,"à",j+1,"h : ",delta,"kWh")
-        row=""
-        conso[j]=conso[j]+delta
-    #print("conso : ",j,"à",j+1,"h : ",round(conso[j],3),"kWh")
+        conso[j] += get_delta(id_entity[i], unite_entity[i], ts_start, ts_end)
 
     for i in range(len(surplus)):
-        query0 = "SELECT sum FROM 'statistics' where metadata_id in (" + str(id_surplus[i]) +") and start_ts ="+str(ts0+(j-1)*3600)
-        query1 = "SELECT sum FROM 'statistics' where metadata_id in (" + str(id_surplus[i]) +") and start_ts ="+str(ts0+(j)*3600)
-
-        data=database.execute(query0)
-        for row in data.fetchall():
-            if unite_surplus[i]=="Wh":
-                sum_conso2=round(row[0]/1000,3)
-            else:
-                sum_conso2=round(row[0],3)
-            #print(id_surplus[i]," : ",j,"h : ",sum_conso2,"kWh")
-        row=""
-        
-        data=database.execute(query1)
-        for row in data.fetchall():
-            if unite_surplus[i]=="Wh":
-                sum_conso=round(row[0]/1000,3)
-            else:
-                sum_conso=round(row[0],3)
-            #print(id_energie[i]," : ",j+1,"h : ",sum_conso"kWh")
-        delta=round(sum_conso-sum_conso2,3)
-        #print(id_entity[i]," : ",j,"à",j+1,"h : ",delta,"kWh")
-        row=""
-        conso_surplus[j]=conso_surplus[j]+delta
-    #print("Surplus : ",j,"à",j+1,"h : ",round(conso_surplus[j],3),"kWh")
+        conso_surplus[j] += get_delta(id_surplus[i], unite_surplus[i], ts_start, ts_end)
 
     for i in range(len(charge_batterie)):
-        query0 = "SELECT sum FROM 'statistics' where metadata_id in (" + str(id_charge_batterie[i]) +") and start_ts ="+str(ts0+(j-1)*3600)
-        query1 = "SELECT sum FROM 'statistics' where metadata_id in (" + str(id_charge_batterie[i]) +") and start_ts ="+str(ts0+(j)*3600)
-
-        data=database.execute(query0)
-        for row in data.fetchall():
-            if unite_charge_batterie[i]=="Wh":
-                sum_conso2=round(row[0]/1000,3)
-            else:
-                sum_conso2=round(row[0],3)
-            #print(id_charge_batterie[i]," : ",j,"h : ",sum_conso2,"kWh")
-        row=""
-        
-        data=database.execute(query1)
-        for row in data.fetchall():
-            if unite_charge_batterie[i]=="Wh":
-                sum_conso=round(row[0]/1000,3)
-            else:
-                sum_conso=round(row[0],3)
-            #print(id_energie[i]," : ",j+1,"h : ",sum_conso"kWh")
-        delta=round(sum_conso-sum_conso2,3)
-        #print(id_entity[i]," : ",j,"à",j+1,"h : ",delta,"kWh")
-        row=""
-        conso_charge_batterie[j]=conso_charge_batterie[j]+delta
-    #print("charge_batterie : ",j,"à",j+1,"h : ",round(conso_charge_batterie[j],3),"kWh")
+        conso_charge_batterie[j] += get_delta(id_charge_batterie[i], unite_charge_batterie[i], ts_start, ts_end)
 
     for i in range(len(decharge_batterie)):
-        query0 = "SELECT sum FROM 'statistics' where metadata_id in (" + str(id_decharge_batterie[i]) +") and start_ts ="+str(ts0+(j-1)*3600)
-        query1 = "SELECT sum FROM 'statistics' where metadata_id in (" + str(id_decharge_batterie[i]) +") and start_ts ="+str(ts0+(j)*3600)
-
-        data=database.execute(query0)
-        for row in data.fetchall():
-            if unite_decharge_batterie[i]=="Wh":
-                sum_conso2=round(row[0]/1000,3)
-            else:
-                sum_conso2=round(row[0],3)
-            #print(id_decharge_batterie[i]," : ",j,"h : ",sum_conso2,"kWh")
-        row=""
-        
-        data=database.execute(query1)
-        for row in data.fetchall():
-            if unite_decharge_batterie[i]=="Wh":
-                sum_conso=round(row[0]/1000,3)
-            else:
-                sum_conso=round(row[0],3)
-            #print(id_energie[i]," : ",j+1,"h : ",sum_conso"kWh")
-        delta=round(sum_conso-sum_conso2,3)
-        #print(id_entity[i]," : ",j,"à",j+1,"h : ",delta,"kWh")
-        row=""
-        conso_decharge_batterie[j]=conso_decharge_batterie[j]+delta
-    #print("decharge_batterie : ",j,"à",j+1,"h : ",round(conso_decharge_batterie[j],3),"kWh")
+        conso_decharge_batterie[j] += get_delta(id_decharge_batterie[i], unite_decharge_batterie[i], ts_start, ts_end)
 
     for i in range(len(energie)):
-        query0 = "SELECT sum FROM 'statistics' where metadata_id in (" + str(id_energie[i]) +") and start_ts ="+str(ts0+(j-1)*3600)
-        query1 = "SELECT sum FROM 'statistics' where metadata_id in (" + str(id_energie[i]) +") and start_ts ="+str(ts0+(j)*3600)
+        conso_linky[j] += get_delta(id_energie[i], unite_energie[i], ts_start, ts_end)
 
-        data=database.execute(query0)
-        for row in data.fetchall():
-            if unite_energie[i]=="Wh":
-                sum_conso2=round(row[0]/1000,3)
-            else:
-                sum_conso2=round(row[0],3)
-            #print(id_energie[i]," : ",j,"h : ",sum_conso2,"kWh")
-        row=""
-        
-        data=database.execute(query1)
-        for row in data.fetchall():
-            if unite_energie[i]=="Wh":
-                sum_conso=round(row[0]/1000,3)
-            else:
-                sum_conso=round(row[0],3)
-            #print(id_energie[i]," : ",j+1,"h : ",sum_conso"kWh")
-        delta=round(sum_conso-sum_conso2,3)
-        #print(id_entity[i]," : ",j,"à",j+1,"h : ",delta,"kWh")
-        row=""
-        conso_linky[j]=conso_linky[j]+delta
-    #print("linky : ",j,"à",j+1,"h : ",round(conso_linky[j],3),"kWh")
+    delta_conso[j] = round(
+        conso_linky[j] - conso[j] - conso_surplus[j] - conso_charge_batterie[j] + conso_decharge_batterie[j], 3
+    )
 
-    delta_conso[j]=conso_linky[j]-conso[j]-conso_surplus[j]-conso_charge_batterie[j]+conso_decharge_batterie[j]
+    print("Consommation non suivie : ", j, "à", j+1, "h : ", round(delta_conso[j], 3), "kWh")
+    if delta_conso[j] >= 0.005 or delta_conso[j] < 0:
+        error += 1
 
-    print("Consommation non suivie : ",j,"à",j+1,"h : ",round(delta_conso[j],3),"kWh")
-    if delta_conso[j]>=0.005:
-        error=error+1
+    if DEBUG_HOUR is not None and j == DEBUG_HOUR:
+        print(f"\n--- Détail {j}h → {j+1}h ---")
+        for i in range(len(liste)):
+            d = get_delta(id_entity[i], unite_entity[i], ts_start, ts_end)
+            print(f"{liste[i]:40s} : {d:8.4f} kWh")
+        print(f"Total suivi        : {round(conso[j],4)} kWh")
+        print(f"Linky (energie)    : {round(conso_linky[j],4)} kWh")
+        print(f"Surplus            : {round(conso_surplus[j],4)} kWh")
+        print(f"Charge batterie    : {round(conso_charge_batterie[j],4)} kWh")
+        print(f"Décharge batterie  : {round(conso_decharge_batterie[j],4)} kWh")
+        print(f"Delta (non suivi)  : {round(delta_conso[j],4)} kWh")
 
-entry=0
-conso_max=0
-if error>0:
+# ---------- Correction ----------
+entry = 0
+conso_max = 0.0
+
+if error > 0:
     print("Consommation non suivie importante : ")
-    for j in range(0,24):
-        if delta_conso[j]>0.06:
-            print("Consommation non suivie : ",j,"à",j+1,"h : ",round(delta_conso[j],3),"kWh")
-            conso_max=0
+    for j in range(0, 24):
+        if delta_conso[j] > 0.1 or delta_conso[j] < 0:
+            print("Consommation non suivie : ", j, "à", j+1, "h : ", round(delta_conso[j], 3), "kWh")
+
+            conso_max = 0.0
+            max_entite = None
+            range_max_entite = None
+            ts_start = ts0 + (j - 1) * 3600
+            ts_end   = ts0 + j * 3600
+
             for i in range(len(liste)):
-                query0 = "SELECT sum FROM 'statistics' where metadata_id in (" + str(id_entity[i]) +") and start_ts ="+str(ts0+(j-1)*3600)
-                query1 = "SELECT sum FROM 'statistics' where metadata_id in (" + str(id_entity[i]) +") and start_ts ="+str(ts0+(j)*3600)
+                d = get_delta(id_entity[i], unite_entity[i], ts_start, ts_end)
+                if d > conso_max:
+                    conso_max = d
+                    max_entite = id_entity[i]
+                    range_max_entite = i
 
-                data=database.execute(query0)
-                for row in data.fetchall():
-                    if unite_entity[i]=="Wh":
-                        sum_entity2=round(row[0]/1000,3)
-                    else:
-                        sum_entity2=round(row[0],3)
-                    #print(id_entity[i]," : ",j,"h : ",sum_entity2,"kWh")
-                row=""
+            print("Conso max :", conso_max, "kWh / Entité : ", max_entite)
 
-                data=database.execute(query1)
-                for row in data.fetchall():
-                    if unite_entity[i]=="Wh":
-                        sum_entity=round(row[0]/1000,3)
-                    else:
-                        sum_entity=round(row[0],3)
-                    #print(id_entity[i]," : ",j+1,"h : ",sum_entity,"kWh")
-                if round(sum_entity-sum_entity2,3)>conso_max:
-                    conso_max=round(sum_entity-sum_entity2,3)
-                    max_entite=id_entity[i]
-                    range_max_entite=i
-                
-                #print(j,"h / Conso",id_entity[i],":",round(sum_entity-sum_entity2,3),unite_entity[i])
-            
-            print("Conso max :",conso_max,"kWh / Entité : ",max_entite)
-            if unite_entity[range_max_entite]=="Wh":
-                factor=1000
+            if range_max_entite is not None and unite_entity[range_max_entite] == "Wh":
+                factor = 1000
             else:
-                factor=1
-            if delta_conso[j]>=0.5:
-                print("Delta trop important à :",j,"h:",delta_conso[j]," kWh")
-            elif delta_conso[j]>=0.05:
-                query1 = "UPDATE 'statistics_short_term' set sum=sum+"+str(round((delta_conso[j]-0.02)*factor,3))+" where metadata_id in (" + str(id_entity[range_max_entite]) +") and start_ts >="+str(ts0+(j)*3600)
-                data=database.execute(query1)
-                query1 = "UPDATE 'statistics' set sum=sum+"+str(round((delta_conso[j]-0.02)*factor,3))+" where metadata_id in (" + str(id_entity[range_max_entite]) +") and start_ts >="+str(ts0+(j)*3600)
-                data=database.execute(query1)
-                entry = entry + 1
-                print("Conso corrigée:",str(round((delta_conso[j]-0.02),3)),"kWh")
-    print("Fin du script : ",entry," entrée(s) modifiée(s)")
-    query0 = "commit"
-    if entry>1:
-        data=database.execute(query0)
+                factor = 1
+
+            if delta_conso[j] >= 0.8 or delta_conso[j] <= -0.8:
+                print(f"Delta trop important à : {j} h: {delta_conso[j]:.3f} kWh")
+                continue
+
+            if delta_conso[j] < 0:
+                val = round((delta_conso[j] - 0.005) * factor, 3)
+            else:
+                val = round((0.005 - delta_conso[j]) * factor, 3)
+
+            # Vérification pour éviter une conso négative
+            d = get_delta(id_entity[range_max_entite], unite_entity[range_max_entite], ts_start, ts_end)
+            if d + (val / factor) < 0:
+                val = -d * factor
+                print(f"⚠️ Correction limitée pour éviter conso négative (conso={d:.3f} kWh)")
+
+            ts_cut = int(ts0 + j * 3600)
+            if max_entite is not None:
+                q1 = f"UPDATE statistics_short_term SET sum = sum + {val} WHERE metadata_id = {max_entite} AND start_ts >= {ts_cut}"
+                database.execute(q1)
+                q2 = f"UPDATE statistics SET sum = sum + {val} WHERE metadata_id = {max_entite} AND start_ts >= {ts_cut}"
+                database.execute(q2)
+                entry += 1
+                signe = "+" if val >= 0 else "-"
+                print(f"Correction appliquée: heure {j}→{j+1}, delta={delta_conso[j]:.3f} kWh, correction={signe}{abs(val)/factor:.3f} kWh")
+
+    if entry > 0:
+        #database.commit()
+        print("Fin du script : ", entry, " entrée(s) modifiée(s)")
+    else:
+        print("Fin du script : 0 entrée modifiée (aucune correction applicable)")
 else:
     print("Fin du script : Pas de données à modifier")
+
+# ---------- Vérification des consommations négatives ----------
+print("\n--- Vérification des consommations négatives ---")
+for j in range(0, 24):
+    ts_start = ts0 + (j - 1) * 3600
+    ts_end   = ts0 + j * 3600
+
+    for i in range(len(liste)):
+        d = get_delta(id_entity[i], unite_entity[i], ts_start, ts_end)
+        if d < 0:
+            print(f"⚠️  Conso négative détectée : {liste[i]} sur {j}h→{j+1}h = {d:.4f} kWh")
 
 database.close()

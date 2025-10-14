@@ -182,7 +182,24 @@
                             "top": "Alto",
                             "middle": "Medio",
                             "down": "Abajo",
-                            "downmost": "Más abajo"
+                            "downmost": "Más abajo",
+                            "upper_half": "Mitad superior",
+                            "lower_half": "Mitad inferior",
+                            "surround": "Alrededor"
+                        }
+                    },
+                    "swing_horizontal_mode": {
+                        "state": {
+                            "leftmost": "Más a la izquierda",
+                            "left": "Izquierda",
+                            "center": "Centro",
+                            "right": "Derecha",
+                            "rightmost": "Más a la derecha",
+                            "left_swing": "Oscilación izquierda",
+                            "right_swing": "Oscilación derecha",
+                            "center_swing": "Oscilación central",
+                            "surround": "Alrededor",
+                            "direct": "Directo"
                         }
                     }
                 }
@@ -411,6 +428,9 @@
             },
             "timer_x": {
                 "name": "Temporizador {x}"
+            },
+            "sensor_threshold": {
+                "name": "{sensor} umbral"
             }
         },
         "select": {
@@ -501,7 +521,8 @@
                     "auto": "Automático",
                     "low": "Bajo",
                     "medium": "Medio",
-                    "high": "Alto"
+                    "high": "Alto",
+                    "very_high": "Muy alto"
                 }
             },
             "recipe": {
@@ -613,6 +634,14 @@
                 "state": {
                     "celsius": "Celsius",
                     "fahrenheit": "Fahrenheit"
+                }
+            },
+            "breaker_trigger_action": {
+                "name": "{trigger} acción",
+                "state": {
+                    "ignore": "Ignorar",
+                    "alarm": "Alarma",
+                    "trip_breaker": "Disyuntor"
                 }
             },
             "oven_built_in_recipe": {
@@ -795,6 +824,13 @@
         "switch": {
             "anti_frost": {
                 "name": "Antihielo"
+            },
+            "breaker": {
+                "name": "Disyuntor",
+                "state": {
+                    "off": "Abierto",
+                    "on": "Cerrado"
+                }
             },
             "evaporator_cleaning": {
                 "name": "Limpieza del evaporador"

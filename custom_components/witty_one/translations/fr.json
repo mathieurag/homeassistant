@@ -21,6 +21,19 @@
             },
             "current_session_duration": {
                 "name": "Durée session courante"
+            },
+            "state": {
+                "name": "État",
+                "state": {
+                    "idle": "Inactif",
+                    "wait": "En attente",
+                    "wait_energy": "En attente énergie",
+                    "charging": "Charge",
+                    "finish": "Charge finie",
+                    "reserved": "Réservé",
+                    "error": "Erreur",
+                    "error_iec": "Erreur IEC"
+                }
             }
         }
     }

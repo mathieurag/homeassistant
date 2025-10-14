@@ -206,6 +206,17 @@ def parse_latest_values(bin_path: str):
         re.IGNORECASE
     )
 
+    # séparateur de panneaux (comme la version Windows) + variantes 28 01 / 28 82 / 0122
+    sep_re = re.compile(
+        r"(?:(?:28(?:01|82))?)"      # préfixe optionnel 28 01 / 28 82
+        r"(?:(?:0122)|(?:22))"       # 0122 ou 22
+        r"[0-9a-fA-F]{4}"            # xxxx
+        r"080212"
+        r"[0-9a-fA-F]{4}"            # yyyy
+        r"0a[0-9a-fA-F]{2}",         # 0a zz
+        re.IGNORECASE
+    )
+
     total_p_global = 0.0
     total_e_global = 0.0
 
@@ -252,26 +263,29 @@ def parse_latest_values(bin_path: str):
         if freqs is not None:
             print(f"[DBG] Bloc {i} générales (auto){mode}: f={len(freqs)} t={len(temps)} v={len(tens)} | T° last={block_last_temp}")
 
-        # 3) DÉMULTIPLEXAGE DES PANNEAUX **SANS séparateurs**
-        #    – on récupère tous les matches slots dans panels_area_hex
-        all_matches = list(slot_re.finditer(panels_area_hex))
-        total_slots_found = len(all_matches)
-
+        # 3) DÉCOUPAGE PANNEAUX (priorité aux séparateurs comme sur Windows)
         pane_hexes = []
-        if nb_slots > 0 and total_slots_found >= nb_slots:
-            # on coupe en paquets de nb_slots en partant de la fin
-            # chaque paquet = un panneau
-            nb_panneaux_estime = total_slots_found // nb_slots
-            idx = total_slots_found
-            for _ in range(nb_panneaux_estime):
-                start_m = all_matches[idx - nb_slots]
-                end_m   = all_matches[idx - 1]
-                pane_hexes.append(panels_area_hex[start_m.start(): end_m.end()])
-                idx -= nb_slots
-            pane_hexes.reverse()  # remet dans l’ordre naturel
-        else:
-            # fallback : un seul panneau (au cas où nb_slots == 0 très tôt le matin)
-            pane_hexes = [panels_area_hex] if panels_area_hex else []
+        last_cut = 0
+        for m in sep_re.finditer(panels_area_hex):
+            pane_hexes.append(panels_area_hex[last_cut:m.start()])
+            last_cut = m.end()
+        pane_hexes.append(panels_area_hex[last_cut:])
+        pane_hexes = [p for p in pane_hexes if p]
+
+        # Fallback : si pas (ou trop peu) de séparateurs, on démultiplexe par paquets de nb_slots
+        if (len(pane_hexes) <= 1) and nb_slots > 0:
+            all_matches = list(slot_re.finditer(panels_area_hex))
+            total_slots_found = len(all_matches)
+            if total_slots_found >= nb_slots:
+                pane_hexes = []
+                nb_p_estime = total_slots_found // nb_slots
+                idx = total_slots_found
+                for _ in range(nb_p_estime):
+                    start_m = all_matches[idx - nb_slots]
+                    end_m   = all_matches[idx - 1]
+                    pane_hexes.append(panels_area_hex[start_m.start(): end_m.end()])
+                    idx -= nb_slots
+                pane_hexes.reverse()
 
         # 4) Lecture des dernières valeurs par panneau
         added = 0
@@ -306,7 +320,7 @@ def parse_latest_values(bin_path: str):
 
         print(f"[DBG] Bloc {i}{mode}: créneaux OK | panneaux détectés={added} | générales={'oui' if (freqs is not None) else 'non'}")
         if added:
-            print(f"   Totaux bloc — Puissance: {round(bloc_p_sum,1)} W | Énergie: {round(bloc_e_sum,2)} kWh")
+            print(f"   Totaux bloc — Puissance: {round(bloc_p_sum,1)} W | Énergie: {round(bloc_e_sum,2)} Wh")
 
     # Synthèse globale debug
     if panneaux:
@@ -314,7 +328,7 @@ def parse_latest_values(bin_path: str):
         sumE = round(sum(p['energie'] for p in panneaux), 2)
         print("\n--- Synthèse globale ---")
         print(f"Somme des dernières puissances de tous les panneaux : {sumP} W")
-        print(f"Somme des dernières énergies de tous les panneaux   : {sumE} kWh")
+        print(f"Somme des dernières énergies de tous les panneaux   : {sumE} Wh")
 
     total_p = round(sum(p["puissance"] for p in panneaux), 2)
     total_e = round(sum(p["energie"]   for p in panneaux), 2)

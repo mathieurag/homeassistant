@@ -182,7 +182,24 @@
                             "top": "Top",
                             "middle": "Middle",
                             "down": "Down",
-                            "downmost": "Downmost"
+                            "downmost": "Downmost",
+                            "upper_half": "Upper half",
+                            "lower_half": "Lower half",
+                            "surround": "Surround"
+                        }
+                    },
+                    "swing_horizontal_mode": {
+                        "state": {
+                            "leftmost": "Leftmost",
+                            "left": "Left",
+                            "center": "Center",
+                            "right": "Right",
+                            "rightmost": "Rightmost",
+                            "left_swing": "Left swing",
+                            "right_swing": "Right swing",
+                            "center_swing": "Center swing",
+                            "surround": "Surround",
+                            "direct": "Direct"
                         }
                     }
                 }
@@ -411,6 +428,9 @@
             },
             "timer_x": {
                 "name": "Timer {x}"
+            },
+            "sensor_threshold": {
+                "name": "{sensor} threshold"
             }
         },
         "select": {
@@ -501,7 +521,8 @@
                     "auto": "Auto",
                     "low": "Low",
                     "medium": "Medium",
-                    "high": "High"
+                    "high": "High",
+                    "very_high": "Very High"
                 }
             },
             "recipe": {
@@ -613,6 +634,14 @@
                 "state": {
                     "celsius": "Celsius",
                     "fahrenheit": "Fahrenheit"
+                }
+            },
+            "breaker_trigger_action": {
+                "name": "{trigger} action",
+                "state": {
+                    "ignore": "Ignore",
+                    "alarm": "Alarm",
+                    "trip_breaker": "Trip breaker"
                 }
             },
             "oven_built_in_recipe": {
@@ -795,6 +824,13 @@
         "switch": {
             "anti_frost": {
                 "name": "Anti-frost"
+            },
+            "breaker": {
+                "name": "Breaker",
+                "state": {
+                    "off": "Open",
+                    "on": "Closed"
+                }
             },
             "evaporator_cleaning": {
                 "name": "Evaporator cleaning"

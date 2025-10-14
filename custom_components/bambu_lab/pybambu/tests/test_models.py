@@ -8,7 +8,7 @@ import json
 # Add the parent directory to the Python path to find pybambu
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-from pybambu.models import PrintJob, Info, AMSList, HMSList, PrintError, Temperature
+from pybambu.models import PrintJob, Info, AMSList, Extruder, HMSList, PrintError, Temperature
 from pybambu.const import Printers
 
 class TestPrintJob(unittest.TestCase):
@@ -35,6 +35,11 @@ class TestInfo(unittest.TestCase):
     def setUp(self):
         self.client = MagicMock()
         self.info = Info(self.client)
+
+        # Create a _device object on the client
+        self.client._device = MagicMock()
+        self.client._device.extruder = Extruder(self.client._device)
+
         # Load test data from P1P.json
         with open(os.path.join(os.path.dirname(__file__), 'P1P.json'), 'r') as f:
             self.test_data = json.load(f)
@@ -46,9 +51,22 @@ class TestInfo(unittest.TestCase):
         self.info.info_update(data)
         self.assertEqual(self.info.sw_ver, "01.07.00.00")
 
+    def test_info_update_nozzle(self):
+        # Test basic info update
+        data = self.test_data['push_all']
+
+        self.client._device.extruder.print_update(data)
+        self.info.print_update(data)
+
+        self.assertEqual(self.info.active_nozzle_diameter, 0.4)
+        self.assertEqual(self.info.active_nozzle_type, "hardened_steel")
+
 class TestAMSList(unittest.TestCase):
     def setUp(self):
         self.client = MagicMock()
+        # Create a _device object on the client
+        self.client._device = MagicMock()
+        self.client._device.extruder = Extruder(self.client._device)
         self.info = Info(self.client)
         self.ams_list = AMSList(self.client)
         # Load test data from P1P.json
@@ -73,15 +91,16 @@ class TestAMSList(unittest.TestCase):
         # Test AMS print update
         data = self.test_data['push_all']
         
+        result = self.client._device.extruder.print_update(data)
         result = self.ams_list.print_update(data)
         self.assertTrue(result)
-        self.assertEqual(self.ams_list.tray_now, 0)
         self.assertIn(0, self.ams_list.data)
 
     def test_h2d_ams_detection(self):
         # Test that two AMS files are properly detected from H2D.json
         data = self.h2d_data['push_all']
         
+        result = self.client._device.extruder.print_update(data)
         result = self.ams_list.print_update(data)
         self.assertTrue(result)
         
@@ -136,6 +155,7 @@ class TestAMSList(unittest.TestCase):
         # Now that we have the models, we can populate the sensor data from the payload.
         data = self.multi_ams_data['push_all']
         
+        result = self.client._device.extruder.print_update(data)
         result = self.ams_list.print_update(data)
         self.assertTrue(result)
         
@@ -190,25 +210,102 @@ class TestH2D(unittest.TestCase):
         self.client = MagicMock()
         self.info = Info(self.client)
         self.temperature = Temperature(self.client)
+
+        # Create a _device object on the client
+        self.client._device = MagicMock()
+        self.client._device.extruder = Extruder(self.client._device)
+
         # Load H2D test data
         with open(os.path.join(os.path.dirname(__file__), 'H2D.json'), 'r') as f:
             self.h2d_data = json.load(f)
         
-        # Mock dual nozzles feature support
+        # Mock feature support
         self.client._device.supports_feature.return_value = True
+
+    def test_h2d_nozzle_info(self):
+        data = self.h2d_data['push_all']
+        result = self.client._device.extruder.print_update(data)
+        result = self.info.print_update(data)
+        self.assertTrue(result)
+
+        self.assertEqual(self.client._device.extruder.active_nozzle_index, 0)  # right is active
+        self.assertEqual(self.info.active_nozzle_diameter, 0.4)
+        self.assertEqual(self.info.active_nozzle_type, "hardened_steel")
+        self.assertEqual(self.info.left_nozzle_diameter, 0.4)
+        self.assertEqual(self.info.right_nozzle_diameter, 0.4)
+        self.assertEqual(self.info.left_nozzle_type, "high_flow_hardened_steel")
+        self.assertEqual(self.info.right_nozzle_type, "hardened_steel")
+
+        data = self.h2d_data['push_alt_nozzle_info']
+        result = self.info.print_update(data)
+        self.assertEqual(self.info.active_nozzle_diameter, 0.2)
+        self.assertEqual(self.info.active_nozzle_type, "stainless_steel")
+        self.assertEqual(self.info.left_nozzle_diameter, 0.6)
+        self.assertEqual(self.info.left_nozzle_type, "tungsten_carbide")
+        self.assertEqual(self.info.right_nozzle_diameter, 0.2)
+        self.assertEqual(self.info.right_nozzle_type, "stainless_steel")
+
+        data = self.h2d_data['push_left_extruder']
+        result = self.client._device.extruder.print_update(data)
+        self.assertEqual(self.client._device.extruder.active_nozzle_index, 1)
+
+        self.assertEqual(self.info.active_nozzle_diameter, 0.6)
+        self.assertEqual(self.info.active_nozzle_type, "tungsten_carbide")
+        self.assertEqual(self.info.left_nozzle_diameter, 0.6)
+        self.assertEqual(self.info.left_nozzle_type, "tungsten_carbide")
+        self.assertEqual(self.info.right_nozzle_diameter, 0.2)
+        self.assertEqual(self.info.right_nozzle_type, "stainless_steel")
+
+    def test_h2d_door_open(self):
+        data = self.h2d_data['push_all']
+        result = self.info.print_update(data)
+        self.assertTrue(result)
+
+        self.assertTrue(self.info.door_open_available)
+        self.assertFalse(self.info.door_open)
+
+        # On the H2D, door status is in the stat field.
+        data = self.h2d_data['push_door_opened']
+        result = self.info.print_update(data)
+        self.assertTrue(result)
+        self.assertTrue(self.info.door_open)
+
+        # On the H2D, door status is in the stat field.
+        data = self.h2d_data['push_door_closed']
+        result = self.info.print_update(data)
+        self.assertTrue(result)
+        self.assertFalse(self.info.door_open)
+
+    def test_h2d_door_ignores_old_flag(self):
+        data = self.h2d_data['push_all']
+        result = self.info.print_update(data)
+        self.assertTrue(result)
+
+        self.assertTrue(self.info.door_open_available)
+        self.assertFalse(self.info.door_open)
+
+        # On the H2D, door status is in the stat field, not home_flag.
+        data = self.h2d_data['push_old_door_opened']
+        _ = self.info.print_update(data)
+        self.assertFalse(self.info.door_open)
+
+        data = self.h2d_data['push_old_door_closed']
+        _ = self.info.print_update(data)
+        self.assertFalse(self.info.door_open)
+
 
     def test_h2d_nozzles(self):
         data = self.h2d_data['push_all']
         result = self.temperature.print_update(data)
         self.assertTrue(result)
 
-        # Test left nozzle (index 0) temperatures
-        self.assertEqual(self.temperature.left_nozzle_temperature, 264)
-        self.assertEqual(self.temperature.left_nozzle_target_temperature, 225)
+        # Test right nozzle (index 0) temperatures
+        self.assertEqual(self.temperature.right_nozzle_temperature, 264)
+        self.assertEqual(self.temperature.right_nozzle_target_temperature, 225)
 
-        # Test right nozzle (index 1) temperatures
-        self.assertEqual(self.temperature.right_nozzle_temperature, 40)
-        self.assertEqual(self.temperature.right_nozzle_target_temperature, 0)
+        # Test left nozzle (index 1) temperatures
+        self.assertEqual(self.temperature.left_nozzle_temperature, 40)
+        self.assertEqual(self.temperature.left_nozzle_target_temperature, 0)
 
 
     

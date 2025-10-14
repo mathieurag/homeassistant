@@ -107,7 +107,7 @@
   triggers:
   - entity_id:
     - sensor.system_monitor_charge_5m
-    above: 1.1
+    above: 2
     trigger: numeric_state
     for:
       hours: 0
@@ -119,6 +119,7 @@
     data:
       message: 'Utilisation du CPU importante : {{states(''sensor.system_monitor_charge_5m'')}}'
     action: notify.notify
+    enabled: false
   - metadata: {}
     data:
       message: 'Utilisation du CPU importante : {{states(''sensor.system_monitor_charge_5m'')}}'
@@ -265,6 +266,9 @@
       - sensor.esphome_web_a92940_marstek_ac_voltage
       - sensor.energie_generale
       - sensor.shelly_em0_voltage
+      - sensor.prise_5_energie
+      - sensor.prise_5_cloud_puissance
+      - sensor.prise_5_local_puissance
     action: recorder.purge_entities
   - delay:
       hours: 0
@@ -306,7 +310,7 @@
       - sensor.*retour_maximum
       - switch.*wifi*
       - sensor.estar*
-      - sensor.gs108e*
+      - sensor.gs308e*
       - sensor.qemu*
       - sensor.*host_001*
       - sensor.shelly*temperature
@@ -325,6 +329,8 @@
       - number.*marstek*
       - light.*marstek*
       - sensor.*production*
+      - sensor.*rx*
+      - sensor.*tx*
     action: recorder.purge_entities
   - delay:
       hours: 0
@@ -351,6 +357,9 @@
       - sensor.esphome_web_a92940_marstek_ac_current
       - sensor.marstek_efficiency
       - sensor.energie_estimee_batterie_dc
+      - sensor.energie_estimee_batterie_dc_2
+      - sensor.variation_consommation_brute
+      - sensor.consommation_brute
       keep_days: 0
     action: recorder.purge_entities
   mode: single
@@ -559,8 +568,8 @@
       metadata: {}
       data:
         title: Tuya Local
-        message: 'Pas de réponse de {{ trigger.to_state.name.split('' '')[0] }} {{
-          trigger.to_state.name.split('' '')[1] }} : {{states(trigger.entity_id)}}'
+        message: '⚠️ Pas de réponse de {{ trigger.to_state.name.split('' '')[0] }}
+          {{ trigger.to_state.name.split('' '')[1] }} : {{states(trigger.entity_id)}}'
   mode: single
 - id: '1725956019083'
   alias: Alerte EcoJoko
@@ -591,7 +600,7 @@
     metadata: {}
     data: {}
     target:
-      device_id: 4b74478c94d963f91d4fb4c038530cf7
+      device_id: ba7db3b64772f03ef5a3528c746de682
   mode: single
 - id: '1725956270150'
   alias: Alerte Refoss
@@ -981,7 +990,7 @@
   conditions: []
   actions:
   - data:
-      message: Pas de réponse de Tahoma !
+      message: ⚠️ Pas de réponse de Tahoma !
     action: notify.notify
   - action: homeassistant.reload_config_entry
     metadata: {}
@@ -1355,7 +1364,7 @@
     - action: notify.persistent_notification
       metadata: {}
       data:
-        message: 'Pas de réponse de TP Link ! '
+        message: '⚠️ Pas de réponse de TP Link ! '
   mode: single
 - id: '1730987726595'
   alias: Alerte Rain Sensor
@@ -1589,7 +1598,7 @@
     below: 5
   conditions:
   - condition: template
-    value_template: '{{float(states(''sensor.sonde_temperature_owon_temperature''),0)>float(states(''input_number.tmax_ecs''),0)-1
+    value_template: '{{float(states(''sensor.sonde_temperature_owon_temperature''),0)>float(states(''input_number.tmax_ecs''),0)-2
       }}'
   actions:
   - if:
@@ -2027,25 +2036,6 @@
     data:
       message: Désactivation de Clim Salon
   mode: single
-- id: '1731971598661'
-  alias: Alerte Radiateur
-  description: ''
-  triggers:
-  - trigger: state
-    entity_id:
-    - sensor.em06_02_b1_power
-    for:
-      hours: 0
-      minutes: 1
-      seconds: 0
-  conditions: []
-  actions:
-  - action: fan.turn_off
-    metadata: {}
-    data: {}
-    target:
-      entity_id: fan.esp32_pwm
-  mode: single
 - id: '1732521992660'
   alias: Activation Prises connectées
   description: ''
@@ -2232,9 +2222,9 @@
     input:
       switch: sensor.telecommande_zigbee_action
       button_1_hold:
-      - type: turn_off
-        device_id: 2e6fb60152117ae32ea29b2814d6e54b
-        entity_id: 3c829a1b3bf8daa103734b4919d21c4a
+      - type: toggle
+        device_id: ca5a1d4d5c652e5a540deaaae09f9405
+        entity_id: d97a95ca27a4528361dd32707c0973b9
         domain: switch
       button_2_short_press:
       - action: climate.toggle
@@ -2244,8 +2234,8 @@
           device_id: d2910ca682aff1ab63ccc59776862bbf
       button_2_hold:
       - type: toggle
-        device_id: 2e6fb60152117ae32ea29b2814d6e54b
-        entity_id: 3c829a1b3bf8daa103734b4919d21c4a
+        device_id: d2910ca682aff1ab63ccc59776862bbf
+        entity_id: ee3bb881fc9b96ab2c667277bcfff60b
         domain: switch
       button_1_short_press:
       - action: climate.toggle
@@ -2261,8 +2251,8 @@
         domain: switch
       button_3_hold:
       - type: toggle
-        device_id: 2e6fb60152117ae32ea29b2814d6e54b
-        entity_id: 3c829a1b3bf8daa103734b4919d21c4a
+        device_id: 280904bd43829cf2b64d322cd3b67cd1
+        entity_id: c72e3cff0583e291cbd39cca60693885
         domain: switch
       button_1_double_press: []
       button_3_short_press:
@@ -2492,6 +2482,9 @@
       - condition: trigger
         id:
         - retard
+      - condition: time
+        after: 00:00:00
+        before: '11:00:00'
       sequence:
       - data:
           message: MAJ données LINKY NOK
@@ -2795,7 +2788,7 @@
     domain: select
     entity_id: 29d02385bfa6a107834f0b8cab20c349
     type: select_option
-    option: manual
+    option: anti-feed
   - device_id: cad5cf1c1acf9585f1a244da05cf1cac
     domain: select
     entity_id: d9f81c55028cbfb4283f09a46b1cf024
@@ -2838,69 +2831,6 @@
     entity_id: 6e525dc6e7cf73abc626c817e8002ce6
     type: select_option
     option: disable
-  - type: turn_off
-    device_id: 62be3297a0c0d75c708f1a2e49911819
-    entity_id: 84ede9c070c6abc84dbd5367e484c988
-    domain: switch
-  mode: single
-- id: '1744146911051'
-  alias: Relance batterie
-  description: ''
-  triggers:
-  - trigger: state
-    entity_id:
-    - select.esphome_web_a92940_marstek_user_work_mode
-    from: anti-feed
-    to: manual
-  conditions:
-  - condition: state
-    entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
-    state: disable
-  - condition: numeric_state
-    entity_id: sensor.esphome_web_a92940_marstek_battery_state_of_charge
-    above: number.esphome_web_a92940_marstek_discharging_cutoff_capacity
-  actions:
-  - action: notify.notify
-    metadata: {}
-    data:
-      message: Batterie arrêtée
-  - if:
-    - condition: trigger
-      id:
-      - Saturation
-    then:
-    - delay:
-        hours: 0
-        minutes: 0
-        seconds: 20
-        milliseconds: 0
-    - if:
-      - condition: numeric_state
-        entity_id: sensor.em06_02_b1_power
-        above: 2000
-      - condition: numeric_state
-        entity_id: sensor.cumulus_2
-        below: 5
-      then:
-      - wait_for_trigger:
-        - trigger: numeric_state
-          entity_id:
-          - sensor.em06_02_b1_power
-          for:
-            hours: 0
-            minutes: 1
-            seconds: 30
-          below: 2000
-      - action: automation.trigger
-        metadata: {}
-        data:
-          skip_condition: true
-        target:
-          entity_id: automation.activer_batterie
-      - action: notify.notify
-        metadata: {}
-        data:
-          message: Batterie relancée
   - type: turn_off
     device_id: 62be3297a0c0d75c708f1a2e49911819
     entity_id: 84ede9c070c6abc84dbd5367e484c988
@@ -2965,12 +2895,6 @@
           skip_condition: true
         target:
           entity_id: automation.desactiver_batterie
-      - action: automation.turn_off
-        metadata: {}
-        data:
-          stop_actions: true
-        target:
-          entity_id: automation.relance_batterie
       - action: automation.turn_on
         metadata: {}
         data: {}
@@ -2992,8 +2916,8 @@
 
       '
     for:
-      hours: 1
-      minutes: 0
+      hours: 0
+      minutes: 1
       seconds: 0
     trigger: template
     id: alerte
@@ -3062,7 +2986,7 @@
   conditions: []
   actions:
   - data:
-      message: "Alerte Marstek : {{\n  state_attr(trigger.get('entity_id',''), 'friendly_name')
+      message: "❗ Alerte Marstek : {{\n  state_attr(trigger.get('entity_id',''), 'friendly_name')
         or 'Capteur inconnu'\n}} est en défaut."
     action: notify.notify
   mode: single
@@ -3085,8 +3009,7 @@
   actions:
   - variables:
       puissance_reseau: '{{ states(''sensor.em06_02_b1_power'') | float(0) }}'
-      puissance_batterie: '{{ states(''sensor.em06_02_b2_power'') | float(0) + 15
-        }}'
+      puissance_batterie: '{{ states(''sensor.em06_02_b2_power'') | float(0) + 5 }}'
       switch_fan: '{{ states(''switch.prise_zigbee_5'') | float(0) }}'
       conso_fan: '{{ states(''sensor.prise_zigbee_5_power'') | float(0) }}'
       consigne_batterie: '{{ puissance_reseau + puissance_batterie}}
@@ -3212,7 +3135,7 @@
             - conditions:
               - alias: SOC = MIN or Tension < 48V
                 condition: template
-                value_template: '{{ soc_batterie <= soc_min or float(states(''sensor.soc_estime_batterie''),10)<-10
+                value_template: '{{ soc_batterie <= soc_min or float(states(''sensor.soc_estime_batterie''),10)==0
                   or float(states(''sensor.esphome_web_a92940_marstek_battery_voltage_average''),0)<48}}'
                 enabled: true
               sequence:
@@ -3254,10 +3177,10 @@
                   conditions:
                   - condition: state
                     entity_id: select.esphome_web_a92940_marstek_user_work_mode
-                    state: manual
+                    state: anti-feed
                 then:
                 - data:
-                    option: manual
+                    option: anti-feed
                   action: select.select_option
                   target:
                     entity_id: select.esphome_web_a92940_marstek_user_work_mode
@@ -3391,8 +3314,8 @@
                 target:
                   entity_id: number.esphome_web_a92940_marstek_forcible_charge_power
                 data:
-                  value: "{% if voltage >= 54.5 %}\n  {% set puissance_charge_max
-                    = 100 %}\n{% elif voltage >= 54 %}\n  {% set puissance_charge_max
+                  value: "{% if voltage > 55.5 %}\n  {% set puissance_charge_max =
+                    100 %}\n{% elif voltage >= 55 %}\n  {% set puissance_charge_max
                     = 500 %}\n{% endif %} {% set dispo = (consigne_batterie | abs)
                     + correction_consigne_charge %} {% if dispo > puissance_charge_max
                     %}\n  {{ puissance_charge_max | int }}\n{% else %}\n  {{ [dispo,
@@ -3413,7 +3336,7 @@
       alias: Charge/Décharge
   mode: single
 - id: '1744819508007'
-  alias: Batterie pleine
+  alias: Batterie pleine/vide
   description: ''
   triggers:
   - value_template: "{{ states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
@@ -3422,56 +3345,86 @@
       and states('sensor.esphome_web_a92940_marstek_battery_state_of_charge') != 'unavailable'
       and states('sensor.esphome_web_a92940_marstek_battery_state_of_charge') != 'unknown'}}\n"
     trigger: template
+    id: plein
+  - value_template: "{{ states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
+      | float(0) ==\n   states('number.esphome_web_a92940_marstek_discharging_cutoff_capacity')
+      | float(0) and states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
+      != 'unavailable' and states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
+      != 'unknown'}}\n"
+    trigger: template
+    id: vide
   conditions: []
   actions:
-  - target:
-      entity_id: input_boolean.batterie_notification_envoyee
-    action: input_boolean.turn_on
-    data: {}
-  - data:
-      message: "\U0001F50B Batterie pleine ({{ states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
-        }}%)"
-      data:
-        actions:
-        - action: desactiver_batterie
-          title: "\U0001F50C Couper la batterie"
-        - action: desactiver_priorite
-          title: ❌ Désactiver priorité batterie
-    action: notify.notify
-  - wait_for_trigger:
-    - event_type: mobile_app_notification_action
-      event_data:
-        action: desactiver_batterie
-      trigger: event
-    - event_type: mobile_app_notification_action
-      event_data:
-        action: desactiver_priorite
-      trigger: event
-    timeout: 00:10:00
-    continue_on_timeout: true
   - choose:
     - conditions:
-      - condition: template
-        value_template: '{{ wait.trigger.event.data.action == ''desactiver_batterie''
-          }}'
+      - condition: trigger
+        id:
+        - plein
+      sequence:
+      - target:
+          entity_id: input_boolean.batterie_notification_envoyee
+        action: input_boolean.turn_on
+        data: {}
+      - data:
+          message: "\U0001F50B Batterie pleine ({{ states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
+            }}%)"
+          data:
+            actions:
+            - action: desactiver_batterie
+              title: "\U0001F50C Couper la batterie"
+            - action: desactiver_priorite
+              title: ❌ Désactiver priorité batterie
+        action: notify.notify
+      - wait_for_trigger:
+        - event_type: mobile_app_notification_action
+          event_data:
+            action: desactiver_batterie
+          trigger: event
+        - event_type: mobile_app_notification_action
+          event_data:
+            action: desactiver_priorite
+          trigger: event
+        timeout: 00:10:00
+        continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ wait.trigger.event.data.action == ''desactiver_batterie''
+              }}'
+          sequence:
+          - data:
+              skip_condition: true
+            target:
+              entity_id: automation.desactiver_batterie
+            action: automation.trigger
+        - conditions:
+          - condition: template
+            value_template: '{{ wait.trigger.event.data.action == ''desactiver_priorite''
+              }}'
+          sequence:
+          - condition: state
+            entity_id: input_boolean.priorite_batterie
+            state: 'on'
+          - target:
+              entity_id: input_boolean.priorite_batterie
+            action: input_boolean.turn_off
+            data: {}
+    - conditions:
+      - condition: trigger
+        id:
+        - vide
       sequence:
       - data:
-          skip_condition: true
-        target:
-          entity_id: automation.desactiver_batterie
-        action: automation.trigger
-    - conditions:
-      - condition: template
-        value_template: '{{ wait.trigger.event.data.action == ''desactiver_priorite''
-          }}'
-      sequence:
-      - condition: state
-        entity_id: input_boolean.priorite_batterie
-        state: 'on'
-      - target:
-          entity_id: input_boolean.priorite_batterie
-        action: input_boolean.turn_off
-        data: {}
+          message: "\U0001FAAB Batterie vide... ({{ states('sensor.soc_estime_batterie')
+            }}% / {{ states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
+            }}%)"
+          data:
+            actions:
+            - action: desactiver_batterie
+              title: "\U0001F50C Couper la batterie"
+            - action: desactiver_priorite
+              title: ❌ Désactiver priorité batterie
+        action: notify.notify
   mode: single
 - id: '1744820100625'
   alias: Reset notif batterie pleine
@@ -3641,10 +3594,21 @@
     above: 100
   conditions: []
   actions:
-  - action: notify.notify
-    metadata: {}
-    data:
-      message: Consommation réseau > 100W depuis 1 min !
+  - if:
+    - condition: template
+      value_template: "{{ states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
+        | float(0) \n> states('number.esphome_web_a92940_marstek_discharging_cutoff_capacity')
+        | float(0) }}"
+    then:
+    - action: notify.notify
+      metadata: {}
+      data:
+        message: ⚡ Consommation réseau > 100W depuis 1 min !
+    - delay:
+        hours: 0
+        minutes: 15
+        seconds: 0
+        milliseconds: 0
   mode: single
 - id: '1747392460384'
   alias: Alerte Batterie
@@ -3725,7 +3689,9 @@
   - target:
       entity_id: input_number.energie_batterie_a_100
     data:
-      value: '{{ states(''sensor.energie_estimee_batterie_dc'') | float(0) }}'
+      value: '{{ ( (states(''sensor.energie_estimee_batterie_dc'')|float) + 5.12 *
+        (1 - (states(''sensor.esphome_web_a92940_marstek_battery_state_of_charge'')|float)/100)
+        ) | round(1) }}'
     action: input_number.set_value
   mode: single
 - id: '1749591645769'
@@ -3784,40 +3750,12 @@
         entity_id:
         - input_boolean.borne
       action: input_boolean.turn_on
-    - action: input_number.set_value
-      metadata: {}
-      data:
-        value: '{{ states(''sensor.frigo_wh'') | float(0) }}'
-      target:
-        entity_id: input_number.fin_frigo
-      enabled: false
-    - action: input_datetime.set_datetime
-      target:
-        entity_id: input_datetime.dernier_cycle_frigo
-      data:
-        datetime: '{{state_attr(''automation.debut_frigo'',''last_triggered'')}}'
-      enabled: false
     else:
     - data: {}
       target:
         entity_id:
         - input_boolean.borne
       action: input_boolean.turn_off
-    - action: input_number.set_value
-      metadata: {}
-      data:
-        value: '{{ states(''sensor.frigo_wh'') | float(0) }}'
-      target:
-        entity_id: input_number.fin_frigo
-      enabled: false
-    - action: input_number.set_value
-      metadata: {}
-      data:
-        value: '{{ ((now() - strptime(states(''input_datetime.dernier_cycle_frigo''),
-          "%Y-%m-%d %H:%M:%S").astimezone(now().tzinfo)).total_seconds()) | round(0)}}'
-      target:
-        entity_id: input_number.duree_cycle_frigo
-      enabled: false
   mode: single
 - id: '1750256687940'
   alias: TV
@@ -4225,11 +4163,11 @@
     data: {}
   mode: single
 - id: '1756561377881'
-  alias: Alerte Eaton
+  alias: Alerte UPS
   description: ''
   triggers:
   - entity_id:
-    - sensor.eaton_etat
+    - sensor.cyberpower_etat
     for:
       hours: 0
       minutes: 0
@@ -4237,35 +4175,40 @@
     trigger: state
     to: unavailable
     id: Indispo
-  - entity_id:
-    - sensor.eaton_etat
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 30
-    trigger: state
-    to: unknown
-    id: Indispo
+    from: Online
+  - trigger: state
+    entity_id:
+    - sensor.cyberpower_autonomie_de_la_batterie
+    from: unavailable
+    id: Reprise
   - trigger: numeric_state
     entity_id:
-    - sensor.eaton_autonomie_de_la_batterie
+    - sensor.cyberpower_autonomie_de_la_batterie
     below: 600
     id: Autonomie
   - trigger: state
     entity_id:
-    - sensor.eaton_etat
+    - sensor.cyberpower_etat
     id: Coupure
     to: On Battery
+    from: Online
   conditions: []
   actions:
   - choose:
     - conditions:
-      - condition: trigger
-        id:
-        - Autonomie
+      - condition: and
+        conditions:
+        - condition: trigger
+          id:
+          - Autonomie
+        - condition: not
+          conditions:
+          - condition: trigger
+            id:
+            - Reprise
       sequence:
       - data:
-          message: Autonomie Eaton de moins de 10minutes
+          message: Autonomie onduleur de moins de 10minutes
         action: notify.notify
     - conditions:
       - condition: trigger
@@ -4273,17 +4216,16 @@
         - Coupure
       sequence:
       - data:
-          message: Coupure de courant !
+          message: Passage en mode batterie de l'onduleur !
         action: notify.notify
     - conditions:
       - condition: trigger
         id:
         - Indispo
       sequence:
-      - action: homeassistant.reload_config_entry
-        metadata: {}
+      - action: hassio.addon_restart
         data:
-          entry_id: 01K3VMP716VYCJY3TQKCBAS33B
+          addon: a0d7b954_nut
       - delay:
           hours: 0
           minutes: 0
@@ -4295,6 +4237,80 @@
         target:
           device_id: c939d252feb1b79badc77e31f214b63e
       - data:
-          message: Eaton indisponible !
+          message: Onduleur indisponible !
         action: notify.notify
+  mode: single
+- id: '1758280107850'
+  alias: Correction Marstek
+  description: Détecte un redémarrage de la batterie Marstek et lance le script de
+    correction
+  triggers:
+  - entity_id: sensor.soc_estime_batterie
+    trigger: state
+    enabled: false
+  - entity_id: binary_sensor.capteurs_marstek
+    to: unavailable
+    trigger: state
+  - entity_id:
+    - binary_sensor.capteurs_marstek
+    trigger: state
+    from: unavailable
+  conditions:
+  - condition: or
+    conditions:
+    - condition: template
+      value_template: "{{ trigger.entity_id == 'sensor.soc_estime_batterie'\n   and
+        trigger.from_state is not none and trigger.to_state is not none\n   and trigger.from_state.state
+        | float(0) == 0\n   and trigger.to_state.state | float(0) > 1 }}\n"
+    - condition: template
+      value_template: "{{ trigger.entity_id == 'sensor.soc_estime_batterie'\n   and
+        trigger.from_state is not none and trigger.to_state is not none\n   and trigger.from_state.state
+        | float(0) > 1\n   and trigger.to_state.state | float(0) == 0 }}\n"
+    - condition: template
+      value_template: "{{ trigger.entity_id == 'binary_sensor.capteurs_marstek'\n
+        \  and trigger.to_state is not none\n   and trigger.to_state.state == 'unavailable'
+        }}\n"
+    - condition: template
+      value_template: '{{ trigger.entity_id == ''binary_sensor.capteurs_marstek''
+        }}
+
+        '
+  actions:
+  - delay: 00:05:00
+  - action: shell_command.correction_marstek
+  mode: single
+- id: '1760007343160'
+  alias: Alerte Deco
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.deco_m5_memory_used
+    to: unavailable
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  - entity_id:
+    - sensor.deco_m5_cpu_used
+    for:
+      hours: 1
+      minutes: 0
+      seconds: 0
+    trigger: state
+  conditions: []
+  actions:
+  - data:
+      message: Pas de réponse de Deco ! {{trigger.from_state.attributes.friendly_name
+        }}
+    action: notify.notify
+    enabled: false
+  - action: notify.persistent_notification
+    data:
+      message: Pas de réponse de Deco ! {{trigger.from_state.attributes.friendly_name
+        }}
+    enabled: false
+  - action: homeassistant.reload_config_entry
+    data:
+      entry_id: 01K6AY58R58Z65ME301FMWH1BV
   mode: single

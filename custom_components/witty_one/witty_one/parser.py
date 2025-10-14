@@ -18,6 +18,7 @@ from .const import (
     NAME_UUID,
     RELAY_TEMP_UUID,
     SESSION_STATE_UUID,
+    STATE_UUID,
 )
 
 
@@ -68,10 +69,21 @@ class WittyCurrentSession:
 
 
 @dataclasses.dataclass
+class WittyOneGeneralState:
+    """General state data for Witty One device."""
+
+    mainstate: int = 0
+    substate: int = 0
+
+
+@dataclasses.dataclass
 class WittyOneDevice:
     """Reponse data for Witty One device."""
 
     static_information: WittyOneStaticProperties
+    general: WittyOneGeneralState = dataclasses.field(
+        default_factory=WittyOneGeneralState
+    )
     energies: list[WittyOnePhaseEnergy] = dataclasses.field(default_factory=list)
     phases_states: list[WittyOnePhaseState] = dataclasses.field(default_factory=list)
     current_session: WittyCurrentSession = dataclasses.field(
@@ -136,7 +148,7 @@ async def _read_energy(client: BleakClient) -> list[WittyOnePhaseEnergy]:
 
 async def _read_phases_state(client: BleakClient) -> list[WittyOnePhaseState]:
     tmp = await client.read_gatt_char(ELECTRIC_STATE_UUID)
-    values = struct.unpack("<HLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL", tmp)
+    values = struct.unpack("<Hlllllllllllllllllllllllllllllll", tmp)
     return [
         WittyOnePhaseState(
             voltage=values[1] / 1000,
@@ -193,6 +205,12 @@ async def _current_session(client: BleakClient) -> WittyCurrentSession:
     )
 
 
+async def _read_general_state(client: BleakClient) -> WittyOneGeneralState:
+    tmp = await client.read_gatt_char(STATE_UUID)
+    values = struct.unpack_from("<HI", tmp)
+    return WittyOneGeneralState(mainstate=values[1] >> 8, substate=values[1] & 0xFF)
+
+
 async def _ambient_temp(client: BleakClient) -> float:
     tmp = await client.read_gatt_char(AMBIENT_TEMP_UUID)
     (_, value, min_value, max_value) = struct.unpack("<Hhhh", tmp)
@@ -234,14 +252,18 @@ class WittyOneDeviceData:
                     'try to add CONFIG_BT_GATTC_MAX_CACHE_CHAR: "80"'
                     " to sdkconfig_options if you use esphome"
                 )
+                if callable(getattr(client, "clear_cache", None)):
+                    await client.clear_cache()  # pyright: ignore[reportAttributeAccessIssue]
                 raise
 
         device = WittyOneDevice(static_information=self.static_properties)
         (
+            device.general,
             device.energies,
             device.phases_states,
             device.current_session,
         ) = await asyncio.gather(
+            _read_general_state(client),
             _read_energy(client),
             _read_phases_state(client),
             _current_session(client),

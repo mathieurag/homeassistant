@@ -50,7 +50,7 @@ for row in data.fetchall():
   table = row[1]
   size = row[0]
   id = id + 1
-  if(id <= 3):
+  if(id <= 10):
     print(table," : ",size," kb")
   Total = Total + size
   

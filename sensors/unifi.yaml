@@ -1,0 +1,13 @@
+sensor:
+  - platform: unifigateway
+    host: !secret unifi_controler_ip
+    username: !secret unifi_login_ha
+    password: !secret unifi_password_ha
+    verify_ssl: false
+    port: 8443
+    monitored_conditions:
+      - www
+      - wan
+      - wlan
+      - alerts
+      - firmware

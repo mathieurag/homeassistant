@@ -81,6 +81,10 @@ template:
           {% set panels = state_attr('sensor.estar_data_details','panneaux') or [] %}
           {% set temp = (panels[1].temperature if panels|length > 0 else None) | float(default=0) %}
           {{ [0, [temp, 100] | min] | max }}
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+
       - name: "Estar Panneau 2 Énergie"
         unique_id: estar_energie_panneau_2
         state: >

@@ -183,7 +183,24 @@
                             "top": "Fent",
                             "middle": "Középen",
                             "down": "Lent",
-                            "downmost": "Legalacsonyabban"
+                            "downmost": "Legalacsonyabban",
+                            "upper_half": "Felső fél",
+                            "lower_half": "Alsó fél",
+                            "surround": "Körül"
+                        }
+                    },
+                    "swing_horizontal_mode": {
+                        "state": {
+                            "leftmost": "Legbaloldalibb",
+                            "left": "Balra",
+                            "center": "Középre",
+                            "right": "Jobbra",
+                            "rightmost": "Legjobboldalibb",
+                            "left_swing": "Balra lengő",
+                            "right_swing": "Jobbra lengő",
+                            "center_swing": "Középre lengő",
+                            "surround": "Körül",
+                            "direct": "Közvetlen"
                         }
                     }
                 }
@@ -412,6 +429,9 @@
             },
             "timer_x": {
                 "name": "Időzítő {x}"
+            },
+            "sensor_threshold": {
+                "name": "{sensor} küszöb"
             }
         },
         "select": {
@@ -502,7 +522,8 @@
                     "auto": "Auto",
                     "low": "Alacsony",
                     "medium": "Közepes",
-                    "high": "Magas"
+                    "high": "Magas",
+                    "very_high": "Nagyon magas"
                 }
             },
             "recipe": {
@@ -614,6 +635,14 @@
                 "state": {
                     "celsius": "Celsius",
                     "fahrenheit": "Fahrenheit"
+                }
+            },
+            "breaker_trigger_action": {
+                "name": "{trigger} művelet",
+                "state": {
+                    "ignore": "Figyelmen kívül hagyás",
+                    "alarm": "Riasztás",
+                    "trip_breaker": "Kismegszakító"
                 }
             },
             "oven_built_in_recipe": {
@@ -796,6 +825,13 @@
         "switch": {
             "anti_frost": {
                 "name": "Fagyálló"
+            },
+            "breaker": {
+                "name": "Kismegszakító",
+                "state": {
+                    "off": "Nyitott",
+                    "on": "Zárt"
+                }
             },
             "evaporator_cleaning": {
                 "name": "Elpárologtató tisztítása"

@@ -1,1 +1,66 @@
 command_line:
+  - sensor:
+      name: UniFi Clients JSON
+      unique_id: unifi_clients_json
+      command: >
+        bash -lc '/config/scripts/unifi/unifi_sta.sh >/dev/null 2>&1 || true;
+        cat /config/scripts/unifi/sta.json 2>/dev/null || echo "{\"meta\":{\"rc\":\"error\"},\"data\":[]}"'
+      scan_interval: 30
+      command_timeout: 25
+      value_template: "{{ value_json.meta.rc | default('error') }}"
+      json_attributes: [data]
+
+  - sensor:
+      name: UniFi Device JSON
+      unique_id: unifi_device_json
+      command: >
+        bash -lc '/config/scripts/unifi/unifi_device.sh >/dev/null 2>&1 || true;
+        cat /config/scripts/unifi/device.json 2>/dev/null || echo "{\"meta\":{\"rc\":\"error\"},\"data\":[]}"'
+      scan_interval: 60
+      command_timeout: 25
+      value_template: "{{ value_json.meta.rc | default('error') }}"
+      json_attributes: [data]
+
+  - sensor:
+      name: UniFi Sites JSON
+      unique_id: unifi_sites_json
+      command: >
+        bash -lc '/config/scripts/unifi/unifi_sites.sh >/dev/null 2>&1 || true;
+        cat /config/scripts/unifi/sites.json 2>/dev/null || echo "{\"meta\":{\"rc\":\"error\"},\"data\":[]}"'
+      scan_interval: 120
+      command_timeout: 25
+      value_template: "{{ value_json.meta.rc | default('error') }}"
+      json_attributes: [data]
+
+  - sensor:
+      name: NUC Promox Usbdisk
+      unique_id: nuc_proxmox_usbdisk
+      state_class: measurement # Exemples de valeurs possibles
+      command: >-
+        ssh
+        -i /config/ssh/id_rsa
+        -o BatchMode=yes
+        -o ConnectTimeout=5
+        -o StrictHostKeyChecking=no
+        root@192.168.68.150
+        /root/recover-usbdisk.sh --diag
+      scan_interval: 300
+      value_template: "{{ value_json.files_total }}"
+      json_attributes:
+        - uuid
+        - partition
+        - disk
+        - usb_node
+        - usb_busdev
+        - usb_driver
+        - usb_speed_mbps
+        - usb_power_control
+        - usb_autosuspend_ms
+        - usb_runtime_status
+        - usb_suspended_time_s
+        - bytes_total
+        - bytes_used
+        - bytes_avail
+        - pct_used
+        - dirs_top
+        - files_total

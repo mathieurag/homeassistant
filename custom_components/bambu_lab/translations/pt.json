@@ -62,7 +62,9 @@
           "local_mqtt": "Ligar localmente à impressora:",
           "host": "Endereço IP Local da Impressora:",
           "access_code": "Código de Acesso:",
-          "usage_hours": "Horas de utilização atuais (opcional):"
+          "usage_hours": "Horas de utilização atuais (opcional):",
+          "print_cache_count": "Número de modelos para armazenar em cache para o assistente doméstico (-1 para ilimitado):",
+          "timelapse_cache_count": "Número de vídeos de timelapse para armazenar em cache para o assistente doméstico (-1 para ilimitado):"
         },
         "sections": {
           "advanced": {
@@ -83,7 +85,8 @@
           "host": "Endereço IP Local da Impressora:",
           "access_code": "Código de Acesso:",
           "usage_hours": "Horas de utilização atuais (opcional):",
-          "developer_lan_mode": "Modo LAN do desenvolvedor ativado:"
+          "print_cache_count": "Número de modelos para armazenar em cache para o assistente doméstico (-1 para ilimitado):",
+          "timelapse_cache_count": "Número de vídeos de timelapse para armazenar em cache para o assistente doméstico (-1 para ilimitado):"
         },
         "sections": {
           "advanced": {
@@ -143,7 +146,9 @@
           "host": "Endereço IP Local da Impressora:",
           "access_code": "Código de Acesso:",
           "local_mqtt": "Conecte-se diretamente à impressora em vez da nuvem do Bambu Lab:",
-          "usage_hours": "Horas de utilização atuais (opcional):"
+          "usage_hours": "Horas de utilização atuais (opcional):",
+          "print_cache_count": "Número de modelos para armazenar em cache para o assistente doméstico (-1 para ilimitado):",
+          "timelapse_cache_count": "Número de vídeos de timelapse para armazenar em cache para o assistente doméstico (-1 para ilimitado):"
         },
         "sections": {
           "advanced": {
@@ -163,7 +168,8 @@
           "host": "Endereço IP Local da Impressora:",
           "access_code": "Código de Acesso:",
           "usage_hours": "Horas de utilização atuais (opcional):",
-          "developer_lan_mode": "Modo LAN do desenvolvedor ativado:"
+          "print_cache_count": "Número de modelos para armazenar em cache para o assistente doméstico (-1 para ilimitado):",
+          "timelapse_cache_count": "Número de vídeos de timelapse para armazenar em cache para o assistente doméstico (-1 para ilimitado):"
         },
         "sections": {
           "advanced": {
@@ -226,6 +232,15 @@
       },
       "dev": {
         "name": "Depurar"
+      },
+      "buzzer_silence": {
+        "name": "Caminhante - silêncio"
+      },
+      "buzzer_fire_alarm": {
+        "name": "Caminhante - alarme de incêndio"
+      },
+      "buzzer_beeping": {
+        "name": "Caminhante - apitando"
       }
     },
     "fan": {
@@ -256,6 +271,9 @@
       },
       "camera_light": {
         "name": "Luz da câmara"
+      },
+      "heatbed_light": {
+        "name": "Luz da costa de calor"
       }
     },
     "number": {
@@ -474,7 +492,11 @@
         "name": "Tipo de bico",
         "state": {
           "hardened_steel": "Aço endurecido",
-          "stainless_steel": "Aço inoxidável"
+          "stainless_steel": "Aço inoxidável",
+          "tungsten_carbide": "Carboneto de tungstênio",
+          "high_flow_hardened_steel": "Aço endurecido com grande fluxo",
+          "high_flow_stainless_steel": "Aço inoxidável com grande fluxo",
+          "high_flow_tungsten_carbide": "carboneto de tungstênio com grande fluxo"
         }
       },
       "humidity_index": {
@@ -741,6 +763,34 @@
           "abnormal": "Anormal",
           "readonly": "Somente leitura"
         }
+      },
+      "left_nozzle_diameter": {
+        "name": "Tamanho do bico esquerdo"
+      },
+      "left_nozzle_type": {
+        "name": "Tipo de bico esquerdo",
+        "state": {
+          "hardened_steel": "Aço endurecido",
+          "stainless_steel": "Aço inoxidável",
+          "tungsten_carbide": "Carboneto de tungstênio",
+          "high_flow_hardened_steel": "Aço endurecido com grande fluxo",
+          "high_flow_stainless_steel": "Aço inoxidável com grande fluxo",
+          "high_flow_tungsten_carbide": "carboneto de tungstênio com grande fluxo"
+        }
+      },
+      "right_nozzle_diameter": {
+        "name": "Tamanho do bico direito"
+      },
+      "right_nozzle_type": {
+        "name": "Tipo de bico direito",
+        "state": {
+          "hardened_steel": "Aço endurecido",
+          "stainless_steel": "Aço inoxidável",
+          "tungsten_carbide": "Carboneto de tungstênio",
+          "high_flow_hardened_steel": "Aço endurecido com grande fluxo",
+          "high_flow_stainless_steel": "Aço inoxidável com grande fluxo",
+          "high_flow_tungsten_carbide": "carboneto de tungstênio com grande fluxo"
+        }
       }
     },
     "camera": {
@@ -760,12 +810,6 @@
       },
       "ftp": {
         "name": "Carregar dados do modelo de impressora"
-      },
-      "timelapse": {
-        "name": "Carregue o mais recente timelapse da impressora"
-      },
-      "download_gcode_file": {
-        "name": "Salvar o arquivo gcode em ha"
       }
     },
     "update": {

@@ -121,7 +121,7 @@ def analyser_granularite(cursor, granularite, config, metadata_ids):
             "batterie": round(batterie / total * 100, 1) if total else 0,
             "reseau": round(reseau / total * 100, 1) if total else 0,
             "autoconso": round(solaire / prod * 100, 1) if prod else 0,
-            "autonomie": round(reseau/ (solaire + reseau) * 100, 1) if solaire else 0,
+            "autonomie": round((solaire + batterie)/ (solaire + batterie + reseau) * 100, 1) if solaire else 0,
             "hphc": round(reseau_hc/ (reseau) * 100, 1) if reseau else 0
         }
 

@@ -270,7 +270,7 @@ NUMBER_SENSORS = [
         icon="mdi:home-lightning-bolt-outline",
         mode = NumberMode.BOX,
         native_max_value=25000,
-        native_min_value=-5000,
+        native_min_value=-25000,
         native_step=50,
         native_unit_of_measurement=UnitOfPower.WATT,
         device_class=NumberDeviceClass.POWER,
@@ -1000,6 +1000,32 @@ SENSOR_SENSORS = [
         device_class=None,
         suggested_display_precision=2,
         entity_registry_enabled_default=False
+    ),
+    ExtSensorEntityDescription(
+        tag=Tag.CHARGING_SESSIONS,
+        key=Tag.CHARGING_SESSIONS.key,
+        icon="mdi:chart-box-multiple-outline",
+        device_class=None,
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC
+    ),
+    ExtSensorEntityDescription(
+        tag=Tag.CHARGING_SESSIONS_VEHICLES,
+        key=Tag.CHARGING_SESSIONS_VEHICLES.key,
+        icon="mdi:chart-box-outline",
+        device_class=None,
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False
+    ),
+    ExtSensorEntityDescription(
+        tag=Tag.CHARGING_SESSIONS_LOADPOINTS,
+        key=Tag.CHARGING_SESSIONS_LOADPOINTS.key,
+        icon="mdi:chart-box-outline",
+        device_class=None,
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False
     )
 ]
 SENSOR_SENSORS_PER_LOADPOINT = [
@@ -1151,7 +1177,7 @@ SENSOR_SENSORS_PER_LOADPOINT = [
         tag=Tag.SESSIONCO2PERKWH,
         icon="mdi:molecule-co2",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="CO₂/kWh",
+        native_unit_of_measurement="g/kWh",
         device_class=None,
         suggested_display_precision=3
     ),
@@ -1308,8 +1334,74 @@ SENSOR_SENSORS_PER_LOADPOINT = [
         #state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TIMESTAMP,
         #device_class=None,
-    )
+    ),
+
+    # charging session sensors's per LOADPOINT
+    ExtSensorEntityDescriptionStub(
+        tag=Tag.CHARGING_SESSIONS_LOADPOINT_ENERGY,
+        icon="mdi:lightning-bolt-outline",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        device_class=SensorDeviceClass.ENERGY,
+        entity_registry_enabled_default=True
+    ),
+    ExtSensorEntityDescriptionStub(
+        tag=Tag.CHARGING_SESSIONS_LOADPOINT_COST,
+        icon="mdi:cash-multiple",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="@@@",
+        device_class=None,
+        suggested_display_precision=3,
+        entity_registry_enabled_default=True
+    ),
+    ExtSensorEntityDescriptionStub(
+        tag=Tag.CHARGING_SESSIONS_LOADPOINT_DURATION,
+        icon="mdi:clock-digital",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_unit_of_measurement=UnitOfTime.DAYS,
+        device_class=SensorDeviceClass.DURATION,
+        suggested_display_precision=1,
+        entity_registry_enabled_default=True
+    ),
 ]
+SENSOR_SENSORS_PER_VEHICLE = [
+    # charging session sensors's per VEHICLE
+    ExtSensorEntityDescriptionStub(
+        tag=Tag.CHARGING_SESSIONS_VEHICLE_ENERGY,
+        icon="mdi:lightning-bolt-outline",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        device_class=SensorDeviceClass.ENERGY,
+        entity_registry_enabled_default=True
+    ),
+    ExtSensorEntityDescriptionStub(
+        tag=Tag.CHARGING_SESSIONS_VEHICLE_COST,
+        icon="mdi:cash-multiple",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="@@@",
+        device_class=None,
+        suggested_display_precision=3,
+        entity_registry_enabled_default=True
+    ),
+    ExtSensorEntityDescriptionStub(
+        tag=Tag.CHARGING_SESSIONS_VEHICLE_DURATION,
+        icon="mdi:clock-digital",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_unit_of_measurement=UnitOfTime.DAYS,
+        device_class=SensorDeviceClass.DURATION,
+        suggested_display_precision=1,
+        entity_registry_enabled_default=True
+    ),
+]
+
 # SENSOR_SENSORS_PER_VEHICLE = [
 #
 #     ExtSensorEntityDescriptionStub(
