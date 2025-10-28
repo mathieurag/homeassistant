@@ -292,7 +292,7 @@ class MqttThread(threading.Thread):
             except Exception:
                 pass
 
-        LOGGER.info("MQTT listener thread exited.")
+        LOGGER.debug("MQTT listener thread exited.")
 
 class ImplicitFTP_TLS(ftplib.FTP_TLS):
     """
@@ -367,8 +367,8 @@ class BambuClient:
         self._device_type = config.get('device_type', 'unknown').upper()
         self._local_mqtt = config.get('local_mqtt', False)
         self._serial = config.get('serial', '')
-        self._enable_camera = config.get('enable_camera', True)
-        self._enable_ftp = config.get('enable_ftp', True)
+        self._enable_camera = config.get('enable_camera', True) and (self.host != "")
+        self._enable_ftp = (self.host != "")
         if self._serial.startswith('MOCK-'):
             self._enable_ftp = False
             self._enable_camera = False
@@ -383,7 +383,7 @@ class BambuClient:
         self._disable_ssl_verify = config.get('disable_ssl_verify', False)
 
         self._connected = False
-        self._port = 1883
+        self._port = 8883
         self._refreshed = False
 
         self._device = Device(self)
@@ -447,6 +447,8 @@ class BambuClient:
     def setup_tls(self):
         if self._local_mqtt:
             self.client.tls_set_context(self.local_tls_context)
+            if self._disable_ssl_verify:
+                self.client.tls_insecure_set(True) 
         else:
             self.client.tls_set()
 
@@ -467,7 +469,6 @@ class BambuClient:
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(None, self.setup_tls)
 
-        self._port = 8883
         if self._local_mqtt:
             self.client.username_pw_set("bblp", password=self._access_code)
         else:
@@ -526,30 +527,13 @@ class BambuClient:
         # Start camera if enabled
         self.start_camera()
 
-    def try_on_connect(self,
-                       client_: mqtt.Client,
-                       userdata: None,
-                       flags: dict[str, Any],
-                       result_code: int,
-                       properties: mqtt.Properties | None = None, ):
-        """Handle connection"""
-        LOGGER.debug("try_on_connect: Connected to printer")
-        self._connected = True
-        LOGGER.debug("Now test subscribing...")
-        self.subscribe()
-        # For the initial configuration connection attempt, we need version info and the IP address.
-        LOGGER.debug("try_on_connect: Getting version info")
-        self.publish(GET_VERSION)
-        LOGGER.debug("try_on_connect: Request push all")
-        self.publish(PUSH_ALL)
-
     def on_disconnect(self,
                       client_: mqtt.Client,
                       userdata: None,
                       result_code: int):
         """Called when MQTT Disconnects"""
         if (result_code == 0):
-            LOGGER.debug(f"On Disconnect: Printer disconnected with error code: {result_code}")
+            LOGGER.debug(f"On Disconnect: Printer disconnected cleanly")
         else:
             LOGGER.warning(f"On Disconnect: Printer disconnected with error code: {result_code}")
         self._on_disconnect()
@@ -698,12 +682,44 @@ class BambuClient:
         """Test if we can connect to an MQTT broker."""
         LOGGER.debug("Try Connection")
 
-        result: queue.Queue[bool] = queue.Queue(maxsize=1)
+        result: queue.Queue[int] = queue.Queue(maxsize=1)
 
         self.received_info = False
         self.received_push = False
 
-        def on_message(client, userdata, message):
+        def try_on_connect(client_: mqtt.Client,
+                           userdata: None,
+                           flags: dict[str, Any],
+                           result_code: int,
+                           properties: mqtt.Properties | None = None, ):
+
+            LOGGER.debug(f"try_on_connect: Connected to printer: {result_code}")
+            self.subscribe_and_request_info()
+
+        def try_on_disconnect(client_: mqtt.Client,
+                              userdata: None,
+                              result_code: int):
+            """Called when MQTT Disconnects"""
+            LOGGER.debug("try_on_disconnect: Lost connection to the printer")
+            if (result_code == 0):
+                LOGGER.debug(f"Printer disconnected cleanly")
+            else:
+                LOGGER.warning(f"Printer disconnected with error code: {result_code}")
+                result.put(result_code)
+
+            try_disconnect()
+
+        def try_disconnect():
+            if self.client is not None:
+                try:
+                    self.client.loop_stop()
+                    self.client.disconnect()
+                except Exception as e:
+                    LOGGER.debug(f"Error during MQTT disconnect: {e}")
+                finally:
+                    self.client = None
+
+        def try_on_message(client, userdata, message):
             json_data = json.loads(message.payload)
             # X1 mqtt payload is inconsistent. Adjust it for consistent logging.
             clean_msg = re.sub(r"\\n *", "", str(message.payload))
@@ -712,7 +728,7 @@ class BambuClient:
             clean_msg = re.sub(r"True", "true", str(clean_msg))
             clean_msg = re.sub(r"False", "false", str(clean_msg))
 
-            LOGGER.debug(f"Try Connection: Got '{clean_msg}'")
+            LOGGER.debug(f"try_on_message: Got '{clean_msg}'")
             if json_data.get("info") and json_data.get("info").get("command") == "get_version":
                 LOGGER.debug("Got Version Command Data")
                 self._device.info_update(data=json_data.get("info"))
@@ -723,16 +739,16 @@ class BambuClient:
             # Observe system command is not needed here because it is not an initial message.
 
             if self.received_info and self.received_push:
-                result.put(True)
+                result.put(0)
 
         self._test_mode = True
         if self._mock:
             self.client = MockMQTTClient(self._serial)
         else:
             self.client = mqtt.Client()
-        self.client.on_connect = self.try_on_connect
-        self.client.on_disconnect = self.on_disconnect
-        self.client.on_message = on_message
+        self.client.on_connect = try_on_connect
+        self.client.on_disconnect = try_on_disconnect
+        self.client.on_message = try_on_message
 
         # Run the blocking tls_set method in a separate thread
         loop = asyncio.get_event_loop()
@@ -743,24 +759,27 @@ class BambuClient:
             self.client.username_pw_set("bblp", password=self._access_code)
         else:
             self.client.username_pw_set(self._username, password=self._auth_token)
-        self._port = 8883
 
-        LOGGER.debug("Test connection: Connecting to %s", host)
+        LOGGER.debug(f"Test connection: Connecting to {host}")
         try:
             self.client.connect(host, self._port)
             self.client.loop_start()
             LOGGER.debug("Waiting for reponse.")
-            if result.get(timeout=10):
+            return_result = result.get(timeout=10)
+            if return_result == 0:
                 LOGGER.debug("Connection test was successful")
-                return True
+            else:
+                LOGGER.debug(f"Connection test failed with result: {return_result}")
+            return return_result
         except OSError as e:
             LOGGER.error(f"Connection test to '{host}' failed: {type(e)} Args: {e}")
-            return False
+            return e.errno
         except queue.Empty:
             LOGGER.error(f"Connection test to '{host}' failed with timeout")
-            return False
+            return -1
         finally:
-            self.disconnect()
+            # Make sure we definitely clean up in all paths.
+            try_disconnect()
 
     async def __aenter__(self):
         """Async enter.
@@ -786,8 +805,11 @@ def create_local_ssl_context():
     """
     script_path = os.path.abspath(__file__)
     directory_path = os.path.dirname(script_path)
-    certfile = directory_path + "/bambu.cert"
-    context = ssl.create_default_context(cafile=certfile)
+    context = ssl.create_default_context()
+    for filename in ("bambu.cert", "bambu_p2s_250626.cert"):
+        path = os.path.join(directory_path, filename)
+        context.load_verify_locations(cafile=path)
+
     # Ignore "CA cert does not include key usage extension" error since python 3.13
     # See note in https://docs.python.org/3/library/ssl.html#ssl.create_default_context
     context.verify_flags &= ~ssl.VERIFY_X509_STRICT
@@ -797,7 +819,7 @@ def create_local_ssl_context():
 
 @functools.lru_cache(maxsize=1)
 def create_insecure_ssl_context():
-    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS)
     context.check_hostname = False
     context.verify_mode = ssl.CERT_NONE
     return context

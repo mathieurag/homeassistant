@@ -232,11 +232,9 @@ class EvccApiBridge:
                                         sub_key = key_parts[2]
                                         if domain in self._data:
                                             if len(self._data[domain]) > idx:
-                                                if sub_key in self._data[domain][idx]:
-                                                    self._data[domain][idx][sub_key] = value
-                                                else:
-                                                    self._data[domain][idx][sub_key] = value
+                                                if not sub_key in self._data[domain][idx]:
                                                     _LOGGER.debug(f"adding '{sub_key}' to {domain}[{idx}]")
+                                                self._data[domain][idx][sub_key] = value
                                             else:
                                                 # we need to add a new entry to the list... - well
                                                 # if we get index 4 but length is only 2 we must add multiple
@@ -247,11 +245,21 @@ class EvccApiBridge:
                                                 self._data[domain][idx] = {sub_key: value}
                                                 _LOGGER.debug(f"adding index {idx} to '{domain}' -> {self._data[domain][idx]}")
                                         else:
-                                            _LOGGER.info(f"unhandled [{domain} not in data] {key} - ignoring: {value} data: {self._data}")
+                                            _LOGGER.info(f"unhandled [{domain} not in data] 3part: {key} - ignoring: {value} data: {self._data}")
                                         # if domain == "loadpoints":
                                         #     pass
                                         # elif domain == "vehicles":
                                         #     pass
+                                    elif len(key_parts) == 2:
+                                        # currently only 'forcast.solar'
+                                        domain = key_parts[0]
+                                        sub_key = key_parts[1]
+                                        if domain in self._data:
+                                            if not sub_key in self._data[domain]:
+                                                _LOGGER.debug(f"adding '{sub_key}' to {domain}")
+                                            self._data[domain][sub_key] = value
+                                        else:
+                                            _LOGGER.info(f"unhandled [{domain} not in data] 2part: {key} - domain {domain} not in self.data - ignoring: {value}")
                                     else:
                                         _LOGGER.info(f"unhandled [not parsable key] {key} - ignoring: {value}")
                                 else:
@@ -541,12 +549,19 @@ class EvccApiBridge:
             return {"err": "no response from evcc"}
 
     async def write_loadpoint_plan(self, idx: str, energy: str, rfc_date: str):
-        # before we can write something to the vehicle endpoints, we must know the vehicle_id!
-        # -> so we have to grab from the loadpoint the current vehicle!
         try:
-            req = f"{self.host}/api/{EP_TYPE.LOADPOINTS.value}/{idx}/plan/energy/{energy}/{rfc_date}"
-            _LOGGER.debug(f"POST request: {req}")
-            r_json = await _do_request(method=self.web_session.post(url=req, ssl=False))
+            r_json = None
+            if energy is not None and rfc_date is not None:
+                # WRITE PLAN...
+                req = f"{self.host}/api/{EP_TYPE.LOADPOINTS.value}/{idx}/plan/energy/{energy}/{rfc_date}"
+                _LOGGER.debug(f"POST request: {req}")
+                r_json = await _do_request(method=self.web_session.post(url=req, ssl=False))
+            else:
+                # DELETE PLAN...
+                req = f"{self.host}/api/{EP_TYPE.LOADPOINTS.value}/{idx}/plan/energy"
+                _LOGGER.debug(f"DELETE request: {req}")
+                r_json = await _do_request(method=self.web_session.delete(url=req, ssl=False))
+
             if r_json is not None and ((hasattr(r_json, "len") and len(r_json) > 0) or isinstance(r_json, (Number, str))):
                 return r_json
             else:
@@ -555,24 +570,28 @@ class EvccApiBridge:
         except Exception as err:
             _LOGGER.info(f"could not write to loadpoint: {idx}")
 
-    async def write_vehicle_plan_for_loadpoint_index(self, idx:str, soc:str, rfc_date:str, precondition: int | None = None):
-        # before we can write something to the vehicle endpoints, we must know the vehicle_id!
-        # -> so we have to grab from the loadpoint the current vehicle!
-        if len(self._data) > 0 and JSONKEY_LOADPOINTS in self._data:
+    async def write_vehicle_plan(self, vehicle_id:str, soc:str, rfc_date:str, precondition: int | None = None):
+        if vehicle_id is not None:
             try:
-                int_idx = int(idx) - 1
-                vehicle_id = self._data[JSONKEY_LOADPOINTS][int_idx][Tag.VEHICLENAME.key]
-                if vehicle_id is not None:
+                r_json = None
+                if soc is not None and rfc_date is not None:
+                    # WRITE PLAN...
                     req = f"{self.host}/api/{EP_TYPE.VEHICLES.value}/{vehicle_id}/plan/soc/{soc}/{rfc_date}"
                     if precondition is not None and precondition > 0:
                         req += f"?precondition={precondition}"
                     _LOGGER.debug(f"POST request: {req}")
-
                     r_json = await _do_request(method=self.web_session.post(url=req, ssl=False))
-                    if r_json is not None and ((hasattr(r_json, "len") and len(r_json) > 0) or isinstance(r_json, (Number, str))):
-                        return r_json
-                    else:
-                        return {"err": "no response from evcc"}
+                else:
+                    # DELETE PLAN...
+                    req = f"{self.host}/api/{EP_TYPE.VEHICLES.value}/{vehicle_id}/plan/soc"
+                    _LOGGER.debug(f"DELETE request: {req}")
+                    r_json = await _do_request(method=self.web_session.delete(url=req, ssl=False))
+
+                if r_json is not None and ((hasattr(r_json, "len") and len(r_json) > 0) or isinstance(r_json, (Number, str))):
+                    return r_json
+                else:
+                    return {"err": "no response from evcc"}
 
             except Exception as err:
-                _LOGGER.info(f"could not find a connected vehicle at loadpoint: {idx}")
+                _LOGGER.error(f"could not write vehicle plan for vehicle: {vehicle_id}, error: {err}")
+                return {"err": f"could not write vehicle plan: {err}"}

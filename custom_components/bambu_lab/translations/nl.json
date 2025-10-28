@@ -20,15 +20,24 @@
     },
     "error": {
       "cannot_connect": "Verbinding mislukt. Controleer de logingegevens.",
-      "cannot_connect_local_ip": "Verbinding mislukt. Controleer het opgegeven IP-adres.",
-      "cannot_connect_local_all": "Verbinding mislukt. Controleer opgegeven instellingen.",
       "invalid_auth": "Ongeldige authenticatie.",
       "unknown": "Onverwachte fout.",
       "code_needed": "Verificatiecode moet worden opgegeven.",
       "verifyCode": "Verificatiecode is vereist. Controleer e-mail of telefoon.",
       "code_expired": "Vertificatiecode is verlopen. Nieuwe verificatiecode is aangevraagd. Controleer hiervoor e-mail of telefoon.",
       "code_incorrect": "Verificatiecode is incorrect. Voer opnieuw in.",
-      "tfaCode": "Twee-factor-authenticatiecode is vereist. Voer deze in."
+      "tfaCode": "Twee-factor-authenticatiecode is vereist. Voer deze in.",
+      "cannot_connect_local_timeout": "Kan geen verbinding maken. Er is een time-out voor de verbinding opgetreden.",
+      "cannot_connect_local_access_denied": "Kan geen verbinding maken. Toegang geweigerd - controleer de toegangscode.",
+      "cannot_connect_local_incorrect_serial": "Kan geen verbinding maken. De verbinding is verbroken door de printer. Controleer het serienummer.",
+      "cannot_connect_local_incorrect_address": "Kan geen verbinding maken. Verbinding geweigerd - controleer het IP-adres.",
+      "cannot_connect_local_address_unreachable": "Kan geen verbinding maken. Adres onbereikbaar - controleer netwerkverbinding.",
+      "cannot_connect_cloud_timeout": "Er is een time-out opgetreden bij het verbinden met de Bambu Lab-cloud.",
+      "cannot_connect_cloud_access_denied": "Toegang geweigerd door Bambu Lab-cloud.",
+      "cannot_connect_cloud_connection_refused": "Verbinding geweigerd door Bambu Lab-cloud.",
+      "cannot_connect_cloud_address_unreachable": "Bambu Lab-cloudadres onbereikbaar.",
+      "cannot_connect_cloud_unknown": "Onbekende fout bij het verbinden met de Bambu Lab-cloud.",
+      "cannot_connect_local_unknown": "Kan geen verbinding maken. Controleer de opgegeven instellingen."
     },
     "step": {
       "user": {
@@ -57,14 +66,15 @@
       },
       "Bambu_Lan": {
         "title": "Opzetten lokale verbinding",
-        "description": "U kunt ervoor kiezen om rechtstreeks verbinding te maken met de printer voor statusupdates in plaats van via Bambu Lab cloud. Hierdoor heeft u minder last van Bambu Lab Cloud-uitval, maar Bambu Lab heeft beperkte controle over de printer in deze hybride modus, dus sommige bedieningselementen zijn niet beschikbaar.",
+        "description": "U kunt ervoor kiezen om rechtstreeks verbinding te maken met de printer mqtt in plaats van met de Bambu Lab-cloud. Dit geeft veerkracht bij cloudstoringen van Bambu Lab, maar Bambu Lab heeft de controle over de printer beperkt in deze hybride modus, zodat sommige bedieningselementen niet beschikbaar zullen zijn.\n\rOngeacht deze keuze haalt de integratie het IP-adres van de printer uit de Bambu Lab-cloud en bevestigt dat er verbinding mee kan worden gemaakt, aangezien dit vereist is voor camera-, printgeschiedenis en timelapse-ondersteuning. Als uw printer niet toegankelijk is voor uw Home Assistant, kunt u deze controle uitschakelen, maar deze functies gaan verloren.",
         "data": {
-          "local_mqtt": "Lokaal verbinden met de printer:",
+          "local_mqtt": "Rechtstreeks verbinding maken met printer mqtt:",
           "host": "Lokaal IP-adres van printer:",
           "access_code": "Toegangscode:",
           "usage_hours": "Huidige gebruiksduur in uren (optioneel):",
           "print_cache_count": "Aantal modellen om te cache naar Home Assistant (-1 voor onbeperkt):",
-          "timelapse_cache_count": "Aantal Timelapse-video's om te cache naar Home Assistant (-1 voor onbeperkt):"
+          "timelapse_cache_count": "Aantal Timelapse-video's om te cache naar Home Assistant (-1 voor onbeperkt):",
+          "skip_local_mqtt": "Sla de lokale mqtt-verbindingstest over (niet aanbevolen):"
         },
         "sections": {
           "advanced": {
@@ -108,15 +118,24 @@
     },
     "error": {
       "cannot_connect": "Verbinden mislukt",
-      "cannot_connect_local_ip": "Verbinding mislukt. Controleer het opgegeven IP-adres.",
-      "cannot_connect_local_all": "Verbinding mislukt. Controleer opgegeven instellingen.",
       "invalid_auth": "Ongeldige authenticatie.",
       "unknown": "Onverwachte fout.",
       "code_needed": "Verificatiecode moet worden opgegeven.",
       "verifyCode": "Verificatiecode is vereist. Controleer e-mail of telefoon.",
       "code_expired": "Vertificatiecode is verlopen. Nieuwe verificatiecode is aangevraagd. Controleer hiervoor e-mail of telefoon.",
       "code_incorrect": "Verificatiecode is incorrect. Voer opnieuw in.",
-      "tfaCode": "Twee-factor-authenticatiecode is vereist. Voer deze in."
+      "tfaCode": "Twee-factor-authenticatiecode is vereist. Voer deze in.",
+      "cannot_connect_local_timeout": "Kan geen verbinding maken. Er is een time-out voor de verbinding opgetreden.",
+      "cannot_connect_local_access_denied": "Kan geen verbinding maken. Toegang geweigerd - controleer de toegangscode.",
+      "cannot_connect_local_incorrect_serial": "Kan geen verbinding maken. De verbinding is verbroken door de printer. Controleer het serienummer.",
+      "cannot_connect_local_incorrect_address": "Kan geen verbinding maken. Verbinding geweigerd - controleer het IP-adres.",
+      "cannot_connect_local_address_unreachable": "Kan geen verbinding maken. Adres onbereikbaar - controleer netwerkverbinding.",
+      "cannot_connect_cloud_timeout": "Er is een time-out opgetreden bij het verbinden met de Bambu Lab-cloud.",
+      "cannot_connect_cloud_access_denied": "Toegang geweigerd door Bambu Lab-cloud.",
+      "cannot_connect_cloud_connection_refused": "Verbinding geweigerd door Bambu Lab-cloud.",
+      "cannot_connect_cloud_address_unreachable": "Bambu Lab-cloudadres onbereikbaar.",
+      "cannot_connect_cloud_unknown": "Onbekende fout bij het verbinden met de Bambu Lab-cloud.",
+      "cannot_connect_local_unknown": "Kan geen verbinding maken. Controleer de opgegeven instellingen."
     },
     "step": {
       "init": {
@@ -140,15 +159,16 @@
       },
       "Bambu_Lan": {
         "title": "Opzetten lokale verbinding",
-        "description": "U kunt ervoor kiezen om rechtstreeks verbinding te maken met de printer voor statusupdates in plaats van via Bambu Lab cloud. Hierdoor heeft u minder last van Bambu Lab Cloud-uitval, maar Bambu Lab heeft beperkte controle over de printer in deze hybride modus, dus sommige bedieningselementen zijn niet beschikbaar.",
+        "description": "U kunt ervoor kiezen om rechtstreeks verbinding te maken met de printer mqtt in plaats van met de Bambu Lab-cloud. Dit geeft veerkracht bij cloudstoringen van Bambu Lab, maar Bambu Lab heeft de controle over de printer beperkt in deze hybride modus, zodat sommige bedieningselementen niet beschikbaar zullen zijn.\n\rOngeacht deze keuze haalt de integratie het IP-adres van de printer uit de Bambu Lab-cloud en bevestigt dat er verbinding mee kan worden gemaakt, aangezien dit vereist is voor camera-, printgeschiedenis en timelapse-ondersteuning. Als uw printer niet toegankelijk is voor uw Home Assistant, kunt u deze controle uitschakelen, maar deze functies gaan verloren.",
         "data": {
           "serial": "Adjust settings for:",
           "host": "Local Printer IP Address:",
           "access_code": "Toegangscode:",
-          "local_mqtt": "Lokaal verbinden met de printer in plaats van via Bambu Lab Cloud:",
+          "local_mqtt": "Rechtstreeks verbinding maken met printer mqtt:",
           "usage_hours": "Huidige gebruiksduur in uren (optioneel):",
           "print_cache_count": "Aantal modellen om te cache naar Home Assistant (-1 voor onbeperkt):",
-          "timelapse_cache_count": "Aantal Timelapse-video's om te cache naar Home Assistant (-1 voor onbeperkt):"
+          "timelapse_cache_count": "Aantal Timelapse-video's om te cache naar Home Assistant (-1 voor onbeperkt):",
+          "skip_local_mqtt": "Sla de lokale mqtt-verbindingstest over (niet aanbevolen):"
         },
         "sections": {
           "advanced": {

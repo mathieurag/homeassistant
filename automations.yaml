@@ -331,6 +331,7 @@
       - sensor.*production*
       - sensor.*rx*
       - sensor.*tx*
+      - sensor.*cpu*
     action: recorder.purge_entities
   - delay:
       hours: 0
@@ -966,11 +967,6 @@
   - event: start
     trigger: homeassistant
   actions:
-  - delay:
-      hours: 0
-      minutes: 1
-      seconds: 0
-      milliseconds: 0
   - action: shell_command.energie_solar
   - action: rest.reload
     data: {}
@@ -3340,14 +3336,14 @@
   description: ''
   triggers:
   - value_template: "{{ states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
-      | float(0) ==\n   states('number.esphome_web_a92940_marstek_charging_cutoff_capacity')
+      | float(0) >=\n   states('number.esphome_web_a92940_marstek_charging_cutoff_capacity')
       | float(0) and is_state('input_boolean.batterie_notification_envoyee','off')
       and states('sensor.esphome_web_a92940_marstek_battery_state_of_charge') != 'unavailable'
       and states('sensor.esphome_web_a92940_marstek_battery_state_of_charge') != 'unknown'}}\n"
     trigger: template
     id: plein
   - value_template: "{{ states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
-      | float(0) ==\n   states('number.esphome_web_a92940_marstek_discharging_cutoff_capacity')
+      | float(0) <=\n   states('number.esphome_web_a92940_marstek_discharging_cutoff_capacity')
       | float(0) and states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
       != 'unavailable' and states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
       != 'unknown'}}\n"
@@ -4313,4 +4309,20 @@
   - action: homeassistant.reload_config_entry
     data:
       entry_id: 01K6AY58R58Z65ME301FMWH1BV
+  mode: single
+- id: '1760888218116'
+  alias: Alerte Disque Externe
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.nuc_promox_usbdisk
+    attribute: health
+    from: OK
+    to: NOK
+  conditions: []
+  actions:
+  - data:
+      message: ⚠️ Disque Externe NOK !
+    action: notify.notify
   mode: single

@@ -20,15 +20,24 @@
     },
     "error": {
       "cannot_connect": "Error al conectar. Revisa las credenciales.",
-      "cannot_connect_local_ip": "Error al conectar. Revisa la dirección IP proporcionada.",
-      "cannot_connect_local_all": "Error al conectar. Revisa la configuración proporcionada.",
       "invalid_auth": "Autenticación inválida.",
       "unknown": "Error inesperado.",
       "code_needed": "Se debe proporcionar el código de verificación.",
       "verifyCode": "Se requiere código de verificación. Consulta tu correo electrónico o teléfono.",
       "code_expired": "El código de verificación expiró. Nuevo código solicitado. Consulta tu correo electrónico o teléfono.",
       "code_incorrect": "El código de verificación era incorrecto. Por favor, introdúcelo de nuevo.",
-      "tfaCode": "Se requiere código 2FA. Por favor, introdúcelo."
+      "tfaCode": "Se requiere código 2FA. Por favor, introdúcelo.",
+      "cannot_connect_local_timeout": "No se pudo conectar. Se agotó el tiempo de conexión.",
+      "cannot_connect_local_access_denied": "No se pudo conectar. Acceso denegado: verifique el código de acceso.",
+      "cannot_connect_local_incorrect_serial": "No se pudo conectar. La impresora cerró la conexión; verifique el número de serie.",
+      "cannot_connect_local_incorrect_address": "No se pudo conectar. Conexión rechazada: verifique la dirección IP.",
+      "cannot_connect_local_address_unreachable": "No se pudo conectar. Dirección inalcanzable: verifique la conexión de red.",
+      "cannot_connect_cloud_timeout": "Se agotó el tiempo al intentar conectarse a la nube de Bambu Lab.",
+      "cannot_connect_cloud_access_denied": "Acceso denegado por la nube de Bambu Lab.",
+      "cannot_connect_cloud_connection_refused": "Conexión rechazada por la nube de Bambu Lab.",
+      "cannot_connect_cloud_address_unreachable": "Dirección de nube de Bambu Lab inalcanzable.",
+      "cannot_connect_cloud_unknown": "Error desconocido al conectarse a la nube de Bambu Lab.",
+      "cannot_connect_local_unknown": "No se pudo conectar. Verifique la configuración proporcionada."
     },
     "step": {
       "user": {
@@ -57,14 +66,15 @@
       },
       "Bambu_Lan": {
         "title": "Configuración de Conexión Local",
-        "description": "Puede optar por conectarse directamente a la impresora para obtener actualizaciones de estado en lugar de hacerlo mediante la nube de Bambu Lab. Esto le brinda resistencia a las interrupciones en la nube de Bambu Lab, pero Bambu Lab tiene un control restringido de la impresora cuando está en este modo híbrido, por lo que algunos controles no estarán disponibles.",
+        "description": "Puede optar por conectarse directamente a la impresora mqtt en lugar de a la nube de Bambu Lab. Esto brinda resistencia a las interrupciones en la nube de Bambu Lab, pero Bambu Lab tiene un control restringido de la impresora cuando está en este modo híbrido, por lo que algunos controles no estarán disponibles.\n\rIndependientemente de esta elección, la integración obtendrá la dirección IP de la impresora de la nube de Bambu Lab y confirmará que puede conectarse a ella, ya que esto es necesario para la cámara, el historial de impresión y la compatibilidad con lapso de tiempo. Si Home Assistant no puede acceder a su impresora, puede desactivar esta verificación, pero perderá esas funciones.",
         "data": {
-          "local_mqtt": "Conectar localmente a la impresora:",
+          "local_mqtt": "Conéctese directamente a la impresora mqtt:",
           "host": "Dirección de IP Local de la Impresora:",
           "access_code": "Código de Acceso:",
           "usage_hours": "Cantidad de horas de uso (opcional):",
           "print_cache_count": "Número de modelos para almacenar en caché al asistente de inicio (-1 para ilimitado):",
-          "timelapse_cache_count": "Número de videos de tiempo de tiempo para almacenar en caché al asistente de inicio (-1 para ilimitado):"
+          "timelapse_cache_count": "Número de videos de tiempo de tiempo para almacenar en caché al asistente de inicio (-1 para ilimitado):",
+          "skip_local_mqtt": "Omita la prueba de conexión mqtt local (no recomendado):"
         },
         "sections": {
           "advanced": {
@@ -108,15 +118,24 @@
     },
     "error": {
       "cannot_connect": "Error al conectar",
-      "cannot_connect_local_ip": "Error al conectar. Revisa la dirección de IP proporcionada.",
-      "cannot_connect_local_all": "Error al conectar. Revisa configuración proporcionada.",
       "invalid_auth": "Autenticación inválida.",
       "unknown": "Error inesperado.",
       "code_needed": "Se debe proporcionar el código de verificación.",
       "verifyCode": "Se requiere código de verificación. Consulta tu correo electrónico o teléfono.",
       "code_expired": "El código de verificación expiró. Nuevo código solicitado. Consulta tu correo electrónico o teléfono.",
       "code_incorrect": "El código de verificación era incorrecto. Por favor, introdúcelo de nuevo.",
-      "tfaCode": "Se requiere código 2FA. Por favor, introdúcelo."
+      "tfaCode": "Se requiere código 2FA. Por favor, introdúcelo.",
+      "cannot_connect_local_timeout": "No se pudo conectar. Se agotó el tiempo de conexión.",
+      "cannot_connect_local_access_denied": "No se pudo conectar. Acceso denegado: verifique el código de acceso.",
+      "cannot_connect_local_incorrect_serial": "No se pudo conectar. La impresora cerró la conexión; verifique el número de serie.",
+      "cannot_connect_local_incorrect_address": "No se pudo conectar. Conexión rechazada: verifique la dirección IP.",
+      "cannot_connect_local_address_unreachable": "No se pudo conectar. Dirección inalcanzable: verifique la conexión de red.",
+      "cannot_connect_cloud_timeout": "Se agotó el tiempo al intentar conectarse a la nube de Bambu Lab.",
+      "cannot_connect_cloud_access_denied": "Acceso denegado por la nube de Bambu Lab.",
+      "cannot_connect_cloud_connection_refused": "Conexión rechazada por la nube de Bambu Lab.",
+      "cannot_connect_cloud_address_unreachable": "Dirección de nube de Bambu Lab inalcanzable.",
+      "cannot_connect_cloud_unknown": "Error desconocido al conectarse a la nube de Bambu Lab.",
+      "cannot_connect_local_unknown": "No se pudo conectar. Verifique la configuración proporcionada."
     },
     "step": {
       "init": {
@@ -140,15 +159,16 @@
       },
       "Bambu_Lan": {
         "title": "Ajusta la configuración de conexión",
-        "description": "Puede optar por conectarse directamente a la impresora para obtener actualizaciones de estado en lugar de hacerlo mediante la nube de Bambu Lab. Esto le brinda resistencia a las interrupciones en la nube de Bambu Lab, pero Bambu Lab tiene un control restringido de la impresora cuando está en este modo híbrido, por lo que algunos controles no estarán disponibles.",
+        "description": "Puede optar por conectarse directamente a la impresora mqtt en lugar de a la nube de Bambu Lab. Esto brinda resistencia a las interrupciones en la nube de Bambu Lab, pero Bambu Lab tiene un control restringido de la impresora cuando está en este modo híbrido, por lo que algunos controles no estarán disponibles.\n\rIndependientemente de esta elección, la integración obtendrá la dirección IP de la impresora de la nube de Bambu Lab y confirmará que puede conectarse a ella, ya que esto es necesario para la cámara, el historial de impresión y la compatibilidad con lapso de tiempo. Si Home Assistant no puede acceder a su impresora, puede desactivar esta verificación, pero perderá esas funciones.",
         "data": {
           "serial": "Ajustar la configuración para:",
           "host": "Dirección IP Local de la Impresora:",
           "access_code": "Código de Acceso:",
-          "local_mqtt": "Conéctese directamente a la impresora en lugar de hacerlo a través de la nube de Bambu Lab:",
+          "local_mqtt": "Conéctese directamente a la impresora mqtt:",
           "usage_hours": "Cantidad de horas de uso (opcional):",
           "print_cache_count": "Número de modelos para almacenar en caché al asistente de inicio (-1 para ilimitado):",
-          "timelapse_cache_count": "Número de videos de tiempo de tiempo para almacenar en caché al asistente de inicio (-1 para ilimitado):"
+          "timelapse_cache_count": "Número de videos de tiempo de tiempo para almacenar en caché al asistente de inicio (-1 para ilimitado):",
+          "skip_local_mqtt": "Omita la prueba de conexión mqtt local (no recomendado):"
         },
         "sections": {
           "advanced": {

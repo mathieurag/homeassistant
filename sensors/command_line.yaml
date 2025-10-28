@@ -50,6 +50,12 @@ command_line:
         - uuid
         - partition
         - disk
+        - mount_mode
+        - health
+        - reason
+        - ls_ok
+        - read_ok
+        - write_ok
         - usb_node
         - usb_busdev
         - usb_driver

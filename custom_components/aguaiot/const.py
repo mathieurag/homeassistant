@@ -6,7 +6,6 @@ from homeassistant.const import (
     UnitOfPressure,
     REVOLUTIONS_PER_MINUTE,
 )
-from homeassistant.components.climate.const import HVACAction
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
     BinarySensorEntityDescription,
@@ -71,6 +70,7 @@ CONF_UUID = "uuid"
 CONF_ENDPOINT = "endpoint"
 CONF_BRAND_ID = "brand_id"
 CONF_BRAND = "brand"
+CONF_LANGUAGE = "language"
 
 AIR_VARIANTS = ["air", "air2", "air3", "air_palm"]
 WATER_VARIANTS = ["water", "h2o", "h2o_mandata"]
@@ -562,6 +562,11 @@ CLIMATE_CANALIZATIONS = (
         key=r"vent_(?!(front|rear))(?P<id>\w+)_set",
         key_temp_set="temp_{id}_set",
         key_temp_get="temp_{id}_get",
+        icon="mdi:fan",
+    ),
+    AguaIOTCanalizationEntityDescription(
+        name="Multifire",
+        key="vent_front_sweetair_set",
         icon="mdi:fan",
     ),
 )

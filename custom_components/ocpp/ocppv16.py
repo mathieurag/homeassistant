@@ -863,10 +863,12 @@ class ChargePoint(cp):
         """Request handler for MeterValues Calls (multi-connector aware)."""
 
         transaction_id: int = int(kwargs.get(om.transaction_id.name, 0) or 0)
+        tx_has_id: bool = transaction_id not in (None, 0)
 
         # Restore missing per-connector meter_start / active_transaction_id from HA if possible.
         ms_key = (connector_id, csess.meter_start.value)
         tx_key = (connector_id, csess.transaction_id.value)
+        session_key = (connector_id, csess.session_time.value)
 
         if self._metrics[ms_key].value is None:
             value = self.get_ha_metric(csess.meter_start.value, connector_id)
@@ -974,16 +976,21 @@ class ChargePoint(cp):
 
         self.process_measurands(meter_values, transaction_matches, connector_id)
 
-        if transaction_matches:
+        if tx_has_id and transaction_matches:
             try:
                 tx_start_epoch = float(self._metrics[tx_key].value)
             except (TypeError, ValueError):
                 tx_start_epoch = time.time()
-            self._metrics[(connector_id, csess.session_time.value)].value = round(
-                (int(time.time()) - tx_start_epoch) / 60
-            )
-            self._metrics[(connector_id, csess.session_time.value)].unit = "min"
-
+            if tx_start_epoch > 0:
+                self._metrics[session_key].value = round(
+                    (time.time() - tx_start_epoch) / 60
+                )
+                self._metrics[session_key].unit = UnitOfTime.MINUTES
+            else:
+                _LOGGER.debug(
+                    "Skipping session time calc — invalid tx_start_epoch=%s",
+                    tx_start_epoch,
+                )
         self.hass.async_create_task(self.update(self.settings.cpid))
         return call_result.MeterValues()
 
@@ -1029,10 +1036,6 @@ class ChargePoint(cp):
                 ]:
                     if meas in self._metrics[connector_id]:
                         self._metrics[(connector_id, meas)].value = 0
-
-        if status == ChargePointStatus.available:
-            self._metrics[(connector_id or 1, cstat.id_tag.value)].value = ""
-            self._metrics[(connector_id or 1, csess.transaction_id.value)].value = 0
 
         self.hass.async_create_task(self.update(self.settings.cpid))
         return call_result.StatusNotification()
@@ -1136,7 +1139,8 @@ class ChargePoint(cp):
         # Reset active transaction (global + per-connector)
         self._active_tx[conn] = 0
         self.active_transaction_id = 0
-
+        self._metrics[(conn, cstat.id_tag.value)].value = ""
+        self._metrics[(conn, csess.transaction_id.value)].value = 0
         self._metrics[(conn, cstat.stop_reason.value)].value = kwargs.get(
             om.reason.name, None
         )

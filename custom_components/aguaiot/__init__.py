@@ -4,9 +4,6 @@ import logging
 from datetime import timedelta
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.core import Event, HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.httpx_client import get_async_client
@@ -27,6 +24,7 @@ from .const import (
     CONF_UUID,
     CONF_BRAND_ID,
     CONF_BRAND,
+    CONF_LANGUAGE,
     DOMAIN,
     PLATFORMS,
     UPDATE_INTERVAL,
@@ -60,6 +58,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     brand = entry.data.get(CONF_BRAND)
     air_temp_fix = entry.options.get("air_temp_fix", False)
     reading_error_fix = entry.options.get("reading_error_fix", False)
+    language = entry.options.get(CONF_LANGUAGE)
 
     agua = aguaiot(
         api_url=api_url,
@@ -73,6 +72,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         async_client=get_async_client(hass),
         air_temp_fix=air_temp_fix,
         reading_error_fix=reading_error_fix,
+        language=language,
     )
 
     try:

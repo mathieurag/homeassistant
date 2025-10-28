@@ -40,10 +40,15 @@ If you have any issues with this you need to open an issue here:
 """
 
 CONF_INCLUDE_EVCC: Final = "include_evcc"
-CONF_USE_WS = "use_websocket"
+CONF_PURGE_ALL: Final = "purge_all_devices"
+CONF_USE_WS= "use_websocket"
+
+EVCC_JSON_VEH_NAME: Final = "evccName"
 
 SERVICE_SET_LOADPOINT_PLAN: Final = "set_loadpoint_plan"
 SERVICE_SET_VEHICLE_PLAN: Final = "set_vehicle_plan"
+SERVICE_DEL_LOADPOINT_PLAN: Final = "del_loadpoint_plan"
+SERVICE_DEL_VEHICLE_PLAN: Final = "del_vehicle_plan"
 
 @dataclass
 class EntityDescriptionStub(metaclass=FrozenOrThawed, frozen_or_thawed=True):
@@ -361,6 +366,16 @@ NUMBER_SENSORS_PER_LOADPOINT = [
         native_min_value=0,
         native_step=1,
         native_unit_of_measurement=UnitOfTime.SECONDS,
+    ),
+    ExtNumberEntityDescriptionStub(
+        tag=Tag.LPPRIORIRY,
+        entity_category=EntityCategory.CONFIG,
+        icon="mdi:priority-high",
+        mode = NumberMode.SLIDER,
+        native_max_value=10,
+        native_min_value=0,
+        native_step=1,
+        device_class=None
     ),
 ]
 

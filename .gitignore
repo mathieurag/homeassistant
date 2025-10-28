@@ -12,6 +12,8 @@ __pycache__/
 zigbee2mqtt/state.json
 packages/refoss_ha
 custom_components/bambu_lab/
+scripts/unifi/*.json
+scripts/unifi/*.txt
 
 # Include
 !*.yaml

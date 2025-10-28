@@ -10,9 +10,10 @@ database_path = "/config/home-assistant_v2.db"
 local_tz = pytz.timezone("Europe/Paris")
 tolerance = 0.001  # kWh
 mode = "full"     # short = 5 min, long = 1 h, full = les deux
+offset_days = 1
 
 # ---------- Lecture paramètres CLI ----------
-offset_days = 0
+
 apply_changes = True
 for arg in sys.argv[1:]:
     if arg.startswith("jour="):

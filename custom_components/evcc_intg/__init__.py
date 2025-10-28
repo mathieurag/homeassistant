@@ -1,8 +1,8 @@
 import asyncio
 import logging
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from typing import Any, Final
-from dataclasses import replace
 
 import aiohttp
 from aiohttp import ClientConnectorError
@@ -21,7 +21,6 @@ from homeassistant.util import slugify
 from packaging.version import Version
 
 from custom_components.evcc_intg.pyevcc_ha import EvccApiBridge
-
 from custom_components.evcc_intg.pyevcc_ha.const import (
     TRANSLATIONS,
     JSONKEY_LOADPOINTS,
@@ -40,7 +39,6 @@ from custom_components.evcc_intg.pyevcc_ha.const import (
     SESSIONS_KEY_LOADPOINTS,
     SESSIONS_KEY_VEHICLES
 )
-
 from custom_components.evcc_intg.pyevcc_ha.keys import Tag, EP_TYPE, camel_to_snake
 from .const import (
     NAME,
@@ -51,10 +49,14 @@ from .const import (
     STARTUP_MESSAGE,
     SERVICE_SET_LOADPOINT_PLAN,
     SERVICE_SET_VEHICLE_PLAN,
+    SERVICE_DEL_LOADPOINT_PLAN,
+    SERVICE_DEL_VEHICLE_PLAN,
     CONF_INCLUDE_EVCC,
     CONF_USE_WS,
+    CONF_PURGE_ALL,
     CONFIG_VERSION,
     CONFIG_MINOR_VERSION,
+    EVCC_JSON_VEH_NAME,
 )
 from .service import EvccService
 
@@ -97,6 +99,16 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         _LOGGER.info(STARTUP_MESSAGE % intg_version)
         hass.data.setdefault(DOMAIN, {"manifest_version": intg_version})
 
+    # yes - hurray! we can now cleanup the device registry...
+    purge_all_devices = config_entry.data.get(CONF_PURGE_ALL, False)
+    asyncio.create_task(check_device_registry(hass, purge_all_devices, config_entry.entry_id))
+    if purge_all_devices:
+        # we remove the 'purge_all_devices' flag from the config entry...
+        new_data_dict = config_entry.data.copy()
+        del new_data_dict[CONF_PURGE_ALL]
+        hass.config_entries.async_update_entry(config_entry, data=new_data_dict, options={}, version=CONFIG_VERSION, minor_version=CONFIG_MINOR_VERSION)
+        _LOGGER.debug(f"Updated configuration (PURGE_ALL removed): {new_data_dict}")
+
     # using the same http client for test and final integration...
     http_session = async_get_clientsession(hass)
 
@@ -131,9 +143,10 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
                                      supports_response=SupportsResponse.OPTIONAL)
         hass.services.async_register(DOMAIN, SERVICE_SET_VEHICLE_PLAN, evcc_services.set_vehicle_plan,
                                      supports_response=SupportsResponse.OPTIONAL)
-
-        # yes - hurray! we can now cleanup the device registry...
-        asyncio.create_task(check_device_registry(hass))
+        hass.services.async_register(DOMAIN, SERVICE_DEL_LOADPOINT_PLAN, evcc_services.del_loadpoint_plan,
+                                     supports_response=SupportsResponse.OPTIONAL)
+        hass.services.async_register(DOMAIN, SERVICE_DEL_VEHICLE_PLAN, evcc_services.del_vehicle_plan,
+                                     supports_response=SupportsResponse.OPTIONAL)
 
         config_entry.async_on_unload(config_entry.add_update_listener(entry_update_listener))
         # ok we are done...
@@ -153,6 +166,8 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> 
 
         hass.services.async_remove(DOMAIN, SERVICE_SET_LOADPOINT_PLAN)
         hass.services.async_remove(DOMAIN, SERVICE_SET_VEHICLE_PLAN)
+        hass.services.async_remove(DOMAIN, SERVICE_DEL_LOADPOINT_PLAN)
+        hass.services.async_remove(DOMAIN, SERVICE_DEL_VEHICLE_PLAN)
 
     return unload_ok
 
@@ -176,11 +191,10 @@ async def check_evcc_is_available(http_session: aiohttp.ClientSession, config_en
 
 
 @staticmethod
-async def check_device_registry(hass: HomeAssistant):
+async def check_device_registry(hass: HomeAssistant, purge_all: bool = False, config_entry_id:str = None) -> None:
     global DEVICE_REG_CLEANUP_RUNNING
     if not DEVICE_REG_CLEANUP_RUNNING:
         DEVICE_REG_CLEANUP_RUNNING = True
-        completed = False
         _LOGGER.debug(f"check device registry for outdated {DOMAIN} devices...")
         if hass is not None:
             a_device_reg = device_reg.async_get(hass)
@@ -189,21 +203,41 @@ async def check_device_registry(hass: HomeAssistant):
                 for a_device_entry in list(a_device_reg.devices.values()):
                     if hasattr(a_device_entry, "identifiers"):
                         ident_value = a_device_entry.identifiers
+
                         if f"{ident_value}".__contains__(DOMAIN):
-                            if hasattr(a_device_entry, "manufacturer"):
+                            if hasattr(a_device_entry, "serial_number"):
+                                a_config_entry_id = a_device_entry.serial_number
+
+                            # ok this is an old 'device' entry (that does not include the
+                            # config_entry_id as serial_number)... This will be deleted in
+                            # any case...
+                            if a_config_entry_id is None:
+                                key_list.append(a_device_entry.id)
+
+                            if purge_all and config_entry_id is not None:
+                                if config_entry_id == a_config_entry_id:
+                                    key_list.append(a_device_entry.id)
+
+                            elif hasattr(a_device_entry, "manufacturer"):
                                 manufacturer_value = a_device_entry.manufacturer
                                 if not f"{manufacturer_value}".__eq__(MANUFACTURER):
                                     _LOGGER.info(f"found a OLD {DOMAIN} DeviceEntry: {a_device_entry}")
                                     key_list.append(a_device_entry.id)
 
+                            #elif intg_version != "UNKNOWN":
+                            #    if not f"{ident_value}".__contains__(intg_version):
+                            #        key_list.append(a_device_entry.id)
+
                 if len(key_list) > 0:
-                    _LOGGER.info(f"NEED TO DELETE old {DOMAIN} DeviceEntries: {key_list}")
+                    if purge_all:
+                        _LOGGER.info(f"CLEAN ALL {DOMAIN} DeviceEntries: {key_list}")
+                    else:
+                        _LOGGER.info(f"NEED TO DELETE old {DOMAIN} DeviceEntries: {key_list}")
+
                     for a_device_entry_id in key_list:
                         a_device_reg.async_remove_device(device_id=a_device_entry_id)
 
-                completed = True
-
-        DEVICE_REG_CLEANUP_RUNNING = completed
+        DEVICE_REG_CLEANUP_RUNNING = False
 
 
 class EvccDataUpdateCoordinator(DataUpdateCoordinator):
@@ -323,19 +357,24 @@ class EvccDataUpdateCoordinator(DataUpdateCoordinator):
             "identifiers": {(DOMAIN, unique_device_id)},
             "manufacturer": MANUFACTURER,
             "name": f"{NAME} [{self._system_id}]",
-            "sw_version": self._version
+            "sw_version": self._version,
+            "serial_number": self._config_entry.entry_id
         }
 
         if JSONKEY_VEHICLES in initdata:
-            for a_veh_name in initdata[JSONKEY_VEHICLES]:
-                a_veh = initdata[JSONKEY_VEHICLES][a_veh_name]
-                self._vehicle[a_veh_name] = {
-                    "name": a_veh["title"],
-                    # "id": slugify(f"vid_{a_veh_name}"),
-                    "id": slugify(a_veh["title"]),
-                    "capacity": a_veh["capacity"] if "capacity" in a_veh else None,
-                    "minSoc": a_veh["minSoc"] if "minSoc" in a_veh else None,
-                    "limitSoc": a_veh["limitSoc"] if "limitSoc" in a_veh else None
+            for a_evcc_veh_name in initdata[JSONKEY_VEHICLES]:
+                a_veh_object = initdata[JSONKEY_VEHICLES][a_evcc_veh_name]
+
+                # we must remove all possible ':' chars (like from 'db:12' - since HA can't handle them
+                # in the translation keys - be careful with this self._vehicle dict keys!
+                # self._vehicle[a_evcc_veh_name.replace(':', '_')] = {
+                self._vehicle[a_evcc_veh_name] = {
+                    EVCC_JSON_VEH_NAME: a_evcc_veh_name,
+                    "name": a_veh_object["title"],
+                    "id": slugify(a_veh_object["title"]),
+                    "capacity": a_veh_object["capacity"] if "capacity" in a_veh_object else None,
+                    "minSoc": a_veh_object["minSoc"] if "minSoc" in a_veh_object else None,
+                    "limitSoc": a_veh_object["limitSoc"] if "limitSoc" in a_veh_object else None
                 }
         else:
             _LOGGER.warning(f"NO vehicles found [{JSONKEY_VEHICLES}] in the evcc data: {initdata}")
@@ -631,11 +670,17 @@ class EvccDataUpdateCoordinator(DataUpdateCoordinator):
             else:
                 return "0"
 
-    async def async_write_plan(self, write_to_vehicle: bool, loadpoint_idx: str, soc: str, rfcdate: str, precondition: int | None = None):
-        if write_to_vehicle:
-            return await self.bridge.write_vehicle_plan_for_loadpoint_index(loadpoint_idx, soc, rfcdate, precondition)
+    async def async_write_plan(self, vehicle_name:str, loadpoint_idx: str, soc_or_energy: str, rfc_date: str, precondition: int | None = None):
+        if vehicle_name is not None and loadpoint_idx is None:
+            return await self.bridge.write_vehicle_plan(vehicle_id=vehicle_name, soc=soc_or_energy, rfc_date=rfc_date, precondition=precondition)
         else:
-            return await self.bridge.write_loadpoint_plan(loadpoint_idx, soc, rfcdate)
+            return await self.bridge.write_loadpoint_plan(idx=loadpoint_idx, energy=soc_or_energy, rfc_date=rfc_date)
+
+    async def async_delete_plan(self, vehicle_name:str, loadpoint_idx: str):
+        if vehicle_name is not None and loadpoint_idx is None:
+            return await self.bridge.write_vehicle_plan(vehicle_id=vehicle_name, soc=None, rfc_date=None, precondition=-1)
+        else:
+            return await self.bridge.write_loadpoint_plan(idx=loadpoint_idx, energy=None, rfc_date=None)
 
     async def async_press_tag(self, tag: Tag, value, idx: str = None, entity: Entity = None) -> dict:
         result = await self.bridge.press_tag(tag, value, idx)
@@ -727,7 +772,8 @@ class EvccDataUpdateCoordinator(DataUpdateCoordinator):
             "identifiers": {(DOMAIN, unique_device_id)},
             "manufacturer": MANUFACTURER,
             "name": f"{NAME_SHORT} - Loadpoint {addon} [{self._system_id}]",
-            "sw_version": self._version
+            "sw_version": self._version,
+            "serial_number": self._config_entry.entry_id
         }
         return a_device_info_dict
 
@@ -738,7 +784,8 @@ class EvccDataUpdateCoordinator(DataUpdateCoordinator):
             "identifiers": {(DOMAIN, unique_device_id)},
             "manufacturer": MANUFACTURER,
             "name": f"{NAME_SHORT} - Vehicle {addon} [{self._system_id}]",
-            "sw_version": self._version
+            "sw_version": self._version,
+            "serial_number": self._config_entry.entry_id
         }
         return a_device_info_dict
 

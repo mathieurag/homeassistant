@@ -20,15 +20,24 @@
     },
     "error": {
       "cannot_connect": "Nepodarilo sa pripojiť. Skontrolujte poverenia.",
-      "cannot_connect_local_ip": "Nepodarilo sa pripojiť. Skontrolujte zadanú IP adresu.",
-      "cannot_connect_local_all": "Nepodarilo sa pripojiť. Skontrolujte zadané nastavenia.",
       "invalid_auth": "Neplatné overenie.",
       "unknown": "Neočakávaná chyba.",
       "code_needed": "Je potrebné zadať overovací kód.",
       "verifyCode": "Vyžaduje sa overovací kód. Skontrolujte e-mail alebo telefón.",
       "code_expired": "Platnosť overovacieho kódu vypršala. Požadovaný nový kód. Skontrolujte  e-mail alebo telefón.",
       "code_incorrect": "Overovací kód bol nesprávny. Prosím zadajte ho znova.",
-      "tfaCode": "2FA kód je požadovaný. Prosím zadajte ho teraz."
+      "tfaCode": "2FA kód je požadovaný. Prosím zadajte ho teraz.",
+      "cannot_connect_local_timeout": "Nepodarilo sa pripojiť. Časový limit spojenia vypršal.",
+      "cannot_connect_local_access_denied": "Nepodarilo sa pripojiť. Prístup odmietnutý - skontrolujte prístupový kód.",
+      "cannot_connect_local_incorrect_serial": "Nepodarilo sa pripojiť. Spojenie bolo ukončené tlačiarňou - skontrolujte sériové číslo.",
+      "cannot_connect_local_incorrect_address": "Nepodarilo sa pripojiť. Pripojenie odmietnuté - skontrolujte IP adresu.",
+      "cannot_connect_local_address_unreachable": "Nepodarilo sa pripojiť. Adresa je nedostupná – skontrolujte sieťové pripojenie.",
+      "cannot_connect_cloud_timeout": "Pri pokuse o pripojenie k cloudu Bambu Lab vypršal časový limit.",
+      "cannot_connect_cloud_access_denied": "Prístup odmietnutý cloudom Bambu Lab.",
+      "cannot_connect_cloud_connection_refused": "Spojenie bolo odmietnuté cloudom Bambu Lab.",
+      "cannot_connect_cloud_address_unreachable": "Cloudová adresa Bambu Lab je nedostupná.",
+      "cannot_connect_cloud_unknown": "Neznáma chyba pri pripájaní k cloudu Bambu Lab.",
+      "cannot_connect_local_unknown": "Nepodarilo sa pripojiť. Skontrolujte poskytnuté nastavenia."
     },
     "step": {
       "user": {
@@ -57,14 +66,15 @@
       },
       "Bambu_Lan": {
         "title": "Nastavenie lokálneho pripojenia",
-        "description": "Môžete sa rozhodnúť pripojiť priamo k tlačiarni pre aktualizácie stavu namiesto cloudu Bambu Lab. To vám dáva odolnosť voči výpadkom cloudu Bambu Lab, ale Bambu Lab má obmedzené ovládanie tlačiarne v tomto hybridnom režime, takže niektoré ovládacie prvky budú nedostupné.",
+        "description": "Môžete sa rozhodnúť pripojiť priamo k tlačiarni mqtt namiesto cloudu Bambu Lab. To poskytuje odolnosť voči výpadkom cloudu Bambu Lab, ale Bambu Lab obmedzilo ovládanie tlačiarne v tomto hybridnom režime, takže niektoré ovládacie prvky budú nedostupné.\n\rBez ohľadu na túto voľbu získa integrácia IP adresu tlačiarne z cloudu Bambu Lab a potvrdí, že sa k nej môže pripojiť, pretože je to potrebné pre fotoaparát, históriu tlače a podporu časozberu. Ak je vaša tlačiareň nedostupná pre domáceho asistenta, môžete túto kontrolu zakázať, ale tieto funkcie stratíte.",
         "data": {
-          "local_mqtt": "Pripojenie lokálne na tlačiareň:",
+          "local_mqtt": "Priame pripojenie k tlačiarni mqtt:",
           "host": "Lokálna IP adresa tlačiarne:",
           "access_code": "Prístupový kód:",
           "usage_hours": "Aktuálne hodiny používania (voliteľné):",
           "print_cache_count": "Počet modelov na vyrovnávaciu pamäť na domáceho asistenta (-1 pre Unlimited):",
-          "timelapse_cache_count": "Počet videí Timelapse na vyrovnávaciu pamäť na domáceho asistenta (-1 pre Unlimited):"
+          "timelapse_cache_count": "Počet videí Timelapse na vyrovnávaciu pamäť na domáceho asistenta (-1 pre Unlimited):",
+          "skip_local_mqtt": "Preskočiť test miestneho pripojenia mqtt (neodporúča sa):"
         },
         "sections": {
           "advanced": {
@@ -108,15 +118,24 @@
     },
     "error": {
       "cannot_connect": "Nepodarilo sa pripojiť",
-      "cannot_connect_local_ip": "Nepodarilo sa pripojiť. Skontrolujte zadanú IP adresu.",
-      "cannot_connect_local_all": "Nepodarilo sa pripojiť. Skontrolujte zadané nastavenia.",
       "invalid_auth": "Neplatné overenie.",
       "unknown": "Neočakávaná chyba.",
       "code_needed": "Je potrebné zadať overovací kód.",
       "verifyCode": "Vyžaduje sa overovací kód. Skontrolujte e-mail alebo telefón.",
       "code_expired": "Platnosť overovacieho kódu vypršala. Požadovaný nový kód. Skontrolujte  e-mail alebo telefón.",
       "code_incorrect": "Overovací kód bol nesprávny. Prosím zadajte ho znova.",
-      "tfaCode": "2FA kód je požadovaný. Prosím zadajte ho teraz."
+      "tfaCode": "2FA kód je požadovaný. Prosím zadajte ho teraz.",
+      "cannot_connect_local_timeout": "Nepodarilo sa pripojiť. Časový limit spojenia vypršal.",
+      "cannot_connect_local_access_denied": "Nepodarilo sa pripojiť. Prístup odmietnutý - skontrolujte prístupový kód.",
+      "cannot_connect_local_incorrect_serial": "Nepodarilo sa pripojiť. Spojenie bolo ukončené tlačiarňou - skontrolujte sériové číslo.",
+      "cannot_connect_local_incorrect_address": "Nepodarilo sa pripojiť. Pripojenie odmietnuté - skontrolujte IP adresu.",
+      "cannot_connect_local_address_unreachable": "Nepodarilo sa pripojiť. Adresa je nedostupná – skontrolujte sieťové pripojenie.",
+      "cannot_connect_cloud_timeout": "Pri pokuse o pripojenie k cloudu Bambu Lab vypršal časový limit.",
+      "cannot_connect_cloud_access_denied": "Prístup odmietnutý cloudom Bambu Lab.",
+      "cannot_connect_cloud_connection_refused": "Spojenie bolo odmietnuté cloudom Bambu Lab.",
+      "cannot_connect_cloud_address_unreachable": "Cloudová adresa Bambu Lab je nedostupná.",
+      "cannot_connect_cloud_unknown": "Neznáma chyba pri pripájaní k cloudu Bambu Lab.",
+      "cannot_connect_local_unknown": "Nepodarilo sa pripojiť. Skontrolujte poskytnuté nastavenia."
     },
     "step": {
       "init": {
@@ -140,15 +159,16 @@
       },
       "Bambu_Lan": {
         "title": "Úprava nastavenia tlačiarne",
-        "description": "Môžete sa rozhodnúť pripojiť priamo k tlačiarni pre aktualizácie stavu namiesto cloudu Bambu Lab. To vám dáva odolnosť voči výpadkom cloudu Bambu Lab, ale Bambu Lab má obmedzené ovládanie tlačiarne v tomto hybridnom režime, takže niektoré ovládacie prvky budú nedostupné.",
+        "description": "Môžete sa rozhodnúť pripojiť priamo k tlačiarni mqtt namiesto cloudu Bambu Lab. To poskytuje odolnosť voči výpadkom cloudu Bambu Lab, ale Bambu Lab obmedzilo ovládanie tlačiarne v tomto hybridnom režime, takže niektoré ovládacie prvky budú nedostupné.\n\rBez ohľadu na túto voľbu získa integrácia IP adresu tlačiarne z cloudu Bambu Lab a potvrdí, že sa k nej môže pripojiť, pretože je to potrebné pre fotoaparát, históriu tlače a podporu časozberu. Ak je vaša tlačiareň nedostupná pre domáceho asistenta, môžete túto kontrolu zakázať, ale tieto funkcie stratíte.",
         "data": {
           "serial": "Upravte nastavenia pre:",
           "host": "Lokálna IP adresa tlačiarne:",
           "access_code": "Prístupový kód:",
-          "local_mqtt": "Pripojte sa priamo k tlačiarni namiesto cloudu Bambu Lab:",
+          "local_mqtt": "Priame pripojenie k tlačiarni mqtt:",
           "usage_hours": "Aktuálne hodiny používania (voliteľné):",
           "print_cache_count": "Počet modelov na vyrovnávaciu pamäť na domáceho asistenta (-1 pre Unlimited):",
-          "timelapse_cache_count": "Počet videí Timelapse na vyrovnávaciu pamäť na domáceho asistenta (-1 pre Unlimited):"
+          "timelapse_cache_count": "Počet videí Timelapse na vyrovnávaciu pamäť na domáceho asistenta (-1 pre Unlimited):",
+          "skip_local_mqtt": "Preskočiť test miestneho pripojenia mqtt (neodporúča sa):"
         },
         "sections": {
           "advanced": {
