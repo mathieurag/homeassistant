@@ -1,7 +1,0 @@
-HTTP/1.1 200 
-vary: Origin
-X-Frame-Options: DENY
-Content-Type: application/json;charset=UTF-8
-Content-Length: 30
-Date: Tue, 28 Oct 2025 20:49:59 GMT
-

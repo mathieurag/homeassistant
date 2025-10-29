@@ -5,20 +5,11 @@
 ip_bans.yaml
 secrets.yaml
 known_devices.yaml
-__pycache__/
-**/__pycache__/
-*.pyc
-*.pyo
-zigbee2mqtt/state.json
-packages/refoss_ha
-custom_components/bambu_lab/
-scripts/unifi/*.json
-scripts/unifi/*.txt
+
 
 # Include
 !*.yaml
 !.gitignore
-!*.md
 !packages
 !packages/**
 !sensors
@@ -33,8 +24,6 @@ scripts/unifi/*.txt
 !custom_components/**
 !myelectricaldata
 !myelectricaldata/**
-!scripts
-!scripts/**
 !zigbee2mqtt
 !www
 !lovelace*
@@ -49,10 +38,19 @@ scripts/unifi/*.txt
 tts
 *.db*
 *.db
+*.csv
 
 # Ensure these YAML files are ignored, otherwise your secret data/credentials will leak.
 ip_bans.yaml
 secrets.yaml
 known_devices.yaml
 *.pyc
-
+**/__pycache__/
+**.pyo
+**.log
+**.old
+zigbee2mqtt/state.json
+zigbee2mqtt/log/
+packages/refoss_ha
+custom_components/bambu_lab/
+scripts

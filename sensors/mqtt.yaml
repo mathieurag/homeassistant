@@ -16,6 +16,14 @@ mqtt:
         value_template: "{{ value_json.freq_eff }}"
         json_attributes_topic: "proxmox/telemetry"
 
+      - name: "NUC Proxmox Energy"
+        unique_id: nuc_proxmox_energy
+        state_topic: "proxmox/telemetry/energy"
+        value_template: "{{ value_json.energy.governor | default('unknown') }}"
+        json_attributes_topic: "proxmox/telemetry/energy"
+        json_attributes_template: "{{ value_json.energy | tojson }}"
+        icon: mdi:chip
+
       - name: "Taux HC jour"
         unique_id: taux_hc_day
         state_topic: "homeassistant/sensor/taux_hc_day/state"

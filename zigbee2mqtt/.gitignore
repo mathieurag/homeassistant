@@ -10,3 +10,5 @@ known_devices.yaml
 coordinator_backup.json*
 state.json
 *.log
+*.old
+*.json
