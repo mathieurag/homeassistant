@@ -1,11 +1,6 @@
 # Example .gitignore file for your config dir.
 # An * ensures that everything will be ignored.
 *
-# Ensure these YAML files are ignored, otherwise your secret data/credentials will leak.
-ip_bans.yaml
-secrets.yaml
-known_devices.yaml
-
 
 # Include
 !*.yaml
@@ -53,4 +48,5 @@ zigbee2mqtt/state.json
 zigbee2mqtt/log/
 packages/refoss_ha
 custom_components/bambu_lab/
-scripts
+/scripts/
+/scripts/**
