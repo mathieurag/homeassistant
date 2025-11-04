@@ -943,23 +943,6 @@
       value: '{{ states(''sensor.taux_solar_heure'') | float | round(1)}}'
     action: input_number.set_value
   mode: single
-- id: '1727467947113'
-  alias: Reset Compteurs
-  description: ''
-  trigger:
-  - platform: time
-    at: 00:00:00
-  condition: []
-  action:
-  - action: utility_meter.reset
-    metadata: {}
-    data: {}
-    target:
-      entity_id:
-      - select.energie_consommee_a
-      - select.energie_consommee_m
-      - select.energie_consommee_s
-  mode: single
 - id: '1727558860632'
   alias: Reload integration on startup
   description: ''
@@ -4103,42 +4086,67 @@
   - at: '21:08:00'
     trigger: time
     id: hc
+  - trigger: time
+    at: '15:00:00'
+    id: HG on
+  - trigger: time
+    at: '17:00:00'
+    id: HG off
   conditions: []
   actions:
-  - if:
-    - condition: trigger
-      id:
-      - hp
-    then:
-    - action: input_boolean.turn_off
-      target:
-        entity_id: input_boolean.hp_hc
-      data: {}
-    - data:
-        option: HP
-      action: select.select_option
-      target:
-        entity_id:
-        - select.energie_consommee_h
-        - select.energie_consommee_j
-        - select.energie_consommee_s
-        - select.energie_consommee_m
-        - select.energie_consommee_a
-    else:
-    - data:
-        option: HC
-      action: select.select_option
-      target:
-        entity_id:
-        - select.energie_consommee_h
-        - select.energie_consommee_j
-        - select.energie_consommee_s
-        - select.energie_consommee_m
-        - select.energie_consommee_a
-    - action: input_boolean.turn_on
-      target:
-        entity_id: input_boolean.hp_hc
-      data: {}
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - HG on
+      sequence:
+      - data:
+          option: HG
+        action: select.select_option
+        target:
+          entity_id:
+          - select.energie_consommee_j
+    - conditions:
+      - condition: trigger
+        id:
+        - HG off
+      sequence:
+      - data:
+          option: HP
+        action: select.select_option
+        target:
+          entity_id:
+          - select.energie_consommee_j
+    - conditions:
+      - condition: trigger
+        id:
+        - hp
+      sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.hp_hc
+        data: {}
+      - data:
+          option: HP
+        action: select.select_option
+        target:
+          entity_id:
+          - select.energie_consommee_j
+    - conditions:
+      - condition: trigger
+        id:
+        - hc
+      sequence:
+      - data:
+          option: HC
+        action: select.select_option
+        target:
+          entity_id:
+          - select.energie_consommee_j
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.hp_hc
+        data: {}
   mode: single
   initial_state: true
 - id: '1754811894299'

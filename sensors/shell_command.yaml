@@ -26,3 +26,18 @@ shell_command:
     -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=no
     root@192.168.68.150
     /root/recover-usbdisk.sh
+  pve_cpu_mode: >-
+    ssh -T -i /config/ssh/id_rsa
+    -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=no
+    root@192.168.68.150
+    "/root/pve-cpu-mode {{ mode }}"
+  s1panel_stop: >-
+    ssh -T -i /config/ssh/id_rsa
+    -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=no
+    root@192.168.68.150
+    "systemctl stop s1panel"
+  s1panel_start: >-
+    ssh -T -i /config/ssh/id_rsa
+    -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=no
+    root@192.168.68.150
+    "systemctl start s1panel"

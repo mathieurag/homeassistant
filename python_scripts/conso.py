@@ -18,6 +18,7 @@ ENTITIES = {
     "decharge_batterie": ("sensor.decharge_marstek", "kWh"),
     "reseau_hc": ("sensor.energie_consommee_j_hc", "Wh"),
     "reseau_hp": ("sensor.energie_consommee_j_hp", "Wh"),
+    "reseau_hg": ("sensor.energie_consommee_j_hg", "Wh"),
     "surplus": ("sensor.surplus_production_kwh", "kWh"),
     "linky": ("linky:16127930466069", "Wh")
 }
@@ -108,6 +109,7 @@ def analyser_granularite(cursor, granularite, config, metadata_ids):
 
         reseau_hc = valeurs.get("reseau_hc", 0)
         reseau_hp = valeurs.get("reseau_hp", 0)
+        reseau_hg = valeurs.get("reseau_hg", 0)
         reseau = valeurs.get("linky", 0)
         hphc = round(reseau_hc/ (reseau) * 100, 1) if reseau else 0
         batterie = valeurs.get("decharge_batterie", 0)

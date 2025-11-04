@@ -33,6 +33,17 @@ for row in data.fetchall():
 
 print("entité =",entity,"/ id=",id_entity_hc)
 
+row=""
+entity = "sensor.energie_consommee_j_hg"
+query0 = "SELECT id FROM 'statistics_meta' where statistic_id like '" + entity +"'"
+#print("requete=",query1)
+data=database.execute(query0)
+for row in data.fetchall():
+    id_entity_hc = row[0]
+
+print("entité =",entity,"/ id=",id_entity_hg)
+
+
 entity = "linky:16127930466069"
 
 row=""

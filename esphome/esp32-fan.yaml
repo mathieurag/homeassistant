@@ -1,0 +1,79 @@
+esphome:
+  name: esp32-fan
+  friendly_name: ESP32-FAN
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "wyHkk4Ty+Jg9ltNKpZ06vGCbL/29b+xZefNQ83IrwRU="
+
+ota:
+  - platform: esphome
+    password: "aac928fb67bad553d9ad28b1d0dd3eb7"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp32-Fan Fallback Hotspot"
+    password: "F5FxNRgB75ir"
+
+captive_portal:
+
+# <<< La ligne qui manquait pour Improv via USB >>>
+improv_serial:
+
+output:
+  - platform: ledc
+    pin: GPIO5         # bas droite, marqué "0"
+    id: fan_pwm
+    frequency: 25000 Hz
+    inverted: true     # niveau bas = ON pour les ventilos 4-fils
+
+fan:
+  - platform: speed
+    name: "Baie PWM Fan"
+    output: fan_pwm
+    restore_mode: RESTORE_DEFAULT_OFF
+
+switch:
+  - platform: output
+    name: "Baie PWM Fan Full"
+    output: fan_pwm
+
+number:
+  - platform: template
+    name: "Baie PWM Fan RAW %"
+    min_value: 0
+    max_value: 100
+    step: 5
+    set_action:
+      - lambda: |-
+          id(fan_pwm).set_level(x / 100.0);  // 0..1
+
+sensor:
+  - platform: pulse_counter
+    pin:
+      number: GPIO21
+      mode:
+        input: true
+        pullup: false
+    name: "Baie Fan RPM"
+    update_interval: 30s
+    internal_filter: 10us
+    filters:
+      - multiply: 0.5      # 2 impulsions/tour → Hz*60/2
+      - lambda: 'return round(x / 50.0f) * 50.0f;'
+    unit_of_measurement: "RPM"
+
+    accuracy_decimals: 0

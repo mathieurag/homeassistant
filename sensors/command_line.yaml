@@ -70,3 +70,18 @@ command_line:
         - pct_used
         - dirs_top
         - files_total
+
+  - sensor:
+      name: "CPU Mode"
+      unique_id: pve_cpu_mode
+      command: >-
+        ssh 
+        -i /config/ssh/id_rsa
+        -o BatchMode=yes
+        -o ConnectTimeout=5
+        -o StrictHostKeyChecking=no
+        -o UserKnownHostsFile=/config/ssh/known_hosts
+        root@192.168.68.150 "/root/pve-cpu-mode --mode-only"
+      value_template: "{{ value | trim | lower | capitalize }}"
+      command_timeout: 10
+      scan_interval: 300

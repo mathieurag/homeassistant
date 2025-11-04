@@ -59,6 +59,7 @@ liste = [
 ]
 
 energie = [
+    'sensor.energie_consommee_j_hg',
     'sensor.energie_consommee_j_hp',
     'sensor.energie_consommee_j_hc',
     'sensor.em06_02_a1_this_month_energy',
