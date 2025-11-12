@@ -55,15 +55,38 @@ esp32_improv:
 web_server:
 
 sensor:
-
-#HCSR04
   - platform: ultrasonic
     trigger_pin: 2
     echo_pin: 15
-    name: "Ultrasonic Sensor"
-    update_interval: 30s # 60s ist default
+    name: "Hauteur pellets brute"
+    id: hauteur_pellets
+    update_interval: 5s
+    timeout: 2m
+    pulse_time: 10us
+    unit_of_measurement: "cm"
     accuracy_decimals: 1
-    unit_of_measurement: cm
     filters:
-      - multiply : 100
-      - round: 1 # will round to 2 decimal place
+      - clamp:
+          min_value: 0.04
+          max_value: 0.45
+      - multiply: 100
+      - median:
+          window_size: 3
+      - lambda: |-
+          static float buffer[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+          static int index = 0;
+          static float last_valid = 37.0;  // Valeur initiale réaliste
+          buffer[index] = x;
+          index = (index + 1) % 6;
+          if (index == 0) {
+            float sum = 0.0;
+            for (int i = 0; i < 6; i++) {
+              sum += buffer[i];
+            }
+            last_valid = sum / 6.0;
+          }
+          return last_valid;
+      - round: 1
+
+
+

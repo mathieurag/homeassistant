@@ -12,6 +12,7 @@ except:
 error=0
 jours=1
 row=""
+DELTA_MIN=0.005
 
 # Calcul de la date choisie à partir de jours:
 target_date = datetime.date.today() - datetime.timedelta(days=jours)
@@ -349,15 +350,18 @@ for j in range(0,24):
     delta_conso[j]=conso_linky[j]-conso[j]-conso_surplus[j]-conso_charge_batterie[j]+conso_decharge_batterie[j]
 
     print("Consommation non suivie : ",j,"à",j+1,"h : ",round(delta_conso[j],3),"kWh")
-    if delta_conso[j]<=0.005:
+    if round(delta_conso[j],3)<DELTA_MIN:
         error=error+1
+        print("Consommation non suivie : ",j,"à",j+1,"h : ",round(delta_conso[j],3),"kWh ==> Delta inférieur à ",DELTA_MIN)
+    else:
+        print("Consommation non suivie : ",j,"à",j+1,"h : ",round(delta_conso[j],3),"kWh")
 
 entry=0
 conso_max=0
 if error>0:
     print("Consommation négative : ")
     for j in range(0,24):
-        if delta_conso[j]<=0.004:
+        if round(delta_conso[j],3)<DELTA_MIN:
             print("Consommation non suivie : ",j,"à",j+1,"h : ",round(delta_conso[j],3),"kWh")
             conso_max=0
             for i in range(len(liste)):

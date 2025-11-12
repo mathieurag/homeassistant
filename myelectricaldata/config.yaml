@@ -46,24 +46,24 @@ myelectricaldata:
     consumption_detail_max_date: "2022-06-01"
     consumption_max_date: "2022-06-01"
     consumption_max_power: true
-    consumption_price_base: 0.1919
-    consumption_price_hc: 0.1608
-    consumption_price_hp: 0.2028
+    consumption_price_base: 0.19078
+    consumption_price_hc: 0.03598
+    consumption_price_hp: 0.21780
     enable: true
     name: Talence
-    offpeak_hours_0: 21H08-5H08
-    offpeak_hours_1: 21H08-5H08
-    offpeak_hours_2: 21H08-5H08
-    offpeak_hours_3: 21H08-5H08
-    offpeak_hours_4: 21H08-5H08
-    offpeak_hours_5: 21H08-5H08
-    offpeak_hours_6: 21H08-5H08
+    offpeak_hours_0: 15H00-17H00
+    offpeak_hours_1: 15H00-17H00
+    offpeak_hours_2: 15H00-17H00
+    offpeak_hours_3: 15H00-17H00
+    offpeak_hours_4: 15H00-17H00
+    offpeak_hours_5: 15H00-17H00
+    offpeak_hours_6: 15H00-17H00
     plan: HC/HP
     production: true
     production_detail: true
     production_detail_max_date: "2025-03-13"
     production_max_date: "2025-03-13"
-    production_price: 0.13
+    production_price: 0.127
     refresh_addresse: false
     refresh_contract: false
     token: Cx8C2mCiLa49Ze326F6YRVbhmmKjmlc3tCRSXX_pZdE=

@@ -8,7 +8,6 @@ import time
 # --- CONFIGURATION ---
 DB_PATH = "/config/home-assistant_v2.db"
 ENTITY_HP = "sensor.energie_consommee_j_hp"
-ENTITY_HG = "sensor.energie_consommee_j_hg"
 ENTITY_HC = "sensor.energie_consommee_j_hc"
 MQTT_HOST = "localhost"
 MQTT_USER = "mqtt"

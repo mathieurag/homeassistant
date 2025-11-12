@@ -1,5 +1,18 @@
 sensor:
-  #ECS
+  #WATERMETER
+
+  # Capteur pour compter le nombre de mises à jour du capteur d'eau
+  - platform: history_stats
+    name: "Nombre de tirages d'eau/h"
+    entity_id: sensor.watermeter_total_water_usage
+    #unique_id: "nombre_de_tirages_d_eau_h"
+    state: "*" # Compte tous les changements d'état (Clé 'state' réintégrée)
+    type: count
+    # Définition standard de la durée relative
+    start: "{{ now() - timedelta(hours=1) }}"
+    end: "{{ now() }}"
+
+    #ECS
   - platform: history_stats
     name: temps_allumage_ecs_today
     entity_id: input_boolean.ecs

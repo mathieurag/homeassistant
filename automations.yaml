@@ -181,42 +181,43 @@
       enabled: false
   mode: single
 - id: '1720013652767'
-  alias: Début Prise Salon
+  alias: Prise Salon
   description: ''
   triggers:
   - entity_id:
     - switch.lumiere_salon
     to: 'on'
     trigger: state
-  conditions:
-  - condition: state
-    entity_id: input_boolean.prise_salon
-    state: 'off'
-  actions:
-  - metadata: {}
-    data: {}
-    target:
-      entity_id: input_boolean.prise_salon
-    action: input_boolean.turn_on
-  mode: single
-- id: '1720013745679'
-  alias: Fin Prise Salon
-  description: ''
-  triggers:
+    id: 'on'
   - entity_id:
     - switch.lumiere_salon
-    to: 'off'
     trigger: state
-  conditions:
-  - condition: state
-    entity_id: input_boolean.prise_salon
-    state: 'on'
+    id: 'off'
+    to:
+    - 'off'
+  conditions: []
   actions:
-  - target:
-      entity_id:
-      - input_boolean.prise_salon
-    data: {}
-    action: input_boolean.turn_off
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - 'on'
+      sequence:
+      - metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.prise_salon
+        action: input_boolean.turn_on
+    - conditions:
+      - condition: trigger
+        id:
+        - 'off'
+      sequence:
+      - metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.prise_salon
+        action: input_boolean.turn_off
   mode: single
 - id: '1720778515127'
   alias: Suppression données EcoJoko
@@ -281,6 +282,7 @@
       - climate
       - automation
       - device_tracker
+      - switch
       entity_globs:
       - switch.clim_*_xfan
       - switch.clim_*_quiet
@@ -346,7 +348,7 @@
       - sensor.taux_solar_jour
       - sensor.conso_mini
       - sensor.cumulus_3
-      - sensor.esphome_web_27f580_ultrasonic_sensor
+      - sensor.hauteur_pellets
       - sensor.batterie_decharge_moyenne
       - sensor.batterie_charge_moyenne
       - sensor.estimation_temps_restant_batterie
@@ -358,48 +360,56 @@
       - sensor.esphome_web_a92940_marstek_ac_current
       - sensor.marstek_efficiency
       - sensor.energie_estimee_batterie_dc
-      - sensor.energie_estimee_batterie_dc_2
       - sensor.variation_consommation_brute
       - sensor.consommation_brute
       keep_days: 0
     action: recorder.purge_entities
+  - delay:
+      hours: 0
+      minutes: 2
+      seconds: 0
+      milliseconds: 0
+  - action: shell_command.pve_cpu_mode
+    data:
+      mode: eco
   mode: single
 - id: '1725127533248'
-  alias: Début Four
+  alias: Four
   description: ''
   triggers:
   - entity_id:
     - sensor.em06_b2_power
     above: 10
     trigger: numeric_state
-  conditions:
-  - condition: state
-    entity_id: input_boolean.four
-    state: 'off'
-  actions:
-  - metadata: {}
-    data: {}
-    action: input_boolean.turn_on
-    target:
-      entity_id: input_boolean.four
-  mode: single
-- id: '1725127649202'
-  alias: Fin Four
-  description: ''
-  triggers:
+    id: 'on'
   - entity_id:
     - sensor.em06_b2_power
     below: 10
     trigger: numeric_state
-  conditions:
-  - condition: state
-    entity_id: input_boolean.four
-    state: 'on'
+    id: 'off'
+  conditions: []
   actions:
-  - data: {}
-    action: input_boolean.turn_off
-    target:
-      entity_id: input_boolean.four
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - 'on'
+      sequence:
+      - metadata: {}
+        data: {}
+        action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.four
+    - conditions:
+      - condition: trigger
+        id:
+        - 'off'
+      sequence:
+      - metadata: {}
+        data: {}
+        action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.four
   mode: single
 - id: '1725223267378'
   alias: Alerte TV non éteinte
@@ -427,36 +437,42 @@
       data: {}
   mode: single
 - id: '1725794082259'
-  alias: Début Plaque
+  alias: Plaque
   description: ''
   triggers:
   - entity_id:
     - sensor.em06_a2_power
     above: 10
     trigger: numeric_state
-  conditions: []
-  actions:
-  - metadata: {}
-    data: {}
-    action: input_boolean.turn_on
-    target:
-      entity_id:
-      - input_boolean.plaque
-  mode: single
-- id: '1725794111545'
-  alias: Fin Plaque
-  description: ''
-  triggers:
+    id: 'on'
   - entity_id:
     - sensor.em06_a2_power
     below: 10
     trigger: numeric_state
+    id: 'off'
   conditions: []
   actions:
-  - data: {}
-    action: input_boolean.turn_off
-    target:
-      entity_id: input_boolean.plaque
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - 'on'
+      sequence:
+      - metadata: {}
+        data: {}
+        action: input_boolean.turn_on
+        target:
+          entity_id:
+          - input_boolean.plaque
+    - conditions:
+      - condition: trigger
+        id:
+        - 'off'
+      sequence:
+      - data: {}
+        action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.plaque
   mode: single
 - id: '1725825034602'
   alias: Alerte Tuya Local
@@ -719,116 +735,118 @@
     action: solcast_solar.update_forecasts
   mode: single
 - id: '1727031043968'
-  alias: Début Lumières RDC
+  alias: Lumières RDC
   description: ''
   triggers:
   - entity_id:
     - sensor.em06_c2_power
     above: 0
     trigger: numeric_state
-  conditions:
-  - condition: state
-    entity_id: input_boolean.lumieres_rdc
-    state: 'off'
-  actions:
-  - metadata: {}
-    data: {}
-    action: input_boolean.turn_on
-    target:
-      entity_id: input_boolean.lumieres_rdc
-  mode: single
-- id: '1727031116637'
-  alias: Début Lumières Étage
-  description: ''
-  triggers:
-  - entity_id:
-    - sensor.bidirectional_energy_meter_power_b
-    above: 0
-    trigger: numeric_state
-  conditions:
-  - condition: state
-    entity_id: input_boolean.lumieres_etage
-    state: 'off'
-  actions:
-  - metadata: {}
-    data: {}
-    action: input_boolean.turn_on
-    target:
-      entity_id: input_boolean.lumieres_etage
-  mode: single
-- id: '1727031227421'
-  alias: Début Prises Etage
-  description: ''
-  triggers:
-  - entity_id:
-    - sensor.bidirectional_energy_meter_power_a
-    above: 0
-    trigger: numeric_state
-  conditions:
-  - condition: state
-    entity_id: input_boolean.prises_etage
-    state: 'off'
-  actions:
-  - metadata: {}
-    data: {}
-    action: input_boolean.turn_on
-    target:
-      entity_id: input_boolean.prises_etage
-  mode: single
-- id: '1727040109754'
-  alias: Fin Lumières Etage
-  description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id:
-    - sensor.bidirectional_energy_meter_power_b
-    below: 1
-  condition: []
-  action:
-  - action: input_boolean.turn_off
-    target:
-      entity_id:
-      - input_boolean.lumieres_etage
-    data: {}
-  mode: single
-- id: '1727040145674'
-  alias: Fin Lumières RDC
-  description: ''
-  triggers:
+    id: 'on'
   - entity_id:
     - sensor.em06_c2_power
     below: 1
     trigger: numeric_state
+    id: 'off'
   conditions: []
   actions:
-  - action: input_boolean.turn_off
-    target:
-      entity_id:
-      - input_boolean.lumieres_rdc
-    data: {}
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - 'on'
+      sequence:
+      - metadata: {}
+        data: {}
+        action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.lumieres_rdc
+    - conditions:
+      - condition: trigger
+        id:
+        - 'off'
+      sequence:
+      - metadata: {}
+        data: {}
+        action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.lumieres_rdc
   mode: single
-- id: '1727040181229'
-  alias: Fin Prises Etage
+- id: '1727031116637'
+  alias: Lumières Étage
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.bidirectional_energy_meter_power_b
+    above: 0
+    trigger: numeric_state
+    id: 'on'
+  - entity_id:
+    - sensor.bidirectional_energy_meter_power_b
+    trigger: numeric_state
+    below: 1
+    id: 'off'
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - 'on'
+      sequence:
+      - metadata: {}
+        data: {}
+        action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.lumieres_etage
+    - conditions:
+      - condition: trigger
+        id:
+        - 'off'
+      sequence:
+      - metadata: {}
+        data: {}
+        action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.lumieres_etage
+  mode: single
+- id: '1727031227421'
+  alias: Prises Etage
   description: ''
   triggers:
   - entity_id:
     - sensor.bidirectional_energy_meter_power_a
-    below: 1
+    above: 0
     trigger: numeric_state
-    for:
-      hours: 0
-      minutes: 1
-      seconds: 0
-  conditions:
-  - condition: state
-    entity_id: input_boolean.prises_etage
-    state: 'on'
+    id: 'on'
+  - entity_id:
+    - sensor.bidirectional_energy_meter_power_a
+    above: 0
+    trigger: numeric_state
+    id: 'off'
+  conditions: []
   actions:
-  - action: input_boolean.turn_off
-    target:
-      entity_id:
-      - input_boolean.prises_etage
-    data: {}
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - 'on'
+      sequence:
+      - metadata: {}
+        data: {}
+        action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.prises_etage
+    - conditions:
+      - condition: trigger
+        id:
+        - 'off'
+      sequence:
+      - metadata: {}
+        data: {}
+        action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.prises_etage
   mode: single
 - id: '1727103070490'
   alias: Energie - Notification
@@ -844,7 +862,9 @@
         '
       message: 'HC : {{ states(''input_number.taux_hc_j_1'') | round(1) }} %. Conso
         : {{states(''input_number.energie_j_1'') | round(2) }} kWh / {{states(''input_number.cout_energie_j_1'')
-        | round(2)  }}€
+        | round(2)  }}€  HG : {{ float(states(''input_number.energie_hg_j_1''),0)
+        | round(2) }} kWh / {{ (float(states(''input_number.energie_hg_j_1''),0) *
+        float(states(''input_number.prix_hg_kwh''),0)) | round(2) }} €
 
         ECS : {{ (states(''sensor.cumulus_kwh'')| float(0) - states(''input_number.energie_cumulus_jour'')
         | float(0))| round(2)}} kWh / Surplus : {{ (states(''input_number.surplus_production_j_1'')
@@ -866,13 +886,23 @@
         True) }}
 
         '
-      message: "Taux HC du jour : {{ states('input_number.taux_hc_j_1') | round(1)
-        }} %.\n\nConsommation de la journée : {{states('input_number.energie_j_1')
-        | round(2) }} kWh / {{states('input_number.cout_energie_j_1') | round(2)  }}€
-        \n\nSurplus : {{ (states('input_number.surplus_production_j_1') | float(0))
-        | round(2) }} kWh pour  {{ (states('input_number.prix_vente_edf_oa') | float(0)
-        * states('input_number.surplus_production_j_1') | float(0)) | round(2) }}
-        €\n"
+      message: 'Taux HC du jour : {{ states(''input_number.taux_hc_j_1'') | round(1)
+        }} %.
+
+
+        Consommation de la journée : {{states(''input_number.energie_j_1'') | round(2)
+        }} kWh / {{states(''input_number.cout_energie_j_1'') | round(2)  }}€  dont
+        HG : {{ float(states(''input_number.energie_hg_j_1''),0) | round(2) }} kWh
+        / {{ (float(states(''input_number.energie_hg_j_1''),0) * float(states(''input_number.prix_hg_kwh''),0))
+        | round(2) }} €
+
+
+        Surplus : {{ (states(''input_number.surplus_production_j_1'') | float(0))
+        | round(2) }} kWh pour  {{ (states(''input_number.prix_vente_edf_oa'') | float(0)
+        * states(''input_number.surplus_production_j_1'') | float(0)) | round(2) }}
+        €
+
+        '
     action: notify.persistent_notification
   - data_template:
       entity_id: input_number.energie_cumulus_jour
@@ -884,40 +914,56 @@
   alias: Energie - Calcul
   description: ''
   triggers:
-  - at: '23:59:50'
+  - at: '23:59:59'
     trigger: time
   conditions: []
   actions:
+  - action: shell_command.pve_cpu_mode
+    data:
+      mode: power
   - data_template:
       entity_id: input_number.energie_j_1
-      value: '{{float(states(''sensor.ecojoko_consommation_reseau''),0) | round(2)}}'
+      value: '{{float(states(''sensor.energie_consommee_j''),0) | round(2)}}'
     action: input_number.set_value
+    alias: Consommation réseau J-1
+  - data_template:
+      entity_id: input_number.energie_hg_j_1
+      value: '{{float(states(''sensor.energie_consommee_j_hg''),0) | round(2)}}'
+    action: input_number.set_value
+    alias: Consommation HG J-1
   - data_template:
       entity_id: input_number.cout_energie_j_1
-      value: '{{(float(states(''sensor.ecojoko_consommation_hc_reseau''),0)*float(states(''input_number.prix_hc_kwh''),0)+float(states(''sensor.ecojoko_consommation_hp_reseau''),0)*float(states(''input_number.prix_hp_kwh''),0))
+      value: '{{(float(states(''sensor.energie_consommee_j_hc''),0)*float(states(''input_number.prix_hc_kwh''),0)+(float(states(''sensor.energie_consommee_j_hp''),0))*float(states(''input_number.prix_hp_kwh''),0)
+        + float(states(''sensor.energie_consommee_j_hg''),0)*float(states(''input_number.prix_hg_kwh''),0))
         | round(2)}}'
     action: input_number.set_value
+    alias: Coût Energie J-1
   - data_template:
       entity_id: input_number.taux_hc_j_1
       value: '{{ float(states(''sensor.taux_hc_jour''),0) | round(1)}}'
     action: input_number.set_value
+    alias: Taux HC J-1
   - data_template:
       entity_id: input_number.solar_previsions_j_1
       value: '{{ states(''sensor.solcast_pv_forecast_previsions_pour_aujourd_hui'')
         | float | round(1)}}'
     action: input_number.set_value
+    alias: Prévisions solaire J-1
   - data_template:
       entity_id: input_number.solar_production_j_1
       value: '{{ float(states(''sensor.energie_solar_j''),0) | round(1)}}'
     action: input_number.set_value
+    alias: Production solaire J-1
   - data_template:
       entity_id: input_number.taux_solar_j_1
       value: '{{ float(states(''sensor.taux_solar_jour''),0) | round(1)}}'
     action: input_number.set_value
+    alias: Taux solaire J-1
   - data_template:
       entity_id: input_number.surplus_production_j_1
       value: '{{ float(states(''sensor.surplus_production_compteur''),0)| round(1)}}'
     action: input_number.set_value
+    alias: Surplus solaire J-1
   mode: single
 - id: '1727278237568'
   alias: Energie - Calcul (h)
@@ -1017,28 +1063,32 @@
   mode: single
 - id: '1727989940257'
   alias: Bilan Solaire
-  description: ''
+  description: Déclenchement à la fin de la production solaire
   triggers:
-  - trigger: sun
-    event: sunset
-    offset: 00:00:00
-    enabled: false
-  - trigger: numeric_state
-    entity_id:
+  - entity_id:
     - sensor.production_solaire
     for:
       hours: 0
       minutes: 15
       seconds: 0
     below: 1
+    trigger: numeric_state
+    enabled: false
+  - trigger: sun
+    event: sunset
+    offset: 00:30:00
+  conditions:
+  - condition: sun
+    after: sunset
+    enabled: false
   actions:
   - data_template:
       title: 'Données Solaire du {{ as_timestamp(now()) | timestamp_custom("%d.%m.%y",
         True) }}
 
         '
-      message: "\nTaux de prévision solaire : {{ states('sensor.taux_solar_jour')
-        | float | round(1)}} %. \n\nProduction solaire : {{ (states('sensor.energie_solar_j')
+      message: "Taux de prévision solaire : {{ states('sensor.taux_solar_jour') |
+        float | round(1)}} %. \nProduction solaire : {{ (states('sensor.energie_solar_j')
         | float) | float | round(2)}} kWh / {{ states('sensor.solcast_pv_forecast_previsions_pour_aujourd_hui')
         | float | round(2)}} kWh prévus.\nAutoconsommation : {{ (((states('sensor.energie_solar_j')
         | float(0)- states('sensor.surplus_production_compteur') | float(0) ) / (states('sensor.energie_solar_j')
@@ -1059,7 +1109,7 @@
         '
       message: 'Solaire : {{ states(''sensor.taux_solar_jour'') | round(1) }} %. Prod
         : {{ (states(''sensor.energie_solar_j'') | float) | round(2) }} kWh / {{states(''sensor.solcast_pv_forecast_previsions_pour_aujourd_hui'')
-        | round(1) }} kWh.  Autoconsommation : {{ (((states(''sensor.energie_solar_j'')
+        | round(1) }} kWh. Autoconsommation : {{ (((states(''sensor.energie_solar_j'')
         | float(0)- states(''sensor.surplus_production_compteur'') | float(0) ) /
         (states(''sensor.energie_solar_j'') | float(0)+0.0001)) * 100) | round(0)}}
         %. Surplus solaire : {{ (states(''sensor.surplus_production_compteur'') |
@@ -1077,6 +1127,9 @@
         '
     action: notify.notify
     enabled: true
+  - action: shell_command.maj_bdpv
+    data: {}
+    response_variable: stdout
 - id: '1728387375442'
   alias: Alerte Garage absence
   description: ''
@@ -2061,7 +2114,7 @@
         target:
           device_id:
           - 95cac785555a1625a4b133475bc2c04b
-      enabled: true
+      enabled: false
     - if:
       - condition: state
         entity_id: switch.prise_tv_local
@@ -2348,6 +2401,9 @@
   - action: shell_command.maj_surplus_eco
     data: {}
   - action: shell_command.maj_hp_hc
+    data: {}
+    enabled: false
+  - action: shell_command.simulation_pv
     data: {}
   mode: single
 - id: '1735138356842'
@@ -2714,18 +2770,18 @@
       entity_id: counter.allumages_poele
   mode: single
 - id: '1742158035852'
-  alias: Alerte ESP32-2
+  alias: Alerte ESP32-POELE
   description: ''
   triggers:
   - entity_id:
-    - sensor.esphome_web_27f580_ultrasonic_sensor
+    - sensor.hauteur_pellets
     for:
       hours: 0
       minutes: 30
       seconds: 0
     trigger: state
   - entity_id:
-    - sensor.esphome_web_27f580_ultrasonic_sensor
+    - sensor.hauteur_pellets
     for:
       hours: 0
       minutes: 5
@@ -2740,12 +2796,12 @@
     domain: switch
   actions:
   - data:
-      message: Pas de réponse de ESP32-2 !
+      message: Pas de réponse de ESP32-POELE !
     action: notify.persistent_notification
   - action: notify.notify
     metadata: {}
     data:
-      message: Pas de réponse de ESP32-2 !
+      message: Pas de réponse de ESP32-POELE !
   - delay:
       hours: 0
       minutes: 5
@@ -3347,47 +3403,12 @@
       - data:
           message: "\U0001F50B Batterie pleine ({{ states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
             }}%)"
-          data:
-            actions:
-            - action: desactiver_batterie
-              title: "\U0001F50C Couper la batterie"
-            - action: desactiver_priorite
-              title: ❌ Désactiver priorité batterie
         action: notify.notify
-      - wait_for_trigger:
-        - event_type: mobile_app_notification_action
-          event_data:
-            action: desactiver_batterie
-          trigger: event
-        - event_type: mobile_app_notification_action
-          event_data:
-            action: desactiver_priorite
-          trigger: event
-        timeout: 00:10:00
-        continue_on_timeout: true
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ wait.trigger.event.data.action == ''desactiver_batterie''
-              }}'
-          sequence:
-          - data:
-              skip_condition: true
-            target:
-              entity_id: automation.desactiver_batterie
-            action: automation.trigger
-        - conditions:
-          - condition: template
-            value_template: '{{ wait.trigger.event.data.action == ''desactiver_priorite''
-              }}'
-          sequence:
-          - condition: state
-            entity_id: input_boolean.priorite_batterie
-            state: 'on'
-          - target:
-              entity_id: input_boolean.priorite_batterie
-            action: input_boolean.turn_off
-            data: {}
+      - delay:
+          hours: 0
+          minutes: 1
+          seconds: 0
+          milliseconds: 0
     - conditions:
       - condition: trigger
         id:
@@ -3397,12 +3418,6 @@
           message: "\U0001FAAB Batterie vide... ({{ states('sensor.soc_estime_batterie')
             }}% / {{ states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
             }}%)"
-          data:
-            actions:
-            - action: desactiver_batterie
-              title: "\U0001F50C Couper la batterie"
-            - action: desactiver_priorite
-              title: ❌ Désactiver priorité batterie
         action: notify.notify
   mode: single
 - id: '1744820100625'
@@ -3571,7 +3586,13 @@
       minutes: 1
       seconds: 0
     above: 100
-  conditions: []
+  conditions:
+  - condition: or
+    conditions:
+    - condition: time
+      before: '15:00:00'
+    - condition: time
+      after: '17:00:00'
   actions:
   - if:
     - condition: template
@@ -3644,7 +3665,9 @@
     - sensor.esphome_web_a92940_marstek_battery_state_of_charge
     to: '100.0'
     for:
-      minutes: 5
+      hours: 0
+      minutes: 1
+      seconds: 0
     id: soc_plein
     trigger: state
   - event_type: call_service
@@ -3655,14 +3678,6 @@
         entity_id: input_button.reset_soc_batterie
     id: bouton
     trigger: event
-  - trigger: numeric_state
-    entity_id:
-    - sensor.esphome_web_a92940_marstek_battery_state_of_charge
-    for:
-      hours: 0
-      minutes: 5
-      seconds: 0
-    above: 99.9
   conditions: []
   actions:
   - target:
@@ -4080,43 +4095,15 @@
   alias: Passage HP/HC
   description: ''
   triggers:
-  - at: 05:08:00
+  - at: 06:00:00
     trigger: time
     id: hp
-  - at: '21:08:00'
+  - at: 00:00:00
     trigger: time
     id: hc
-  - trigger: time
-    at: '15:00:00'
-    id: HG on
-  - trigger: time
-    at: '17:00:00'
-    id: HG off
   conditions: []
   actions:
   - choose:
-    - conditions:
-      - condition: trigger
-        id:
-        - HG on
-      sequence:
-      - data:
-          option: HG
-        action: select.select_option
-        target:
-          entity_id:
-          - select.energie_consommee_j
-    - conditions:
-      - condition: trigger
-        id:
-        - HG off
-      sequence:
-      - data:
-          option: HP
-        action: select.select_option
-        target:
-          entity_id:
-          - select.energie_consommee_j
     - conditions:
       - condition: trigger
         id:
@@ -4334,3 +4321,366 @@
       message: ⚠️ Disque Externe NOK !
     action: notify.notify
   mode: single
+- id: '1762271482776'
+  alias: Passage HG
+  description: ''
+  triggers:
+  - trigger: time
+    at: '15:00:00'
+    id: 'On'
+  - trigger: time
+    at: '16:55:00'
+    id: 'Off'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.automatisation
+    state: 'on'
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - 'Off'
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_boolean.mode_absent
+          state: 'off'
+        then:
+        - action: switch.turn_off
+          metadata: {}
+          data: {}
+          target:
+            entity_id: switch.shelly_plus_1pm_01_switch_0
+        - action: switch.turn_off
+          metadata: {}
+          data: {}
+          target:
+            device_id: 62be3297a0c0d75c708f1a2e49911819
+        - device_id: ca5a1d4d5c652e5a540deaaae09f9405
+          domain: climate
+          entity_id: 75d43c2f5470d1d38b1db785215bfc05
+          type: set_hvac_mode
+          hvac_mode: 'off'
+        - device_id: d2910ca682aff1ab63ccc59776862bbf
+          domain: climate
+          entity_id: f134f6c77732ee45a8c2eb02f1419140
+          type: set_hvac_mode
+          hvac_mode: 'off'
+        - device_id: bd855e7f72d58cac65db32e4edfbf775
+          domain: climate
+          entity_id: cfc8e4c00ec05ae6b721d21a975d1ccb
+          type: set_hvac_mode
+          hvac_mode: 'off'
+        - device_id: 280904bd43829cf2b64d322cd3b67cd1
+          domain: climate
+          entity_id: c8d050f513f09480235a70a8a490c65b
+          type: set_hvac_mode
+          hvac_mode: 'off'
+        - action: input_boolean.turn_on
+          metadata: {}
+          data: {}
+          target:
+            entity_id: input_boolean.gestion_batterie_autonome
+        else:
+        - action: input_boolean.turn_on
+          metadata: {}
+          data: {}
+          target:
+            entity_id: input_boolean.gestion_batterie_autonome
+      - delay:
+          hours: 0
+          minutes: 5
+          seconds: 0
+          milliseconds: 0
+      - action: select.select_option
+        metadata: {}
+        data:
+          option: HP
+        target:
+          entity_id: select.energie_consommee_j
+        alias: Passage en HP
+    - conditions:
+      - condition: trigger
+        id:
+        - 'On'
+      sequence:
+      - if:
+        - condition: or
+          conditions:
+          - condition: state
+            entity_id: input_boolean.mode_absent
+            state: 'on'
+          - condition: time
+            weekday:
+            - wed
+            - sat
+            - sun
+        then:
+        - action: automation.trigger
+          metadata: {}
+          data:
+            skip_condition: true
+          target:
+            entity_id: automation.charge_forcee_batterie
+        else:
+        - device_id: d2910ca682aff1ab63ccc59776862bbf
+          domain: climate
+          entity_id: f134f6c77732ee45a8c2eb02f1419140
+          type: set_hvac_mode
+          hvac_mode: heat
+        - device_id: ca5a1d4d5c652e5a540deaaae09f9405
+          domain: climate
+          entity_id: 75d43c2f5470d1d38b1db785215bfc05
+          type: set_hvac_mode
+          hvac_mode: heat
+        - device_id: bd855e7f72d58cac65db32e4edfbf775
+          domain: climate
+          entity_id: cfc8e4c00ec05ae6b721d21a975d1ccb
+          type: set_hvac_mode
+          hvac_mode: heat
+        - device_id: 280904bd43829cf2b64d322cd3b67cd1
+          domain: climate
+          entity_id: c8d050f513f09480235a70a8a490c65b
+          type: set_hvac_mode
+          hvac_mode: heat
+        - action: switch.turn_off
+          metadata: {}
+          data: {}
+          target:
+            entity_id: switch.shelly_plus_1pm_02_switch_0
+        - action: switch.turn_on
+          metadata: {}
+          target:
+            entity_id: switch.cumulus
+          data: {}
+        - action: switch.turn_on
+          metadata: {}
+          data: {}
+          target:
+            entity_id: switch.shelly_plus_1pm_01_switch_0
+        - action: automation.trigger
+          metadata: {}
+          data:
+            skip_condition: true
+          target:
+            entity_id: automation.charge_forcee_batterie
+      - action: select.select_option
+        metadata: {}
+        data:
+          option: HG
+        target:
+          entity_id: select.energie_consommee_j
+        alias: Passage en HG
+      - action: input_number.set_value
+        metadata: {}
+        data:
+          value: '{{ float(states(''sensor.energie_consommee_j_hg''), 0) | round(2)
+            }}'
+        target:
+          entity_id: input_number.energie_hg_j_1
+      - action: automation.trigger
+        metadata: {}
+        data:
+          skip_condition: true
+        target:
+          entity_id: automation.charge_forcee_batterie
+      - action: switch.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: switch.shelly_plus_1pm_01_switch_0
+  mode: single
+- id: '1762347085911'
+  alias: Charge forcée batterie
+  description: ''
+  triggers: []
+  conditions: []
+  actions:
+  - variables:
+      puissance_reseau: '{{ states(''sensor.em06_02_b1_power'') | float(0) }}'
+      puissance_batterie: '{{ states(''sensor.em06_02_b2_power'') | float(0) + 5 }}'
+      switch_fan: '{{ states(''switch.prise_zigbee_5'') | float(0) }}'
+      conso_fan: '{{ states(''sensor.prise_zigbee_5_power'') | float(0) }}'
+      consigne_batterie: '{{ puissance_reseau + puissance_batterie}}
+
+        '
+      puissance_charge_max: '{{ states(''number.esphome_web_a92940_marstek_max_charge_power'')
+        | float(2500) }}'
+      puissance_decharge_max: '{{ states(''number.esphome_web_a92940_marstek_max_discharge_power'')
+        | float(2500) }}'
+      soc_batterie: '{{ states(''sensor.esphome_web_a92940_marstek_battery_state_of_charge'')
+        | float(0) }}'
+      soc_max: '{{ states(''number.esphome_web_a92940_marstek_charging_cutoff_capacity'')
+        | float(100) }}'
+      soc_min: '{{ states(''number.esphome_web_a92940_marstek_discharging_cutoff_capacity'')
+        | float(11) }}'
+      voltage: '{{ states(''sensor.esphome_web_a92940_marstek_battery_voltage_average'')
+        | float(0) }}'
+      correction_consigne_decharge: 0
+      correction_consigne_charge: 0
+    alias: Calcul des variables
+  - alias: Comparaison SOC MAX
+    choose:
+    - conditions:
+      - alias: SOC = MAX
+        condition: template
+        value_template: '{{ soc_batterie >= soc_max}}'
+        enabled: true
+      sequence:
+      - alias: Mode Stop
+        if:
+        - condition: not
+          conditions:
+          - condition: state
+            entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
+            state: stop
+        then:
+        - target:
+            entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
+          data:
+            option: stop
+          action: select.select_option
+      - target:
+          entity_id:
+          - number.esphome_web_a92940_marstek_forcible_charge_power
+          - number.esphome_web_a92940_marstek_forcible_discharge_power
+        data:
+          value: '0'
+        action: number.set_value
+        alias: Charge/Discharge à 0
+      - alias: Mode Disable
+        if:
+        - condition: state
+          entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
+          state: enable
+        then:
+        - target:
+            entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
+          data:
+            option: disable
+          action: select.select_option
+      - device_id: cad5cf1c1acf9585f1a244da05cf1cac
+        domain: select
+        entity_id: 29d02385bfa6a107834f0b8cab20c349
+        type: select_option
+        option: manual
+    - conditions:
+      - alias: SOC < MAX
+        condition: template
+        value_template: '{{ soc_batterie < soc_max}}'
+        enabled: true
+      sequence:
+      - action: input_boolean.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.gestion_batterie_autonome
+      - data:
+          option: anti-feed
+        action: select.select_option
+        target:
+          entity_id: select.esphome_web_a92940_marstek_user_work_mode
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+          milliseconds: 0
+      - target:
+          entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
+        data:
+          option: charge
+        action: select.select_option
+      - target:
+          entity_id: number.esphome_web_a92940_marstek_forcible_discharge_power
+        data:
+          value: '0'
+        action: number.set_value
+        alias: Discharge à 0
+      - alias: Valeur de charge
+        target:
+          entity_id: number.esphome_web_a92940_marstek_forcible_charge_power
+        data:
+          value: '{{ puissance_charge_max | int }}'
+        action: number.set_value
+      - target:
+          entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
+        data:
+          option: enable
+        action: select.select_option
+  mode: single
+- id: '1762605191556'
+  alias: Reset Energie
+  description: ''
+  triggers:
+  - trigger: time
+    at: 00:00:00
+  conditions: []
+  actions:
+  - action: utility_meter.reset
+    metadata: {}
+    data: {}
+    target:
+      entity_id: select.energie_consommee_j
+  mode: single
+- id: '1762725337624'
+  alias: Alerte CPU Mode
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.cpu_mode
+    to:
+    - power
+    for:
+      hours: 1
+      minutes: 0
+      seconds: 0
+  conditions: []
+  actions:
+  - action: shell_command.pve_cpu_mode
+    data:
+      mode: eco
+  mode: single
+- &id001
+  id: '1668257222700'
+  alias: Alerte fuite d'eau
+  description: Détecte la fuite par une fréquence anormale de changements et estime
+    le débit.
+  triggers:
+  - minutes: '4'
+    hours: /1
+    trigger: time_pattern
+  conditions:
+  - condition: numeric_state
+    entity_id: sensor.nombre_de_tirages_d_eau_h
+    above: 6
+  - condition: numeric_state
+    entity_id: sensor.volume_d_eau_consomme_h
+    above: 0.001
+  actions:
+  - variables:
+      volume_h: '{{ states(''sensor.volume_d_eau_consomme_h'') | float(0) }}'
+      frequence_h: '{{ states(''sensor.nombre_de_tirages_d_eau_h'') | int(1) }}'
+      debit_par_evenement_L: '{% set debit_m3 = volume_h / frequence_h %} {{ (debit_m3
+        * 1000) | round(2) }}
+
+        '
+      type_fuite: "{% if volume_h >= 0.1 %} # >= 100 litres/heure\n  Fuite SÉVÈRE
+        (Débit continu important)\n{% elif debit_par_evenement_L <= 0.5 %} # <= 0.5
+        litre/marche (votre fuite de chasse d'eau est à 0.3L)\n  Fuite LENTE (Chasse
+        d'eau à micro-marches)\n{% else %}\n  Fuite MODÉRÉE (Robinet ou canalisation
+        lente)\n{% endif %}\n"
+  - action: notify.notify
+    metadata: {}
+    data:
+      title: "\U0001F6A8 ALERTE FUITE D'EAU : {{ type_fuite }}"
+      message: 'Une activité d''écoulement anormale est détectée. - **Fréquence :**
+        {{ frequence_h }} changements en 1h. - **Volume Total :** {{ (volume_h * 1000)
+        | round(2) }} litres. - **Débit Moyen par Événement :** {{ debit_par_evenement_L
+        }} Litres. - **Débit Horaire Estimé :** {{ (volume_h * 1000) | round(2) }}
+        L/h.
+
+        '
+  mode: single
+- *id001

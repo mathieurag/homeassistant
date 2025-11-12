@@ -6,24 +6,6 @@ template:
         unit_of_measurement: "%"
         state_class: measurement
 
-      - name: "Taux de consommation en HC (s)"
-        unique_id: "taux_hc_semaine"
-        state: "{{ (float(states('sensor.energie_consommee_s_hc'),0)*100 / (float(states('sensor.energie_consommee_s_hc'),0)+ float(states('sensor.energie_consommee_s_hp'),0)+0.001))| round(1) }}"
-        unit_of_measurement: "%"
-        state_class: measurement
-
-      - name: "Taux de consommation en HC (m)"
-        unique_id: "taux_hc_mois"
-        state: "{{ (float(states('sensor.energie_consommee_m_hc'),0)*100 / (float(states('sensor.energie_consommee_m_hc'),0)+ float(states('sensor.energie_consommee_m_hp'),0)+0.001))| round(1) }}"
-        unit_of_measurement: "%"
-        state_class: measurement
-
-      - name: "Taux de consommation en HC (a)"
-        unique_id: "taux_hc_annee"
-        state: "{{ (float(states('sensor.energie_consommee_a_hc'),0)*100 / (float(states('sensor.energie_consommee_a_hc'),0)+ float(states('sensor.energie_consommee_a_hp'),0)+0.001))| round(1) }}"
-        unit_of_measurement: "%"
-        state_class: measurement
-
       - name: "Taux HC sensor"
         state: "{{ float(states('input_number.taux_hc_j_1'),0)| round(2) }}"
         unit_of_measurement: "%"
@@ -33,17 +15,23 @@ template:
       - name: "Coût HP du jour"
         unique_id: "hp_cout_jour"
         device_class: monetary
-        state: "{{ (float(states('sensor.ecojoko_consommation_hp_reseau'),0) * float(states('input_number.prix_hp'),0) + float(states('input_number.cout_hp_jour'),0)/2 )|round(2) }}"
+        state: "{{ ((float(states('sensor.ecojoko_consommation_hp_reseau'),0)-float(states('sensor.energie_consommee_j_hg'),0)) * float(states('input_number.prix_hp'),0) + float(states('input_number.cout_hp_jour'),0)/3 )|round(2) }}"
         unit_of_measurement: "€"
 
       - name: "Coût HC du jour"
         unique_id: "hc_cout_jour"
-        state: "{{ (float(states('sensor.ecojoko_consommation_hc_reseau'),0) * float(states('input_number.prix_hc'),0) + float(states('input_number.cout_hp_jour'),0)/2)|round(2) }}"
+        state: "{{ (float(states('sensor.ecojoko_consommation_hc_reseau'),0) * float(states('input_number.prix_hc'),0) + float(states('input_number.cout_hp_jour'),0)/3)|round(2) }}"
+        unit_of_measurement: "€"
+        device_class: monetary
+
+      - name: "Coût HG du jour"
+        unique_id: "hg_cout_jour"
+        state: "{{ (float(states('sensor.energie_consommee_j_hg'),0) * float(states('input_number.prix_hg'),0) + float(states('input_number.cout_hp_jour'),0)/3)|round(2) }}"
         unit_of_measurement: "€"
         device_class: monetary
 
       - name: "Coût Total du jour"
         unique_id: "cout_jour"
-        state: "{{ (float(states('sensor.hp_cout_jour'),0) + float(states('sensor.hc_cout_jour'),0))|round(2) }}"
+        state: "{{ (float(states('sensor.hp_cout_jour'),0) + float(states('sensor.hc_cout_jour'),0) + float(states('sensor.hg_cout_jour'),0))|round(2) }}"
         unit_of_measurement: "€"
         device_class: monetary
