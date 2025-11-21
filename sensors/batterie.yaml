@@ -136,7 +136,7 @@ template:
         state: >
           {% set inverter = states('sensor.esphome_web_a92940_marstek_inverter_state') %}
           {% set capacity_now = states('sensor.esphome_web_a92940_marstek_battery_remaining_capacity') | float(0) %}
-          {% set soc = states('sensor.soc_estime_batterie') | float(0) %}
+          {% set soc = states('sensor.esphome_web_a92940_marstek_battery_state_of_charge') | float(0) %}
           {% set cutoff_charge_pct = states('number.esphome_web_a92940_marstek_charging_cutoff_capacity') | float(0) %}
           {% set cutoff_discharge_pct_old = states('number.esphome_web_a92940_marstek_discharging_cutoff_capacity') | float(0) %}
           {% set cutoff_discharge_pct = 0 %}

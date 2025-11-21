@@ -71,8 +71,7 @@ recorder:
   purge_keep_days: 7
   auto_repack: true
   auto_purge: true
-
-python_script:
+  commit_interval: 60
 
 system_log:
   fire_event: true

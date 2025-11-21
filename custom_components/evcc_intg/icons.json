@@ -1,6 +1,0 @@
-{
-  "services": {
-    "set_loadpoint_plan": "mdi:airplane-takeoff",
-    "set_vehicle_plan": "mdi:airplane-takeoff"
-  }
-}

@@ -624,24 +624,52 @@
   description: ''
   triggers:
   - entity_id:
-    - sensor.em06_02_a2_power
+    - sensor.em06_a1_voltage
     for:
       hours: 0
-      minutes: 15
+      minutes: 5
       seconds: 0
     trigger: state
+    id: '01'
+  - entity_id:
+    - sensor.em06_02_b1_voltage
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: state
+    id: '02'
   conditions: []
   actions:
-  - data:
-      message: Pas de réponse de Refoss !
-    action: notify.notify
-  - action: homeassistant.reload_config_entry
-    metadata: {}
-    data: {}
-    target:
-      device_id:
-      - 551a4cec52ce5ec5f96436a57efb7e39
-      - 70241aa2125233db1ee21cb73c58a47a
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - '01'
+      sequence:
+      - action: homeassistant.reload_config_entry
+        metadata: {}
+        data: {}
+        target:
+          device_id:
+          - 551a4cec52ce5ec5f96436a57efb7e39
+      - data:
+          message: Pas de réponse de EM06-01 !
+        action: notify.notify
+    - conditions:
+      - condition: trigger
+        id:
+        - '02'
+      sequence:
+      - action: homeassistant.reload_config_entry
+        metadata: {}
+        data: {}
+        target:
+          device_id:
+          - 70241aa2125233db1ee21cb73c58a47a
+      - data:
+          message: Pas de réponse de EM06-02 !
+        action: notify.notify
   mode: single
 - id: '1726580346858'
   alias: Alerte Tuya Cloud
@@ -713,9 +741,8 @@
 - id: '1726759242515'
   alias: Solcast update
   description: ''
-  trigger:
-  - platform: template
-    value_template: "{% set nr = as_datetime(state_attr('sun.sun','next_rising'))
+  triggers:
+  - value_template: "{% set nr = as_datetime(state_attr('sun.sun','next_rising'))
       | as_local %} {% set ns = as_datetime(state_attr('sun.sun','next_setting'))
       | as_local %} {% set api_request_limit = 10 %} {% if nr > ns %}\n  {% set nr
       = nr - timedelta(hours = 24) %} \n{% endif %} {% set hours_difference = (ns
@@ -724,13 +751,14 @@
       \ {% set start_time = nr + (i * interval_hours) %}\n  {% if ((start_time - timedelta(seconds=30))
       <= now()) and (now() <= (start_time + timedelta(seconds=30))) %}\n    {% set
       ns.match = true %}\n  {% endif %}\n{% endfor %} {{ ns.match }}"
-  condition:
+    trigger: template
+  conditions:
   - condition: sun
     before: sunset
     after: sunrise
-  action:
+  actions:
   - delay:
-      seconds: '{{ range(30, 360)|random|int }}'
+      seconds: '{{ range(30, 60)|random|int }}'
   - data: {}
     action: solcast_solar.update_forecasts
   mode: single
@@ -1647,11 +1675,16 @@
     data: {}
     target:
       entity_id: input_boolean.ecs_chaud
-  - action: input_boolean.turn_on
-    metadata: {}
-    data: {}
-    target:
-      entity_id: input_boolean.priorite_batterie
+  - if:
+    - condition: template
+      value_template: '{{ states(''select.energie_consommee_j'')!=''HG''}}'
+      alias: HG
+    then:
+    - action: input_boolean.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: input_boolean.priorite_batterie
   - action: notify.notify
     metadata: {}
     data:
@@ -2402,7 +2435,7 @@
     data: {}
   - action: shell_command.maj_hp_hc
     data: {}
-    enabled: false
+    enabled: true
   - action: shell_command.simulation_pv
     data: {}
   mode: single
@@ -2676,7 +2709,7 @@
   - action: climate.set_temperature
     metadata: {}
     data:
-      temperature: 19
+      temperature: 18.5
     target:
       entity_id: climate.poele_talence
   - action: climate.set_fan_mode
@@ -3379,13 +3412,13 @@
   triggers:
   - value_template: "{{ states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
       | float(0) >=\n   states('number.esphome_web_a92940_marstek_charging_cutoff_capacity')
-      | float(0) and is_state('input_boolean.batterie_notification_envoyee','off')
+      | float(1) and is_state('input_boolean.batterie_notification_envoyee','off')
       and states('sensor.esphome_web_a92940_marstek_battery_state_of_charge') != 'unavailable'
       and states('sensor.esphome_web_a92940_marstek_battery_state_of_charge') != 'unknown'}}\n"
     trigger: template
     id: plein
   - value_template: "{{ states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
-      | float(0) <=\n   states('number.esphome_web_a92940_marstek_discharging_cutoff_capacity')
+      | float(1) <=\n   states('number.esphome_web_a92940_marstek_discharging_cutoff_capacity')
       | float(0) and states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
       != 'unavailable' and states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
       != 'unknown'}}\n"
@@ -3589,29 +3622,121 @@
       minutes: 1
       seconds: 0
     above: 100
+    id: Conso_min
+  - trigger: numeric_state
+    entity_id:
+    - sensor.consommation_reseau
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+    above: 8500
+    id: Conso_max
+  - trigger: numeric_state
+    entity_id:
+    - sensor.consommation_reseau
+    above: 9000
+    id: Conso_max_max
   conditions:
   - condition: or
     conditions:
-    - condition: time
-      before: '15:00:00'
-    - condition: time
-      after: '17:00:00'
+    - condition: and
+      conditions:
+      - condition: or
+        conditions:
+        - condition: time
+          before: '15:00:00'
+        - condition: time
+          after: '17:00:00'
+      - condition: trigger
+        id:
+        - Conso_min
+    - condition: trigger
+      id:
+      - Conso_max
   actions:
-  - if:
-    - condition: template
-      value_template: "{{ states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
-        | float(0) \n> states('number.esphome_web_a92940_marstek_discharging_cutoff_capacity')
-        | float(0) }}"
-    then:
-    - action: notify.notify
-      metadata: {}
-      data:
-        message: ⚡ Consommation réseau > 100W depuis 1 min !
-    - delay:
-        hours: 0
-        minutes: 15
-        seconds: 0
-        milliseconds: 0
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - Conso_min
+      sequence:
+      - if:
+        - condition: template
+          value_template: "{{ states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
+            | float(0) \n> states('number.esphome_web_a92940_marstek_discharging_cutoff_capacity')
+            | float(0) }}"
+        then:
+        - action: notify.notify
+          metadata: {}
+          data:
+            message: ⚡ Consommation réseau > 100W depuis 1 min !
+        - delay:
+            hours: 0
+            minutes: 15
+            seconds: 0
+            milliseconds: 0
+    - conditions:
+      - condition: trigger
+        id:
+        - Conso_max
+      sequence:
+      - action: notify.notify
+        metadata: {}
+        data:
+          message: ⚡ Consommation réseau > 8,5kW depuis 1 min !
+      - if:
+        - condition: or
+          conditions:
+          - condition: device
+            device_id: 280904bd43829cf2b64d322cd3b67cd1
+            domain: climate
+            entity_id: c8d050f513f09480235a70a8a490c65b
+            type: is_hvac_mode
+            hvac_mode: heat
+        then:
+        - action: climate.set_hvac_mode
+          metadata: {}
+          data:
+            hvac_mode: 'off'
+          target:
+            entity_id: climate.clim_entree
+    - conditions:
+      - condition: trigger
+        id:
+        - Conso_max_max
+      sequence:
+      - action: notify.notify
+        metadata: {}
+        data:
+          message: ⚡ Consommation réseau > 9kW !
+      - if:
+        - condition: device
+          type: is_on
+          device_id: 62be3297a0c0d75c708f1a2e49911819
+          entity_id: 84ede9c070c6abc84dbd5367e484c988
+          domain: switch
+        then:
+        - action: switch.turn_off
+          metadata: {}
+          data: {}
+          target:
+            entity_id: switch.cumulus
+        - wait_for_trigger:
+          - trigger: numeric_state
+            entity_id:
+            - sensor.consommation_reseau
+            for:
+              hours: 0
+              minutes: 1
+              seconds: 0
+            below: 6000
+        - action: switch.turn_on
+          metadata: {}
+          data: {}
+          target:
+            entity_id: switch.cumulus
+        alias: Eteindre/Rallumer Cumulus
   mode: single
 - id: '1747392460384'
   alias: Alerte Batterie
@@ -4062,7 +4187,7 @@
     - action: input_number.set_value
       metadata: {}
       data:
-        value: '{{ states(''sensor.frigo_wh'') | float(0) }}'
+        value: '{{ states(''sensor.frigo_kwh'') | float(0) }}'
       target:
         entity_id: input_number.debut_frigo
     - action: input_datetime.set_datetime
@@ -4078,7 +4203,7 @@
     - action: input_number.set_value
       metadata: {}
       data:
-        value: '{{ states(''sensor.frigo_wh'') | float(0) }}'
+        value: '{{ states(''sensor.frigo_kwh'') | float(0) }}'
       target:
         entity_id: input_number.fin_frigo
     - action: input_number.increment
@@ -4687,19 +4812,210 @@
         '
   mode: single
 - *id001
-- id: '1762976591106'
-  alias: Température poêle
+- id: '1763643702020'
+  alias: CPU Mode
   description: ''
-  triggers:
-  - trigger: state
-    entity_id:
-    - input_number.temperature_poele
+  triggers: []
   conditions: []
   actions:
-  - action: climate.set_temperature
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: sensor.cpu_mode
+        state:
+        - Eco
+      sequence:
+      - action: shell_command.pve_cpu_mode
+        data:
+          mode: power
+    - conditions:
+      - condition: state
+        entity_id: sensor.cpu_mode
+        state:
+        - Balanced
+      sequence:
+      - action: shell_command.pve_cpu_mode
+        data:
+          mode: power
+    - conditions:
+      - condition: state
+        entity_id: sensor.cpu_mode
+        state:
+        - Power
+      sequence:
+      - action: shell_command.pve_cpu_mode
+        data:
+          mode: eco
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - action: homeassistant.update_entity
     metadata: {}
     data:
-      temperature: '{{float(states(''input_number.temperature_poele''),20)}}'
-    target:
-      entity_id: climate.poele_talence
+      entity_id:
+      - sensor.cpu_mode
+  mode: single
+- id: '1763645726678'
+  alias: Tirage d'eau
+  description: Analyse des données de consommation d'eau
+  triggers:
+  - trigger: state
+    id: tirage
+    entity_id:
+    - sensor.watermeter_water_usage
+  - trigger: state
+    id: conso
+    entity_id:
+    - sensor.watermeter_total_water_usage
+  conditions:
+  - condition: or
+    conditions:
+    - condition: and
+      conditions:
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: sensor.watermeter_water_usage
+          state:
+          - unavailable
+        - condition: state
+          entity_id: sensor.watermeter_water_usage
+          state:
+          - unknown
+      - condition: trigger
+        id:
+        - tirage
+    - condition: trigger
+      id:
+      - conso
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - tirage
+      sequence:
+      - if:
+        - condition: template
+          value_template: ' {{ states(''sensor.watermeter_water_usage'') | float(0)
+            != 0 }}'
+        then:
+        - wait_for_trigger:
+          - trigger: template
+            value_template: '{{ states(''sensor.watermeter_water_usage'') | float(0)
+              == 0 }}'
+      - variables:
+          volume: '{{ (states(''sensor.watermeter_total_water_usage'') | float) -
+            (trigger.from_state.state | float) }}'
+          duree: '{{ (now().timestamp() - trigger.from_state.last_changed.timestamp())
+            | int }}'
+          temperature_debut: '{{ states(''sensor.sonde_temperature_owon_temperature'')
+            | float(0) }}'
+          temperature_fin: '{{ states(''sensor.sonde_temperature_owon_temperature'')
+            | float }}'
+          delta_temperature: '{{ temperature_fin - temperature_debut }}'
+          debit_moyen: '{{ (volume / duree * 60) if duree > 0 else 0 }}'
+          lave_vaisselle_on: '{{ states(''input_boolean.lave_vaisselle'') == ''on''
+            }}'
+          lave_linge_on: '{{ states(''input_boolean.lave_linge'') == ''on'' }}'
+      - variables:
+          type_tirage: "{% if lave_vaisselle_on %}\n  lave_vaisselle\n{% elif lave_linge_on
+            %}\n  {% if delta_temperature < seuil_delta_temperature and debit_moyen
+            >= seuil_debit_douche_adulte_min %}\n    douche_pendant_lave_linge\n  {%
+            else %}\n    lave_linge\n  {% endif %}\n{% elif delta_temperature < seuil_delta_temperature
+            and debit_moyen < seuil_debit_douche_enfant_max and volume >= seuil_volume_douche_enfant_min
+            %}\n  douche_enfant\n{% elif delta_temperature < seuil_delta_temperature
+            and debit_moyen >= seuil_debit_douche_adulte_min and volume >= seuil_volume_douche_adulte_min
+            %}\n  douche_adulte\n{% elif delta_temperature < seuil_delta_temperature
+            and volume >= seuil_volume_bain_min %}\n  bain\n{% elif volume <= seuil_volume_toilettes_max
+            and duree <= seuil_duree_toilettes_max %}\n  toilettes\n{% else %}\n  inconnu\n{%
+            endif %}"
+      - data:
+          title: 'Nouveau tirage d''eau détecté : {{ type_tirage }}'
+          message: 'Type : {{ type_tirage }} Volume : {{ volume | round(1) }} L Durée
+            : {{ (duree / 60) | round(1) }} min Débit moyen : {{ debit_moyen | round(1)
+            }} L/min ΔT ECS : {{ delta_temperature | round(1) }} °C'
+        action: notify.notify
+    - conditions:
+      - condition: trigger
+        id:
+        - conso
+      sequence:
+      - variables:
+          seuil_fuite_lente_volume: 10
+          seuil_fuite_lente_duree: 3600
+      - condition: and
+        conditions:
+        - condition: numeric_state
+          entity_id: sensor.watermeter_water_usage
+          below: 0.1
+        - condition: template
+          value_template: "{{ (states('sensor.watermeter_total_water_usage') | float)
+            -\n   (trigger.from_state.state | float) >= seuil_fuite_lente_volume }}"
+        - condition: template
+          value_template: '{{ (now().timestamp() - trigger.from_state.last_changed.timestamp())
+            | int >= seuil_fuite_lente_duree }}'
+      - data:
+          title: '⚠️ Alerte : Fuite lente détectée !'
+          message: "Volume perdu : {{ (states('sensor.watermeter_total_water_usage')
+            | float) - (trigger.from_state.state | float) | round(1) }} L Durée :
+            {{ (now().timestamp() - trigger.from_state.last_changed.timestamp()) |
+            int / 60 | round(1) }} min Débit moyen : {{\n  ((states('sensor.watermeter_total_water_usage')
+            | float) - (trigger.from_state.state | float)) /\n  ((now().timestamp()
+            - trigger.from_state.last_changed.timestamp()) | int) * 60 | round(2)\n}}
+            L/min"
+        action: notify.notify
+  mode: restart
+  variables:
+    seuil_debit_min: 0.5
+    seuil_debit_douche_enfant_max: 8
+    seuil_debit_douche_adulte_min: 8
+    seuil_volume_toilettes_max: 10
+    seuil_volume_douche_enfant_min: 20
+    seuil_volume_douche_adulte_min: 40
+    seuil_volume_bain_min: 80
+    seuil_duree_toilettes_max: 60
+    seuil_duree_douche_min: 120
+    seuil_delta_temperature: -2
+    temps_attente_fin_tirage: 30
+- id: '1763758492981'
+  alias: Sêche serviette
+  description: ''
+  triggers:
+  - entity_id:
+    - sensor.em06_b1_power
+    above: 0
+    trigger: numeric_state
+    id: 'on'
+  - entity_id:
+    - sensor.em06_b1_power
+    trigger: numeric_state
+    below: 1
+    id: 'off'
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - 'on'
+      sequence:
+      - metadata: {}
+        data: {}
+        action: input_boolean.turn_on
+        target:
+          entity_id:
+          - input_boolean.seche_serviette
+    - conditions:
+      - condition: trigger
+        id:
+        - 'off'
+      sequence:
+      - metadata: {}
+        data: {}
+        action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.seche_serviette
   mode: single

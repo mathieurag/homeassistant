@@ -71,7 +71,7 @@ liste = [
     'sensor.double_clamp_meter_today_energy_b', 'sensor.em06_a2_this_month_energy',
     'sensor.disjoncteur_3', 'sensor.em06_a1_this_month_energy',
     'sensor.lampe_salon_2', 'sensor.em06_c2_this_month_energy',
-    'sensor.prises_rdc_2', 'sensor.disjoncteur_4', 'sensor.energie_borne', 'sensor.prise_zigbee_3_energy',
+    'sensor.prises_rdc_2', 'sensor.seche_serviette', 'sensor.disjoncteur_4', 'sensor.energie_borne', 'sensor.prise_zigbee_3_energy',
 ]
 energie = [
     'sensor.energie_consommee_j_hg', 'sensor.energie_consommee_j_hp', 'sensor.energie_consommee_j_hc',

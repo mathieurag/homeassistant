@@ -1,0 +1,106 @@
+homeassistant:
+  enabled: true
+  legacy_action_sensor: true
+advanced:
+  network_key:
+    - 69
+    - 54
+    - 81
+    - 21
+    - 251
+    - 148
+    - 169
+    - 121
+    - 84
+    - 160
+    - 40
+    - 28
+    - 45
+    - 154
+    - 56
+    - 52
+  pan_id: 3038
+  ext_pan_id:
+    - 137
+    - 100
+    - 252
+    - 101
+    - 162
+    - 194
+    - 49
+    - 141
+mqtt:
+  server: mqtt://core-mosquitto:1883
+  user: homeassistant
+  password: teiPheiraiquaizaeCh7shaew5iuwaWahdeir0iawaimae3aep5eiwahmoonu5Ai
+frontend:
+  enabled: true
+  port: 8099
+serial:
+  port: >-
+    /dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_fa68f88a56e7ed11af7d646262c613ac-if00-port0
+  adapter: ember
+device_options: {}
+devices:
+  "0xa4c138682a772531":
+    friendly_name: Rain Sensor
+    icon: device_icons/221b4637010e8943e2d5dd911079b5d8.png
+  "0x70b3d52b6005f633":
+    friendly_name: Prise Zigbee 1
+    measurement_poll_interval: 20
+    power_precision: 3
+    current_precision: 3
+    voltage_precision: 3
+    energy_precision: 3
+    icon: device_icons/08a9016bbc0657cf5f581ae9c19c31a5.png
+  "0x3c6a2cfffed4a7de":
+    friendly_name: Sonde température OWON
+    temperature_precision: 2
+    icon: device_icons/873132dd4ffdaedcdafc34cf99dfb2b2.png
+  "0xa4c138d9a41bd98f":
+    friendly_name: Télécommande Zigbee
+    icon: device_icons/cb062f1a14f964f90d6df43799d4bbd3.png
+    homeassistant: {}
+    optimistic: true
+  "0xa4c138da3f8fc34f":
+    friendly_name: Répéteur Zigbee 1
+  "0xa4c138077ed1f7b8":
+    friendly_name: Prise Zigbee 2
+    current_precision: 2
+    voltage_precision: 2
+    power_precision: 2
+    energy_precision: 2
+  "0x70b3d52b60103b94":
+    friendly_name: Prise Zigbee 3
+    measurement_poll_interval: 20
+    state_action: true
+    power_precision: 3
+    energy_precision: 3
+  "0xe0798dfffe42767c":
+    friendly_name: LED Strip 1
+  "0x8c65a3fffed80a9b":
+    friendly_name: Disjoncteur Zigbee 1
+    temperature_precision: ""
+    power_precision: ""
+    current_precision: ""
+    voltage_precision: ""
+    energy_precision: ""
+  "0xa4c13801c27dffff":
+    friendly_name: Prise Zigbee 5
+  "0x6c5cb1fffe1ce3fe":
+    friendly_name: Disjoncteur Zigbee 2
+    voltage_precision: 1
+    power_precision: 1
+    energy_precision: 2
+    temperature_precision: 1
+    current_precision: 1
+    voltage_calibration: ""
+  "0x94b216fffee65577":
+    friendly_name: Disjoncteur Zigbee 3
+availability:
+  enabled: true
+  active:
+    timeout: 30
+  passive:
+    timeout: 120
+version: 4

@@ -4,7 +4,7 @@
     "version": 1,
     "source": "zigbee-herdsman@6.3.2",
     "internal": {
-      "date": "2025-11-12T13:23:09.767Z",
+      "date": "2025-11-21T20:55:42.798Z",
       "ezspVersion": 13
     }
   },
@@ -13,7 +13,7 @@
       "hashed_tclk": "bdea35907f75fe958b311c9d46e16dbc"
     }
   },
-  "coordinator_ieee": "471e52feffa3658c",
+  "coordinator_ieee": "29b009feffe9dc54",
   "pan_id": "bde",
   "extended_pan_id": "8964fc65a2c2318d",
   "nwk_update_id": 0,
@@ -40,7 +40,7 @@
   "network_key": {
     "key": "45365115fb94a97954a0281c2d9a3834",
     "sequence_number": 0,
-    "frame_counter": 19898249
+    "frame_counter": 20716614
   },
   "devices": []
 }

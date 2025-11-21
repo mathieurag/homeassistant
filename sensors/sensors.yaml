@@ -27,7 +27,7 @@ template:
 
       #PELLETS
       - name: "Taux de remplissage pellets"
-        state: "{{ max(min((42 - 5 - float(states('sensor.hauteur_pellets'),0) + 5)/(( 42 - 5) / 100),100),0)| round(0)}}"
+        state: "{{ max(min((42 - 4 - float(states('sensor.hauteur_pellets'),0) + 4)/(( 42 - 4) / 100),100),0)| round(0)}}"
         unique_id: "taux_remplissage_pellets"
         unit_of_measurement: "%"
         state_class: measurement # Exemples de valeurs possibles

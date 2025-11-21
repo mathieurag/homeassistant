@@ -47,7 +47,7 @@ def is_hc_time(ts_local):
     return ts_local.hour >= 0 and ts_local.hour < 6
 
 def is_hg_time(ts_local):
-    # 6h-17h = HG
+    # 15h-17h = HG
     return ts_local.hour >= 15 and ts_local.hour < 17
 
 def get_active_tarif(ts_local):

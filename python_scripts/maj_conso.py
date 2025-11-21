@@ -54,7 +54,7 @@ liste = [
     'sensor.em06_c2_this_month_energy',
     'sensor.prises_rdc_2',
     'sensor.disjoncteur_4',
-    #'sensor.prise_5_energie',
+    'sensor.seche_serviette',
     'sensor.energie_borne',
     'sensor.prise_zigbee_3_energy',
 ]
