@@ -423,14 +423,23 @@
             }
         },
         "number": {
+            "maximum_temperature": {
+                "name": "Максимална температура"
+            },
+            "minimum_temperature": {
+                "name": "Минимална температура"
+            },
+            "sensor_threshold": {
+                "name": "{sensor} праг"
+            },
+            "temperature_calibration": {
+                "name": "Калибриране на температурата"
+            },
             "timer": {
                 "name": "Таймер"
             },
             "timer_x": {
                 "name": "Таймер {x}"
-            },
-            "sensor_threshold": {
-                "name": "{sensor} праг"
             }
         },
         "select": {
@@ -787,7 +796,11 @@
                     "empty": "Празен",
                     "missing": "Липсва",
                     "formatting": "Форматиране",
-                    "unformatted": "Неформатиран"
+                    "unformatted": "Неформатиран",
+                    "maintenance_required": "Изисква се поддръжка",
+                    "dry": "Сухо",
+                    "comfortable": "Удобно",
+                    "damp": "Влажно"
                 }
             },
             "time_remaining": {
@@ -849,6 +862,9 @@
                     "off": "Отворен",
                     "on": "Затворен"
                 }
+            },
+            "do_not_disturb": {
+                "name": "Не безпокойте"
             },
             "evaporator_cleaning": {
                 "name": "Почистване изпарител"

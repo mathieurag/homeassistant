@@ -4,12 +4,11 @@ import logging
 import re
 import copy
 import numbers
-from homeassistant.helpers import entity_platform, service
+from homeassistant.helpers import entity_platform
 from homeassistant.util import dt
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
-    DataUpdateCoordinator,
 )
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (
@@ -37,11 +36,10 @@ from .aguaiot import AguaIOTError
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
-    coordinator: DataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id][
-        "coordinator"
-    ]
-    agua = hass.data[DOMAIN][entry.entry_id]["agua"]
+async def async_setup_entry(hass, config_entry, async_add_entities):
+    coordinator = config_entry.runtime_data
+    agua = coordinator.agua
+
     entities = []
     for device in agua.devices:
         stove = AguaIOTAirDevice(coordinator, device)
@@ -130,9 +128,12 @@ class AguaIOTClimateDevice(CoordinatorEntity, ClimateEntity):
 class AguaIOTAirDevice(AguaIOTClimateDevice):
     """Representation of an Agua IOT heating device."""
 
+    _attr_has_entity_name = True
+    _attr_name = None
+
     def __init__(self, coordinator, device):
         """Initialize the thermostat."""
-        CoordinatorEntity.__init__(self, coordinator)
+        super().__init__(coordinator)
         self._enable_turn_on_off_backwards_compatibility = False
         self._device = device
         self._hybrid = "power_wood_set" in device.registers
@@ -163,11 +164,6 @@ class AguaIOTAirDevice(AguaIOTClimateDevice):
         return self._device.id_device
 
     @property
-    def name(self):
-        """Return the name of the device, if any."""
-        return self._device.name
-
-    @property
     def supported_features(self):
         """Return the list of supported features."""
         features = (
@@ -183,18 +179,27 @@ class AguaIOTAirDevice(AguaIOTClimateDevice):
     @property
     def hvac_action(self):
         """Return the current running hvac operation."""
-        if (
-            str(self._device.get_register_value_description("status_get")).upper()
-            in STATUS_IDLE
-        ):
-            return HVACAction.IDLE
-        elif (
-            self._device.get_register_value("status_get") == 0
-            or str(self._device.get_register_value_description("status_get")).upper()
-            in STATUS_OFF
-        ):
-            return HVACAction.OFF
-        return HVACAction.HEATING
+        if self._device.get_register_value("status_get") is not None:
+            if (
+                str(
+                    self._device.get_register_value_description(
+                        key="status_get", language="ENG"
+                    )
+                ).upper()
+                in STATUS_IDLE
+            ):
+                return HVACAction.IDLE
+            elif (
+                self._device.get_register_value("status_get") == 0
+                or str(
+                    self._device.get_register_value_description(
+                        key="status_get", language="ENG"
+                    )
+                ).upper()
+                in STATUS_OFF
+            ):
+                return HVACAction.OFF
+            return HVACAction.HEATING
 
     @property
     def hvac_modes(self):
@@ -204,13 +209,18 @@ class AguaIOTAirDevice(AguaIOTClimateDevice):
     @property
     def hvac_mode(self):
         """Return hvac operation ie. heat, cool mode."""
-        if (
-            self._device.get_register_value("status_get") == 0
-            or str(self._device.get_register_value_description("status_get")).upper()
-            in STATUS_OFF
-        ):
-            return HVACMode.OFF
-        return HVACMode.HEAT
+        if self._device.get_register_value("status_get") is not None:
+            if (
+                self._device.get_register_value("status_get") == 0
+                or str(
+                    self._device.get_register_value_description(
+                        key="status_get", language="ENG"
+                    )
+                ).upper()
+                in STATUS_OFF
+            ):
+                return HVACMode.OFF
+            return HVACMode.HEAT
 
     async def async_set_hvac_mode(self, hvac_mode):
         """Set new target hvac mode."""
@@ -267,7 +277,10 @@ class AguaIOTAirDevice(AguaIOTClimateDevice):
         """Turn device off."""
         try:
             await self._device.set_register_value_description(
-                "status_managed_get", "OFF"
+                key="status_managed_get",
+                value_description="OFF",
+                value_fallback=170,
+                language="ENG",
             )
             await self.coordinator.async_request_refresh()
         except AguaIOTError as err:
@@ -277,7 +290,10 @@ class AguaIOTAirDevice(AguaIOTClimateDevice):
         """Turn device on."""
         try:
             await self._device.set_register_value_description(
-                "status_managed_get", "ON"
+                key="status_managed_get",
+                value_description="ON",
+                value_fallback=85,
+                language="ENG",
             )
             await self.coordinator.async_request_refresh()
         except AguaIOTError as err:
@@ -307,9 +323,12 @@ class AguaIOTAirDevice(AguaIOTClimateDevice):
     @property
     def current_temperature(self):
         """Return the current temperature."""
-        value = self._device.get_register_value_description(self._temperature_get_key)
-        if isinstance(value, numbers.Number):
-            return value
+        if self._temperature_get_key:
+            value = self._device.get_register_value_description(
+                self._temperature_get_key
+            )
+            if isinstance(value, numbers.Number):
+                return value
 
     @property
     def target_temperature(self):
@@ -356,9 +375,13 @@ class AguaIOTAirDevice(AguaIOTClimateDevice):
 class AguaIOTWaterDevice(AguaIOTClimateDevice):
     """Representation of an Agua IOT heating device."""
 
+    _attr_has_entity_name = True
+    _attr_name = "Water"
+    _attr_icon = "mdi:water"
+
     def __init__(self, coordinator, device, parent):
         """Initialize the thermostat."""
-        CoordinatorEntity.__init__(self, coordinator)
+        super().__init__(coordinator)
         self._enable_turn_on_off_backwards_compatibility = False
         self._device = device
         self._parent = parent
@@ -386,14 +409,6 @@ class AguaIOTWaterDevice(AguaIOTClimateDevice):
     @property
     def unique_id(self):
         return f"{self._device.id_device}_water"
-
-    @property
-    def name(self):
-        return f"{self._device.name} Water"
-
-    @property
-    def icon(self):
-        return "mdi:water"
 
     @property
     def supported_features(self):
@@ -428,7 +443,10 @@ class AguaIOTWaterDevice(AguaIOTClimateDevice):
         """Turn device off."""
         try:
             await self._device.set_register_value_description(
-                "status_managed_get", "OFF"
+                key="status_managed_get",
+                value_description="OFF",
+                value_fallback=170,
+                language="ENG",
             )
             await self.coordinator.async_request_refresh()
         except AguaIOTError as err:
@@ -438,7 +456,10 @@ class AguaIOTWaterDevice(AguaIOTClimateDevice):
         """Turn device on."""
         try:
             await self._device.set_register_value_description(
-                "status_managed_get", "ON"
+                key="status_managed_get",
+                value_description="ON",
+                value_fallback=85,
+                language="ENG",
             )
             await self.coordinator.async_request_refresh()
         except AguaIOTError as err:
@@ -457,9 +478,12 @@ class AguaIOTWaterDevice(AguaIOTClimateDevice):
     @property
     def current_temperature(self):
         """Return the current temperature."""
-        value = self._device.get_register_value_description(self._temperature_get_key)
-        if isinstance(value, numbers.Number):
-            return value
+        if self._temperature_get_key:
+            value = self._device.get_register_value_description(
+                self._temperature_get_key
+            )
+            if isinstance(value, numbers.Number):
+                return value
 
     @property
     def target_temperature(self):
@@ -488,8 +512,12 @@ class AguaIOTWaterDevice(AguaIOTClimateDevice):
 
 
 class AguaIOTCanalizationDevice(AguaIOTClimateDevice):
+    """Canalization device"""
+
+    _attr_has_entity_name = True
+
     def __init__(self, coordinator, device, description, parent):
-        CoordinatorEntity.__init__(self, coordinator)
+        super().__init__(coordinator)
         self._enable_turn_on_off_backwards_compatibility = False
         self._device = device
         self._parent = parent
@@ -508,7 +536,7 @@ class AguaIOTCanalizationDevice(AguaIOTClimateDevice):
 
     @property
     def name(self):
-        return f"{self._device.name} {self.entity_description.name}"
+        return self.entity_description.name
 
     @property
     def supported_features(self):
@@ -583,19 +611,19 @@ class AguaIOTCanalizationDevice(AguaIOTClimateDevice):
 
     @property
     def hvac_action(self):
-        if int(self._device.get_register_value(self.entity_description.key)) > 0:
+        if self._device.get_register_value(self.entity_description.key):
             return self._parent.hvac_action
         return HVACAction.OFF
 
     @property
     def hvac_modes(self):
-        if int(self._device.get_register_value(self.entity_description.key)) > 0:
+        if self._device.get_register_value(self.entity_description.key):
             return [self._parent.hvac_mode]
         return [HVACMode.OFF]
 
     @property
     def hvac_mode(self):
-        if int(self._device.get_register_value(self.entity_description.key)) > 0:
+        if self._device.get_register_value(self.entity_description.key):
             return self._parent.hvac_mode
         return HVACMode.OFF
 

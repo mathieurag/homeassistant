@@ -423,14 +423,23 @@
             }
         },
         "number": {
+            "maximum_temperature": {
+                "name": "Maximum temperature"
+            },
+            "minimum_temperature": {
+                "name": "Minimum temperature"
+            },
+            "sensor_threshold": {
+                "name": "{sensor} threshold"
+            },
+            "temperature_calibration": {
+                "name": "Temperature calibration"
+            },
             "timer": {
                 "name": "Timer"
             },
             "timer_x": {
                 "name": "Timer {x}"
-            },
-            "sensor_threshold": {
-                "name": "{sensor} threshold"
             }
         },
         "select": {
@@ -786,7 +795,11 @@
                     "empty": "Empty",
                     "missing": "Missing",
                     "formatting": "Formatting",
-                    "unformatted": "Unformatted"
+                    "unformatted": "Unformatted",
+                    "maintenance_required": "Maintenance required",
+                    "dry": "Dry",
+                    "comfortable": "Comfortable",
+                    "damp": "Damp"
                 }
             },
             "time_remaining": {
@@ -848,6 +861,9 @@
                     "off": "Open",
                     "on": "Closed"
                 }
+            },
+            "do_not_disturb": {
+                "name": "Do not disturb"
             },
             "evaporator_cleaning": {
                 "name": "Evaporator cleaning"

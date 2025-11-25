@@ -105,3 +105,5 @@ logger:
     homeassistant.components.recorder.db_schema: error
 
 my:
+
+a_file_logger:

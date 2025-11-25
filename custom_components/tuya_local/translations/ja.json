@@ -423,14 +423,23 @@
             }
         },
         "number": {
+            "maximum_temperature": {
+                "name": "最大温度"
+            },
+            "minimum_temperature": {
+                "name": "最小温度"
+            },
+            "sensor_threshold": {
+                "name": "しきい値{sensor}"
+            },
+            "temperature_calibration": {
+                "name": "温度補正"
+            },
             "timer": {
                 "name": "タイマー"
             },
             "timer_x": {
                 "name": "タイマー{x}"
-            },
-            "sensor_threshold": {
-                "name": "しきい値{sensor}"
             }
         },
         "select": {
@@ -786,7 +795,11 @@
                     "empty": "空",
                     "missing": "欠落",
                     "formatting": "フォーマット中",
-                    "unformatted": "未フォーマット"
+                    "unformatted": "未フォーマット",
+                    "maintenance_required": "メンテナンス必要",
+                    "dry": "乾燥",
+                    "comfortable": "快適",
+                    "damp": "湿気"
                 }
             },
             "time_remaining": {
@@ -848,6 +861,9 @@
                     "off": "トリップ",
                     "on": "リセット"
                 }
+            },
+            "do_not_disturb": {
+                "name": "邪魔しないでください"
             },
             "evaporator_cleaning": {
                 "name": "エバポレーターの掃除"

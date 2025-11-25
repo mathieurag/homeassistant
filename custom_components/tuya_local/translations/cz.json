@@ -423,14 +423,23 @@
             }
         },
         "number": {
+            "maximum_temperature": {
+                "name": "Maximální teplota"
+            },
+            "minimum_temperature": {
+                "name": "Minimální teplota"
+            },
+            "sensor_threshold": {
+                "name": "{sensor} práh"
+            },
+            "temperature_calibration": {
+                "name": "Kalibrace teploty"
+            },
             "timer": {
                 "name": "Časovač"
             },
             "timer_x": {
                 "name": "Časovač {x}"
-            },
-            "sensor_threshold": {
-                "name": "{sensor} práh"
             }
         },
         "select": {
@@ -786,7 +795,11 @@
                     "empty": "Prázdný",
                     "missing": "Chybí",
                     "formatting": "Formátování",
-                    "unformatted": "Neformátováno"
+                    "unformatted": "Neformátováno",
+                    "maintenance_required": "Vyžadována údržba",
+                    "dry": "Suchý",
+                    "comfortable": "Pohodlný",
+                    "damp": "Vlhost"
                 }
             },
             "time_remaining": {
@@ -848,6 +861,9 @@
                     "off": "Otevřeno",
                     "on": "Zavřeno"
                 }
+            },
+            "do_not_disturb": {
+                "name": "Nerušit"
             },
             "evaporator_cleaning": {
                 "name": "Čištění výparníku"

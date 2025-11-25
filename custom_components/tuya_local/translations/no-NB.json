@@ -424,14 +424,23 @@
             }
         },
         "number": {
+            "maximum_temperature": {
+                "name": "Maksimumstemperatur"
+            },
+            "minimum_temperature": {
+                "name": "Minimumstemperatur"
+            },
+            "sensor_threshold": {
+                "name": "{sensor} terskel"
+            },
+            "temperature_calibration": {
+                "name": "Temperaturkalibrering"
+            },
             "timer": {
                 "name": "Timer"
             },
             "timer_x": {
                 "name": "Timer {x}"
-            },
-            "sensor_threshold": {
-                "name": "{sensor} terskel"
             }
         },
         "select": {
@@ -787,7 +796,11 @@
                     "empty": "Tom",
                     "missing": "Manglende",
                     "formatting": "Formatering",
-                    "unformatted": "Uformaterte"
+                    "unformatted": "Uformaterte",
+                    "maintenance_required": "Vedlikehold kreves",
+                    "dry": "Tørr",
+                    "comfortable": "Komfortabel",
+                    "damp": "Fuktig"
                 }
             },
             "time_remaining": {
@@ -849,6 +862,9 @@
                     "off": "Åpen",
                     "on": "Lukket"
                 }
+            },
+            "do_not_disturb": {
+                "name": "Ikke forstyrr"
             },
             "evaporator_cleaning": {
                 "name": "Rengjøring av fordamper"

@@ -423,14 +423,23 @@
             }
         },
         "number": {
+            "maximum_temperature": {
+                "name": "Μέγιστη θερμοκρασία"
+            },
+            "minimum_temperature": {
+                "name": "Ελάχιστη θερμοκρασία"
+            },
+            "sensor_threshold": {
+                "name": "Κατώφλι {sensor}"
+            },
+            "temperature_calibration": {
+                "name": "Βαθμονόμηση θερμοκρασίας"
+            },
             "timer": {
                 "name": "Χρονοδιακόπτης"
             },
             "timer_x": {
                 "name": "Χρονοδιακόπτης {x}"
-            },
-            "sensor_threshold": {
-                "name": "Κατώφλι {sensor}"
             }
         },
         "select": {
@@ -786,7 +795,11 @@
                     "empty": "Άδειο",
                     "missing": "Ελλιπές",
                     "formatting": "Μορφοποίηση",
-                    "unformatted": "Μη μορφοποιημένο"
+                    "unformatted": "Μη μορφοποιημένο",
+                    "maintenance_required": "Απαιτείται συντήρηση",
+                    "dry": "Στεγνό",
+                    "comfortable": "Άνετο",
+                    "damp": "Υγρό"
                 }
             },
             "time_remaining": {
@@ -848,6 +861,9 @@
                     "off": "Ανοιχτός",
                     "on": "Κλειστός"
                 }
+            },
+            "do_not_disturb": {
+                "name": "Μην ενοχλείτε"
             },
             "evaporator_cleaning": {
                 "name": "Καθαρισμός αποστακτήρα"

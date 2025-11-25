@@ -1,5 +1,6 @@
 shell_command:
   database: python3 /config/python_scripts/database.py
+  shelly_discovery: python3 /config/python_scripts/shelly_discovery_gen2.py
   script: python3 /config/python_scripts/script.py
   supp_ecojoko: python3 /config/python_scripts/suppression_ecojoko.py
   maj_bdpv: python3 /config/python_scripts/maj_bdpv.py
@@ -14,7 +15,6 @@ shell_command:
   simulation_pv: "python3 /config/python_scripts/simulation_pv.py"
   suivi_pv: "python3 /config/python_scripts/suivi_pv.py"
   comparaison_pv: "python3 /config/python_scripts/comparaison_pv.py"
-  refoss: "python3 /config/packages/refoss_ha/script.py"
   taux_hc: "python3 /config/python_scripts/taux_hc.py"
   conso: "python3 /config/python_scripts/conso.py"
   estar: "python3 /config/python_scripts/estar.py"

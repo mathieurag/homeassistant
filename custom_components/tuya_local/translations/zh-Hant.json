@@ -424,14 +424,23 @@
             }
         },
         "number": {
+            "maximum_temperature": {
+                "name": "最高溫度"
+            },
+            "minimum_temperature": {
+                "name": "最低溫度"
+            },
+            "sensor_threshold": {
+                "name": "{sensor}閾值"
+            },
+            "temperature_calibration": {
+                "name": "溫度校準"
+            },
             "timer": {
                 "name": "計時器"
             },
             "timer_x": {
                 "name": "計時器{x}"
-            },
-            "sensor_threshold": {
-                "name": "{sensor}閾值"
             }
         },
         "select": {
@@ -787,7 +796,11 @@
                     "empty": "空",
                     "missing": "缺失",
                     "formatting": "格式化中",
-                    "unformatted": "未格式化"
+                    "unformatted": "未格式化",
+                    "maintenance_required": "需要維護",
+                    "dry": "乾燥",
+                    "comfortable": "舒適",
+                    "damp": "潮濕"
                 }
             },
             "time_remaining": {
@@ -849,6 +862,9 @@
                     "on": "合閘",
                     "off": "跳閘"
                 }
+            },
+            "do_not_disturb": {
+                "name": "請勿打擾"
             },
             "evaporator_cleaning": {
                 "name": "蒸發器清潔"

@@ -423,14 +423,23 @@
             }
         },
         "number": {
+            "maximum_temperature": {
+                "name": "Maximal temperatur"
+            },
+            "minimum_temperature": {
+                "name": "Minimal temperatur"
+            },
+            "sensor_threshold": {
+                "name": "{sensor} tröskel"
+            },
+            "temperature_calibration": {
+                "name": "Temperaturkalibrering"
+            },
             "timer": {
                 "name": "Timer"
             },
             "timer_x": {
                 "name": "Timer {x}"
-            },
-            "sensor_threshold": {
-                "name": "{sensor} tröskel"
             }
         },
         "select": {
@@ -786,7 +795,11 @@
                     "empty": "Tom",
                     "missing": "Saknas",
                     "formatting": "Formaterar",
-                    "unformatted": "Oformaterad"
+                    "unformatted": "Oformaterad",
+                    "maintenance_required": "Underhåll krävs",
+                    "dry": "Torr",
+                    "comfortable": "Bekväm",
+                    "damp": "Fuktig"                    
                 }
             },
             "time_remaining": {
@@ -848,6 +861,9 @@
                     "off": "Öppen",
                     "on": "Stängd"
                 }
+            },
+            "do_not_disturb": {
+                "name": "Stör ej"
             },
             "evaporator_cleaning": {
                 "name": "Förångarrengöring"

@@ -423,14 +423,23 @@
             }
         },
         "number": {
+            "maximum_temperature": {
+                "name": "Maximale Temperatur"
+            },
+            "minimum_temperature": {
+                "name": "Minimale Temperatur"
+            },
+            "sensor_threshold": {
+                "name": "{sensor} Schwellenwert"
+            },
+            "temperature_calibration": {
+                "name": "Temperaturkalibrierung"
+            },
             "timer": {
                 "name": "Timer"
             },
             "timer_x": {
                 "name": "Timer {x}"
-            },
-            "sensor_threshold": {
-                "name": "{sensor} Schwellenwert"
             }
         },
         "select": {
@@ -787,7 +796,11 @@
                     "empty": "Leer",
                     "missing": "Fehlend",
                     "formatting": "Formatieren",
-                    "unformatted": "Unformatiert"
+                    "unformatted": "Unformatiert",
+                    "maintenance_required": "Wartung erforderlich",
+                    "dry": "Trocken",
+                    "comfortable": "Bequem",
+                    "damp": "Feucht"
                 }
             },
             "time_remaining": {
@@ -849,6 +862,9 @@
                     "off": "Offen",
                     "on": "Geschlossen"
                 }
+            },
+            "do_not_disturb": {
+                "name": "Nicht stören"
             },
             "evaporator_cleaning": {
                 "name": "Verdampferreinigung"

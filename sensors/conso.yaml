@@ -101,6 +101,7 @@ template:
           + float(states('sensor.prise_lave_linge_local_puissance'),0)
           + float(states('sensor.bidirectional_energy_meter_power_a'),0)
           + float(states('sensor.bidirectional_energy_meter_power_b'),0)
+          + float(states('sensor.em06_b1_power'),0)
           ) | round(0) }}"
 
       - name: "Conso mini"
@@ -171,9 +172,12 @@ template:
           + float(states('sensor.prise_lave_vaisselle_local_puissance'),0)
           + float(states('sensor.prise_tv_local_puissance'),0)
           + float(states('sensor.prise_5_local_puissance'),0)
+          + float(states('sensor.prise_6_puissance'),0)
           + float(states('sensor.prise_zigbee_1_power'),0)
           + float(states('sensor.prise_zigbee_2_power'),0)
           + float(states('sensor.prise_zigbee_3_power'),0)
+          + float(states('sensor.prise_zigbee_4_power'),0)
+          + float(states('sensor.prise_zigbee_5_power'),0)
           + float(states('sensor.mesureur_n1_local_puissance_a'),0)
           + float(states('sensor.mesureur_n1_local_puissance_b'),0)
           + float(states('sensor.bidirectional_energy_meter_power_a'),0)

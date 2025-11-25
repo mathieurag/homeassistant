@@ -457,7 +457,11 @@
                     "empty": "Buit",
                     "missing": "Falta",
                     "formatting": "Formatant",
-                    "unformatted": "No formatat"
+                    "unformatted": "No formatat",
+                    "maintenance_required": "Manteniment necessari",
+                    "dry": "Sec",
+                    "comfortable": "Còmode",
+                    "damp": "Humit"
                 }
             },
             "time_remaining": {
@@ -564,14 +568,23 @@
             }
         },
         "number": {
+            "maximum_temperature": {
+                "name": "Temperatura màxima"
+            },
+            "minimum_temperature": {
+                "name": "Temperatura mínima"
+            },
+            "sensor_threshold": {
+                "name": "{sensor} llindar"
+            },
+            "temperature_calibration": {
+                "name": "Calibració de temperatura"
+            },
             "timer": {
                 "name": "Temporitzador"
             },
             "timer_x": {
                 "name": "Temporitzador {x}"
-            },
-            "sensor_threshold": {
-                "name": "{sensor} llindar"
             }
         },
         "select": {
@@ -848,6 +861,9 @@
                     "on": "Trencat",
                     "off": "Normal"
                 }
+            },
+            "do_not_disturb": {
+                "name": "No molestar"
             },
             "evaporator_cleaning": {
                 "name": "Neteja de l'evaporador"

@@ -1,3 +1,4 @@
+
 {
     "title": "Tuya Local",
     "config": {
@@ -423,14 +424,23 @@
             }
         },
         "number": {
+            "maximum_temperature": {
+                "name": "Suhu maksimum"
+            },
+            "minimum_temperature": {
+                "name": "Suhu minimum"
+            },
+            "sensor_threshold": {
+                "name": "Ambang {sensor}"
+            },
+            "temperature_calibration": {
+                "name": "Kalibrasi suhu"
+            },
             "timer": {
                 "name": "Pengatur waktu"
             },
             "timer_x": {
                 "name": "Pengatur waktu {x}"
-            },
-            "sensor_threshold": {
-                "name": "Ambang {sensor}"
             }
         },
         "select": {
@@ -786,7 +796,11 @@
                     "empty": "Kosong",
                     "missing": "Hilang",
                     "formatting": "Memformat",
-                    "unformatted": "Belum diformat"
+                    "unformatted": "Belum diformat",
+                    "maintenance_required": "Perawatan diperlukan",
+                    "dry": "Kering",
+                    "comfortable": "Nyaman",
+                    "damp": "Lembab"
                 }
             },
             "time_remaining": {
@@ -848,6 +862,9 @@
                     "on": "Tutup",
                     "off": "Buka"
                 }
+            },
+            "do_not_disturb": {
+                "name": "Jangan ganggu"
             },
             "evaporator_cleaning": {
                 "name": "Pembersihan evaporator"

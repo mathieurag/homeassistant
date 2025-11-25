@@ -423,14 +423,23 @@
             }
         },
         "number": {
+            "maximum_temperature": {
+                "name": "Temperatură maximă"
+            },
+            "minimum_temperature": {
+                "name": "Temperatură minimă"
+            },
+            "sensor_threshold": {
+                "name": "Prag {sensor}"
+            },
+            "temperature_calibration": {
+                "name": "Calibrare temperatură"
+            },
             "timer": {
                 "name": "Temporizator"
             },
             "timer_x": {
                 "name": "Temporizator {x}"
-            },
-            "sensor_threshold": {
-                "name": "Prag {sensor}"
             }
         },
         "select": {
@@ -786,7 +795,11 @@
                     "empty": "Gol",
                     "missing": "Lipsă",
                     "formatting": "Formatare",
-                    "unformatted": "Neformatat"
+                    "unformatted": "Neformatat",
+                    "maintenance_required": "Necesită întreținere",
+                    "dry": "Uscat",
+                    "comfortable": "Confortabil",
+                    "damp": "Umed"
                 }
             },
             "time_remaining": {
@@ -848,6 +861,9 @@
                     "off": "Deschis",
                     "on": "Închis"
                 }
+            },
+            "do_not_disturb": {
+                "name": "Nu deranjați"
             },
             "evaporator_cleaning": {
                 "name": "Curățare evaporator"

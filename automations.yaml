@@ -2358,10 +2358,8 @@
   - topic: shellies_discovery/rpc
     trigger: mqtt
   actions:
-  - action: python_script.shellies_discovery_gen2
-    data:
-      id: '{{ trigger.payload_json.src }}'
-      device_config: '{{ trigger.payload_json.result }}'
+  - action: shell_command.shelly_discovery
+    data: {}
   - condition: template
     value_template: '{{ ''mqtt'' in trigger.payload_json.result }}'
   - data:
@@ -2931,11 +2929,6 @@
         id:
         - batterie
       sequence:
-      - action: input_boolean.turn_off
-        metadata: {}
-        data: {}
-        target:
-          entity_id: input_boolean.charge_batterie_pilotee
       - action: automation.trigger
         metadata: {}
         data:
@@ -3060,7 +3053,7 @@
   mode: single
 - id: '1744807759043'
   alias: Gestion batterie autonome
-  description: Pilotage direct batterie avec compensation et gestion SOC
+  description: Pilotage direct batterie avec compensation, gestion SOC et charge forcée
   triggers:
   - entity_id: sensor.em06_02_b1_power
     id: mise_a_jour_reseau
@@ -3073,7 +3066,15 @@
     to: 'off'
     id: desactivation_gestion
     trigger: state
-  conditions: []
+  conditions:
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: input_boolean.gestion_batterie_autonome
+      state: 'on'
+    - condition: trigger
+      id:
+      - desactivation_gestion
   actions:
   - variables:
       compensation_pertes: 5
@@ -3081,31 +3082,37 @@
       puissance_reseau: '{{ states(''sensor.em06_02_b1_power'') | float(0) }}'
       puissance_batterie: '{{ states(''sensor.em06_02_b2_power'') | float(0) + compensation_pertes
         }}'
-      switch_fan: '{{ states(''switch.prise_zigbee_5'') | float(0) }}'
-      conso_fan: '{{ states(''sensor.prise_zigbee_5_power'') | float(0) }}'
-      consigne_batterie: '{{ puissance_reseau + puissance_batterie}}
+      consigne_batterie: '{{ puissance_reseau + puissance_batterie }}'
+      puissance_charge_max: '{{ states(''number.esphome_web_a92940_marstek_max_charge_power'')
+        | float(2500) }}
 
         '
-      puissance_charge_max: '{{ states(''number.esphome_web_a92940_marstek_max_charge_power'')
-        | float(0) }}'
       puissance_decharge_max: '{{ states(''number.esphome_web_a92940_marstek_max_discharge_power'')
-        | float(0) }}'
+        | float(2500) }}
+
+        '
       soc_batterie: '{{ states(''sensor.esphome_web_a92940_marstek_battery_state_of_charge'')
-        | float(0) }}'
+        | float(12) }}
+
+        '
       soc_max: '{{ states(''number.esphome_web_a92940_marstek_charging_cutoff_capacity'')
-        | float(0) }}'
+        | float(100) }}
+
+        '
       soc_min: '{{ states(''number.esphome_web_a92940_marstek_discharging_cutoff_capacity'')
-        | float(0) }}'
+        | float(12) }}
+
+        '
       voltage: '{{ states(''sensor.esphome_web_a92940_marstek_battery_voltage_average'')
-        | float(0) }}'
+        | float(50) }}
+
+        '
       correction_consigne_decharge: 0
       correction_consigne_charge: 0
-    alias: Calcul des variables
   - alias: Choix entre désactivation et charge/décharge
     choose:
     - conditions:
-      - alias: SOC MIN/MAX ou désactivation
-        condition: or
+      - condition: or
         conditions:
         - condition: trigger
           id:
@@ -3131,7 +3138,6 @@
         data:
           value: '0'
         action: number.set_value
-        alias: Charge/Discharge à 0
       - alias: Mode Disable
         if:
         - condition: not
@@ -3139,15 +3145,103 @@
           - condition: state
             entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
             state: disable
-          alias: Mode Disable
         then:
         - target:
             entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
           data:
             option: disable
           action: select.select_option
-          alias: Mode Disable
-      alias: Désactivation
+      alias: Désactivation Gestion
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.charge_forcee_batterie
+        state: 'on'
+      sequence:
+      - variables:
+          consommation_reseau: '{{ states(''sensor.consommation_reseau'') | float(0)
+            }}'
+          puissance_charge_actuelle_batterie: '{{ states(''number.esphome_web_a92940_marstek_forcible_charge_power'')
+            | float(2500) }}'
+          consommation_reseau_hors_charge: '{{ [consommation_reseau - puissance_charge_actuelle_batterie,
+            0] | max | int }}
+
+            '
+          puissance_max_autorisee: '{{ [9000 - consommation_reseau_hors_charge, 0]
+            | max | int }}
+
+            '
+          puissance_charge_final: "{% if puissance_charge_max > puissance_max_autorisee
+            %}\n  {{ puissance_max_autorisee }}\n{% else %}\n  {{ puissance_charge_max
+            }}\n{% endif %}\n"
+      - if:
+        - condition: template
+          value_template: '{{ puissance_charge_final > 0 }}'
+          alias: Charge > 0W
+        then:
+        - alias: Activer le mode charge
+          if:
+          - condition: not
+            conditions:
+            - condition: state
+              entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
+              state: charge
+          then:
+          - target:
+              entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
+            data:
+              option: charge
+            action: select.select_option
+        - alias: Appliquer la puissance de charge
+          target:
+            entity_id: number.esphome_web_a92940_marstek_forcible_charge_power
+          data:
+            value: '{{ puissance_charge_final }}'
+          action: number.set_value
+        - alias: Désactiver la décharge
+          target:
+            entity_id: number.esphome_web_a92940_marstek_forcible_discharge_power
+          data:
+            value: 0
+          action: number.set_value
+        - alias: Activer le contrôle RS485 si nécessaire
+          if:
+          - condition: state
+            entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
+            state: disable
+          then:
+          - target:
+              entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
+            data:
+              option: enable
+            action: select.select_option
+        - alias: Log pour débogage
+          data:
+            message: 'Charge forcée activée - Consommation réseau: {{ consommation_reseau
+              }}W, Charge actuelle batterie: {{ puissance_charge_actuelle_batterie
+              }}W, Consommation hors charge: {{ consommation_reseau_hors_charge }}W,
+              Max autorisé: {{ puissance_max_autorisee }}W, Puissance finale: {{ puissance_charge_final
+              }}W
+
+              '
+            level: info
+          action: system_log.write
+          enabled: false
+        else:
+        - alias: Désactiver la charge forcée si impossible
+          target:
+            entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
+          data:
+            option: stop
+          action: select.select_option
+        - alias: Notification si charge impossible
+          data:
+            message: 'Charge forcée impossible : consommation réseau trop élevée ({{
+              consommation_reseau }}W).
+
+              '
+            title: ⚠️ Charge forcée désactivée
+          action: notify.notify
+      alias: Charge forcée
     - conditions:
       - condition: state
         entity_id: input_boolean.gestion_batterie_autonome
@@ -3158,9 +3252,8 @@
           - condition: template
             value_template: '{{ consigne_batterie >= -10 and consigne_batterie <=
               10 }}'
-            alias: Zone morte (+/- 10W)
           sequence:
-          - alias: Charge à 0
+          - alias: Charge/Décharge à 0 (zone morte)
             target:
               entity_id:
               - number.esphome_web_a92940_marstek_forcible_charge_power
@@ -3168,7 +3261,6 @@
             data:
               value: '0'
             action: number.set_value
-            enabled: false
           - alias: Mode Stop
             if:
             - condition: not
@@ -3182,7 +3274,6 @@
               data:
                 option: stop
               action: select.select_option
-            enabled: false
           - if:
             - condition: state
               entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
@@ -3193,24 +3284,20 @@
               data:
                 option: enable
               action: select.select_option
-            alias: Mode Enable
-            enabled: false
-          alias: Zone morte (+/- 10W)
         - conditions:
           - condition: template
             value_template: '{{ consigne_batterie > 10 }}'
-            alias: Discharge > 10W
           sequence:
-          - alias: Comparaison SOC MIN
+          - alias: Décharge
             choose:
             - conditions:
-              - alias: SOC = MIN or Tension < 48V
-                condition: template
+              - condition: template
                 value_template: '{{ soc_batterie <= soc_min or float(states(''sensor.soc_estime_batterie''),10)==0
-                  or float(states(''sensor.esphome_web_a92940_marstek_battery_voltage_average''),0)<48}}'
-                enabled: true
+                  or float(states(''sensor.esphome_web_a92940_marstek_battery_voltage_average''),0)<48}}
+
+                  '
               sequence:
-              - alias: Mode Stop
+              - alias: Mode Stop (SOC min ou tension basse)
                 if:
                 - condition: not
                   conditions:
@@ -3230,7 +3317,6 @@
                 data:
                   value: '0'
                 action: number.set_value
-                alias: Charge/Discharge à 0
               - if:
                 - condition: state
                   entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
@@ -3241,25 +3327,9 @@
                   data:
                     option: enable
                   action: select.select_option
-                alias: Mode Enable
-              - alias: Mode Manuel
-                if:
-                - condition: not
-                  conditions:
-                  - condition: state
-                    entity_id: select.esphome_web_a92940_marstek_user_work_mode
-                    state: anti-feed
-                then:
-                - data:
-                    option: anti-feed
-                  action: select.select_option
-                  target:
-                    entity_id: select.esphome_web_a92940_marstek_user_work_mode
             - conditions:
-              - alias: SOC > MIN
-                condition: template
+              - condition: template
                 value_template: '{{ soc_batterie >= soc_min}}'
-                enabled: true
               sequence:
               - if:
                 - condition: not
@@ -3267,19 +3337,14 @@
                   - condition: state
                     entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
                     state: discharge
-                  alias: Mode Discharge
                 then:
                 - target:
                     entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
                   data:
                     option: discharge
                   action: select.select_option
-                  alias: Mode Discharge
-                alias: Mode Discharge
-              - alias: Charge à 0
-                target:
-                  entity_id:
-                  - number.esphome_web_a92940_marstek_forcible_charge_power
+              - target:
+                  entity_id: number.esphome_web_a92940_marstek_forcible_charge_power
                 data:
                   value: '0'
                 action: number.set_value
@@ -3292,7 +3357,6 @@
                     | int }}\n{% else %}\n  {{ [besoin, 0] | max | int }}\n{% endif
                     %}\n"
                 action: number.set_value
-                alias: Valeur de Discharge
               - if:
                 - condition: state
                   entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
@@ -3303,22 +3367,17 @@
                   data:
                     option: enable
                   action: select.select_option
-                alias: Mode Enable
-          alias: Décharge
         - conditions:
           - condition: template
             value_template: '{{ consigne_batterie < -10 }}'
-            alias: Charge < -10W
           sequence:
-          - alias: Comparaison SOC MAX
+          - alias: Charge
             choose:
             - conditions:
-              - alias: SOC = MAX
-                condition: template
+              - condition: template
                 value_template: '{{ soc_batterie >= soc_max}}'
-                enabled: true
               sequence:
-              - alias: Mode Stop
+              - alias: Mode Stop (SOC max)
                 if:
                 - condition: not
                   conditions:
@@ -3338,37 +3397,16 @@
                 data:
                   value: '0'
                 action: number.set_value
-                alias: Charge/Discharge à 0
-              - alias: Mode Disable
-                if:
-                - condition: state
-                  entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
-                  state: enable
-                then:
-                - target:
-                    entity_id: select.esphome_web_a92940_marstek_rs485_control_mode
-                  data:
-                    option: disable
-                  action: select.select_option
-              - device_id: cad5cf1c1acf9585f1a244da05cf1cac
-                domain: select
-                entity_id: 29d02385bfa6a107834f0b8cab20c349
-                type: select_option
-                option: anti-feed
             - conditions:
-              - alias: SOC < MAX
-                condition: template
+              - condition: template
                 value_template: '{{ soc_batterie < soc_max}}'
-                enabled: true
               sequence:
-              - alias: Mode charge
-                if:
+              - if:
                 - condition: not
                   conditions:
                   - condition: state
                     entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
                     state: charge
-                  alias: Mode Charge
                 then:
                 - target:
                     entity_id: select.esphome_web_a92940_marstek_forcible_charge_discharge
@@ -3380,9 +3418,7 @@
                 data:
                   value: '0'
                 action: number.set_value
-                alias: Discharge à 0
-              - alias: Valeur de charge
-                target:
+              - target:
                   entity_id: number.esphome_web_a92940_marstek_forcible_charge_power
                 data:
                   value: "{% if voltage > 55.5 %}\n  {% set puissance_charge_max =
@@ -3402,9 +3438,7 @@
                   data:
                     option: enable
                   action: select.select_option
-                alias: Mode Enable
-          alias: Charge
-      alias: Charge/Décharge
+      alias: Gestion Autonome
   mode: single
 - id: '1744819508007'
   alias: Batterie pleine/vide
@@ -3414,13 +3448,18 @@
       | float(0) >=\n   states('number.esphome_web_a92940_marstek_charging_cutoff_capacity')
       | float(1) and is_state('input_boolean.batterie_notification_envoyee','off')
       and states('sensor.esphome_web_a92940_marstek_battery_state_of_charge') != 'unavailable'
-      and states('sensor.esphome_web_a92940_marstek_battery_state_of_charge') != 'unknown'}}\n"
+      and states('sensor.esphome_web_a92940_marstek_battery_state_of_charge') != 'unknown'
+      and states('number.esphome_web_a92940_marstek_charging_cutoff_capacity') !=
+      'unavailable' and states('number.esphome_web_a92940_marstek_charging_cutoff_capacity')
+      != 'unknown'}}\n"
     trigger: template
     id: plein
   - value_template: "{{ states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
       | float(1) <=\n   states('number.esphome_web_a92940_marstek_discharging_cutoff_capacity')
       | float(0) and states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
       != 'unavailable' and states('sensor.esphome_web_a92940_marstek_battery_state_of_charge')
+      != 'unknown' and states('number.esphome_web_a92940_marstek_discharging_cutoff_capacity')
+      != 'unavailable' and states('number.esphome_web_a92940_marstek_discharging_cutoff_capacity')
       != 'unknown'}}\n"
     trigger: template
     id: vide
@@ -3685,6 +3724,7 @@
         metadata: {}
         data:
           message: ⚡ Consommation réseau > 8,5kW depuis 1 min !
+        enabled: false
       - if:
         - condition: or
           conditions:
@@ -3701,6 +3741,7 @@
             hvac_mode: 'off'
           target:
             entity_id: climate.clim_entree
+        enabled: false
     - conditions:
       - condition: trigger
         id:
@@ -4280,6 +4321,11 @@
   actions:
   - action: shell_command.estar
     data: {}
+  - action: homeassistant.update_entity
+    metadata: {}
+    data:
+      entity_id:
+      - sensor.prise_5_local_puissance
   mode: single
 - id: '1756561377881'
   alias: Alerte UPS
@@ -4457,7 +4503,7 @@
     at: '15:00:00'
     id: 'On'
   - trigger: time
-    at: '16:55:00'
+    at: '16:58:00'
     id: 'Off'
   conditions:
   - condition: state
@@ -4505,22 +4551,15 @@
           entity_id: c8d050f513f09480235a70a8a490c65b
           type: set_hvac_mode
           hvac_mode: 'off'
-        - action: input_boolean.turn_on
-          metadata: {}
-          data: {}
-          target:
-            entity_id: input_boolean.gestion_batterie_autonome
-        else:
-        - action: input_boolean.turn_on
-          metadata: {}
-          data: {}
-          target:
-            entity_id: input_boolean.gestion_batterie_autonome
-      - delay:
-          hours: 0
-          minutes: 5
-          seconds: 0
-          milliseconds: 0
+      - wait_for_trigger:
+        - trigger: time
+          at: '17:00:00'
+      - action: input_boolean.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id:
+          - input_boolean.charge_forcee_batterie
       - action: select.select_option
         metadata: {}
         data:
@@ -4533,25 +4572,45 @@
         id:
         - 'On'
       sequence:
-      - if:
-        - condition: or
+      - action: select.select_option
+        metadata: {}
+        data:
+          option: HG
+        target:
+          entity_id: select.energie_consommee_j
+        alias: Passage en HG
+      - action: input_number.set_value
+        metadata: {}
+        data:
+          value: '{{ float(states(''sensor.energie_consommee_j_hg''), 0) | round(2)
+            }}'
+        target:
+          entity_id: input_number.energie_hg_j_1
+      - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.charge_forcee_batterie
+      - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id:
+          - input_boolean.gestion_batterie_autonome
+      - alias: Semaine et présent
+        if:
+        - condition: and
           conditions:
-          - condition: state
-            entity_id: input_boolean.mode_absent
-            state: 'on'
           - condition: time
             weekday:
-            - wed
-            - sat
-            - sun
+            - mon
+            - tue
+            - thu
+            - fri
+          - condition: state
+            entity_id: input_boolean.mode_absent
+            state: 'off'
         then:
-        - action: automation.trigger
-          metadata: {}
-          data:
-            skip_condition: true
-          target:
-            entity_id: automation.charge_forcee_batterie
-        else:
         - device_id: d2910ca682aff1ab63ccc59776862bbf
           domain: climate
           entity_id: f134f6c77732ee45a8c2eb02f1419140
@@ -4565,11 +4624,6 @@
         - device_id: bd855e7f72d58cac65db32e4edfbf775
           domain: climate
           entity_id: cfc8e4c00ec05ae6b721d21a975d1ccb
-          type: set_hvac_mode
-          hvac_mode: heat
-        - device_id: 280904bd43829cf2b64d322cd3b67cd1
-          domain: climate
-          entity_id: c8d050f513f09480235a70a8a490c65b
           type: set_hvac_mode
           hvac_mode: heat
         - action: switch.turn_off
@@ -4587,37 +4641,18 @@
           data: {}
           target:
             entity_id: switch.shelly_plus_1pm_01_switch_0
-        - action: automation.trigger
-          metadata: {}
-          data:
-            skip_condition: true
-          target:
-            entity_id: automation.charge_forcee_batterie
-      - action: select.select_option
-        metadata: {}
-        data:
-          option: HG
-        target:
-          entity_id: select.energie_consommee_j
-        alias: Passage en HG
-      - action: input_number.set_value
-        metadata: {}
-        data:
-          value: '{{ float(states(''sensor.energie_consommee_j_hg''), 0) | round(2)
-            }}'
-        target:
-          entity_id: input_number.energie_hg_j_1
-      - action: automation.trigger
-        metadata: {}
-        data:
-          skip_condition: true
-        target:
-          entity_id: automation.charge_forcee_batterie
-      - action: switch.turn_on
-        metadata: {}
-        data: {}
-        target:
-          entity_id: switch.shelly_plus_1pm_01_switch_0
+      - if:
+        - condition: state
+          entity_id: input_boolean.mode_absent
+          state:
+          - 'off'
+        then:
+        - device_id: 280904bd43829cf2b64d322cd3b67cd1
+          domain: climate
+          entity_id: c8d050f513f09480235a70a8a490c65b
+          type: set_hvac_mode
+          hvac_mode: heat
+        alias: Présent
   mode: single
 - id: '1762347085911'
   alias: Charge forcée batterie
@@ -4628,8 +4663,6 @@
   - variables:
       puissance_reseau: '{{ states(''sensor.em06_02_b1_power'') | float(0) }}'
       puissance_batterie: '{{ states(''sensor.em06_02_b2_power'') | float(0) + 5 }}'
-      switch_fan: '{{ states(''switch.prise_zigbee_5'') | float(0) }}'
-      conso_fan: '{{ states(''sensor.prise_zigbee_5_power'') | float(0) }}'
       consigne_batterie: '{{ puissance_reseau + puissance_batterie}}
 
         '
@@ -4815,47 +4848,81 @@
 - id: '1763643702020'
   alias: CPU Mode
   description: ''
-  triggers: []
+  triggers:
+  - trigger: numeric_state
+    id: percentage_max
+    entity_id:
+    - sensor.system_monitor_utilisation_du_processeur
+    - sensor.esphome_pourcentage_du_processeur
+    - sensor.nuc_proxmox_cpu
+    above: 50
+  - trigger: numeric_state
+    id: percentage_min
+    entity_id:
+    - sensor.system_monitor_utilisation_du_processeur
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
+    below: 10
   conditions: []
   actions:
   - choose:
     - conditions:
-      - condition: state
-        entity_id: sensor.cpu_mode
-        state:
-        - Eco
+      - condition: trigger
+        id:
+        - percentage_max
       sequence:
       - action: shell_command.pve_cpu_mode
         data:
           mode: power
     - conditions:
-      - condition: state
-        entity_id: sensor.cpu_mode
-        state:
-        - Balanced
-      sequence:
-      - action: shell_command.pve_cpu_mode
-        data:
-          mode: power
-    - conditions:
-      - condition: state
-        entity_id: sensor.cpu_mode
-        state:
-        - Power
+      - condition: trigger
+        id:
+        - percentage_min
       sequence:
       - action: shell_command.pve_cpu_mode
         data:
           mode: eco
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 5
-      milliseconds: 0
-  - action: homeassistant.update_entity
-    metadata: {}
-    data:
-      entity_id:
-      - sensor.cpu_mode
+    default:
+    - choose:
+      - conditions:
+        - condition: state
+          entity_id: sensor.cpu_mode
+          state:
+          - Eco
+        sequence:
+        - action: shell_command.pve_cpu_mode
+          data:
+            mode: power
+      - conditions:
+        - condition: state
+          entity_id: sensor.cpu_mode
+          state:
+          - Balanced
+        sequence:
+        - action: shell_command.pve_cpu_mode
+          data:
+            mode: power
+      - conditions:
+        - condition: state
+          entity_id: sensor.cpu_mode
+          state:
+          - Power
+        sequence:
+        - action: shell_command.pve_cpu_mode
+          data:
+            mode: eco
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 5
+        milliseconds: 0
+    - action: homeassistant.update_entity
+      metadata: {}
+      data:
+        entity_id:
+        - sensor.cpu_mode
   mode: single
 - id: '1763645726678'
   alias: Tirage d'eau
@@ -4897,35 +4964,33 @@
         id:
         - tirage
       sequence:
-      - if:
-        - condition: template
-          value_template: ' {{ states(''sensor.watermeter_water_usage'') | float(0)
-            != 0 }}'
-        then:
-        - wait_for_trigger:
-          - trigger: template
-            value_template: '{{ states(''sensor.watermeter_water_usage'') | float(0)
-              == 0 }}'
       - variables:
-          volume: '{{ (states(''sensor.watermeter_total_water_usage'') | float) -
-            (trigger.from_state.state | float) }}'
-          duree: '{{ (now().timestamp() - trigger.from_state.last_changed.timestamp())
-            | int }}'
+          heure_debut: '{{ now().timestamp() }}'
+          volume_debut: '{{ states(''sensor.watermeter_total_water_usage'') | float
+            }}'
+      - wait_for_trigger:
+        - trigger: numeric_state
+          entity_id:
+          - sensor.watermeter_water_usage
+          below: 0.001
+      - variables:
+          volume_fin: '{{ states(''sensor.watermeter_total_water_usage'') | float
+            }}'
+          volume: '{{ volume_fin - volume_debut }}'
+          duree: '{{ now().timestamp() - heure_debut }}'
           temperature_debut: '{{ states(''sensor.sonde_temperature_owon_temperature'')
-            | float(0) }}'
+            | float }}'
           temperature_fin: '{{ states(''sensor.sonde_temperature_owon_temperature'')
             | float }}'
           delta_temperature: '{{ temperature_fin - temperature_debut }}'
           debit_moyen: '{{ (volume / duree * 60) if duree > 0 else 0 }}'
-          lave_vaisselle_on: '{{ states(''input_boolean.lave_vaisselle'') == ''on''
-            }}'
-          lave_linge_on: '{{ states(''input_boolean.lave_linge'') == ''on'' }}'
+      - wait_template: "{{ not is_state('input_boolean.lave_linge', 'on') and\n   not
+          is_state('input_boolean.lave_vaisselle', 'on') }}"
       - variables:
-          type_tirage: "{% if lave_vaisselle_on %}\n  lave_vaisselle\n{% elif lave_linge_on
-            %}\n  {% if delta_temperature < seuil_delta_temperature and debit_moyen
-            >= seuil_debit_douche_adulte_min %}\n    douche_pendant_lave_linge\n  {%
-            else %}\n    lave_linge\n  {% endif %}\n{% elif delta_temperature < seuil_delta_temperature
-            and debit_moyen < seuil_debit_douche_enfant_max and volume >= seuil_volume_douche_enfant_min
+          type_tirage: "{% if states('input_boolean.lave_vaisselle') == 'on' %}\n
+            \ lave_vaisselle\n{% elif states('input_boolean.lave_linge') == 'on' %}\n
+            \ lave_linge\n{% elif delta_temperature < seuil_delta_temperature and
+            debit_moyen < seuil_debit_douche_enfant_max and volume >= seuil_volume_douche_enfant_min
             %}\n  douche_enfant\n{% elif delta_temperature < seuil_delta_temperature
             and debit_moyen >= seuil_debit_douche_adulte_min and volume >= seuil_volume_douche_adulte_min
             %}\n  douche_adulte\n{% elif delta_temperature < seuil_delta_temperature
@@ -4943,17 +5008,14 @@
         id:
         - conso
       sequence:
-      - variables:
-          seuil_fuite_lente_volume: 10
-          seuil_fuite_lente_duree: 3600
       - condition: and
         conditions:
         - condition: numeric_state
           entity_id: sensor.watermeter_water_usage
           below: 0.1
         - condition: template
-          value_template: "{{ (states('sensor.watermeter_total_water_usage') | float)
-            -\n   (trigger.from_state.state | float) >= seuil_fuite_lente_volume }}"
+          value_template: '{{ (states(''sensor.watermeter_total_water_usage'') | float)
+            - (trigger.from_state.state | float) >= seuil_fuite_lente_volume }}'
         - condition: template
           value_template: '{{ (now().timestamp() - trigger.from_state.last_changed.timestamp())
             | int >= seuil_fuite_lente_duree }}'
@@ -4977,45 +5039,99 @@
     seuil_volume_douche_adulte_min: 40
     seuil_volume_bain_min: 80
     seuil_duree_toilettes_max: 60
-    seuil_duree_douche_min: 120
     seuil_delta_temperature: -2
     temps_attente_fin_tirage: 30
-- id: '1763758492981'
-  alias: Sêche serviette
+    seuil_fuite_lente_volume: 10
+    seuil_fuite_lente_duree: 3600
+- id: '1764059204459'
+  alias: Sèche serviette
   description: ''
   triggers:
-  - entity_id:
+  - trigger: state
+    entity_id:
+    - schedule.chauffage_seche_serviette
+    from:
+    - 'off'
+    id: 'on'
+    to:
+    - 'on'
+  - trigger: state
+    entity_id:
+    - schedule.chauffage_seche_serviette
+    from:
+    - 'on'
+    id: 'off'
+    to:
+    - 'off'
+  - trigger: numeric_state
+    entity_id:
+    - sensor.prise_seche_serviette_power
+    - sensor.em06_b1_power
+    id: power_off
+    below: 1
+  - trigger: numeric_state
+    entity_id:
+    - sensor.prise_seche_serviette_power
     - sensor.em06_b1_power
     above: 0
-    trigger: numeric_state
-    id: 'on'
-  - entity_id:
-    - sensor.em06_b1_power
-    trigger: numeric_state
-    below: 1
-    id: 'off'
-  conditions: []
+    id: power_on
+  conditions:
+  - condition: numeric_state
+    entity_id: sensor.salle_de_bains_bt_temperature
+    below: 19.5
+    enabled: false
   actions:
   - choose:
     - conditions:
       - condition: trigger
         id:
-        - 'on'
+        - 'off'
       sequence:
-      - metadata: {}
-        data: {}
-        action: input_boolean.turn_on
-        target:
-          entity_id:
-          - input_boolean.seche_serviette
+      - device_id: d7da7ec9836088844d5ad8b862fb0b13
+        domain: select
+        entity_id: ee3b5db4639e01c901c75485a7fedf55
+        type: select_option
+        option: 'off'
     - conditions:
       - condition: trigger
         id:
-        - 'off'
+        - 'on'
       sequence:
-      - metadata: {}
+      - type: turn_on
+        device_id: d7da7ec9836088844d5ad8b862fb0b13
+        entity_id: ce9363e11f13156adff6bcad4f3ae63d
+        domain: switch
+      - type: turn_on
+        device_id: d7da7ec9836088844d5ad8b862fb0b13
+        entity_id: 0b72a355a586c82ff602e61487683870
+        domain: switch
+      - device_id: d7da7ec9836088844d5ad8b862fb0b13
+        domain: select
+        entity_id: ee3b5db4639e01c901c75485a7fedf55
+        type: select_option
+        option: comfort
+    - conditions:
+      - condition: trigger
+        id:
+        - power_on
+      sequence:
+      - action: input_boolean.turn_on
+        metadata: {}
         data: {}
-        action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.seche_serviette
+      - action: notify.notify
+        metadata: {}
+        data:
+          message: ⚡​Sèche serviette en marche !
+    - conditions:
+      - condition: trigger
+        id:
+        - power_off
+      sequence:
+      - action: input_boolean.turn_off
+        metadata: {}
+        data: {}
         target:
           entity_id: input_boolean.seche_serviette
   mode: single

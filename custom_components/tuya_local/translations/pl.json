@@ -423,14 +423,23 @@
             }
         },
         "number": {
+            "maximum_temperature": {
+                "name": "Maksymalna temperatura"
+            },
+            "minimum_temperature": {
+                "name": "Minimalna temperatura"
+            },
+            "sensor_threshold": {
+                "name": "{sensor} próg"
+            },
+            "temperature_calibration": {
+                "name": "Kalibracja temperatury"
+            },
             "timer": {
                 "name": "Regulator czasowy"
             },
             "timer_x": {
                 "name": "Regulator czasowy {x}"
-            },
-            "sensor_threshold": {
-                "name": "{sensor} próg"
             }
         },
         "select": {
@@ -787,7 +796,11 @@
                     "empty": "Puste",
                     "missing": "Brakujące",
                     "formatting": "Formatowanie",
-                    "unformatted": "Niesformatowane"
+                    "unformatted": "Niesformatowane",
+                    "maintenance_required": "Wymagana konserwacja",
+                    "dry": "Suchy",
+                    "comfortable": "Wygodny",
+                    "damp": "Wilgotny"
                 }
             },
             "time_remaining": {
@@ -849,6 +862,9 @@
                     "off": "Otwarty",
                     "on": "Zamknięty"
                 }
+            },
+            "do_not_disturb": {
+                "name": "Nie przeszkadzać"
             },
             "evaporator_cleaning": {
                 "name": "Czyszczenie parownika"

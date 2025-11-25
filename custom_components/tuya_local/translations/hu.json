@@ -424,14 +424,23 @@
             }
         },
         "number": {
+            "maximum_temperature": {
+                "name": "Maximális hőmérséklet"
+            },
+            "minimum_temperature": {
+                "name": "Minimális hőmérséklet"
+            },
+            "sensor_threshold": {
+                "name": "{sensor} küszöb"
+            },
+            "temperature_calibration": {
+                "name": "Hőmérséklet kalibráció"
+            },
             "timer": {
                 "name": "Időzítő"
             },
             "timer_x": {
                 "name": "Időzítő {x}"
-            },
-            "sensor_threshold": {
-                "name": "{sensor} küszöb"
             }
         },
         "select": {
@@ -787,7 +796,11 @@
                     "empty": "Üres",
                     "missing": "Hiányzik",
                     "formatting": "Formázás",
-                    "unformatted": "Nem formázott"
+                    "unformatted": "Nem formázott",
+                    "maintenance_required": "Karbantartás szükséges",
+                    "dry": "Száraz",
+                    "comfortable": "Kényelmes",
+                    "damp": "Párás"
                 }
             },
             "time_remaining": {
@@ -849,6 +862,9 @@
                     "off": "Nyitott",
                     "on": "Zárt"
                 }
+            },
+            "do_not_disturb": {
+                "name": "Ne zavarjanak"
             },
             "evaporator_cleaning": {
                 "name": "Elpárologtató tisztítása"
