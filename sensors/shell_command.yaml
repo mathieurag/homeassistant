@@ -19,14 +19,19 @@ shell_command:
   conso: "python3 /config/python_scripts/conso.py"
   estar: "python3 /config/python_scripts/estar.py"
   correction_marstek: "python3 /config/python_scripts/correction_marstek.py"
-  unifi_refresh_sta: "/bin/bash -lc '/config/scripts/unifi/unifi_sta.sh >/dev/null 2>&1 || true'"
-  unifi_refresh_device: "/bin/bash -lc '/config/scripts/unifi/unifi_device.sh >/dev/null 2>&1 || true'"
-  unifi_refresh_sites: "/bin/bash -lc '/config/scripts/unifi/unifi_sites.sh >/dev/null 2>&1 || true'"
+  unifi_refresh_sta: "/bin/bash '/config/scripts/unifi/unifi_sta.sh'"
+  unifi_refresh_device: "/bin/bash '/config/scripts/unifi/unifi_device.sh'"
+  unifi_refresh_sites: "/bin/bash '/config/scripts/unifi/unifi_sites.sh'"
   usbdata_recover: >-
     ssh -T -i /config/ssh/id_rsa
     -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=no
     root@192.168.68.150
     /root/recover-usbdisk.sh
+  usbdata_check: >-
+    ssh -T -i /config/ssh/id_rsa
+    -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=no
+    root@192.168.68.150
+    /root/recover-usbdisk.sh --diag
   pve_cpu_mode: >-
     ssh -T -i /config/ssh/id_rsa
     -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=no

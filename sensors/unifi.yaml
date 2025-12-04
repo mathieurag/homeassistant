@@ -1,323 +1,297 @@
-sensor:
-  - platform: unifigateway
-    host: !secret unifi_controler_ip
-    username: !secret unifi_login_ha
-    password: !secret unifi_password_ha
-    verify_ssl: false
-    port: 8443
-    monitored_conditions:
-      - www
-      - wan
-      - wlan
-      - alerts
-      - firmware
-
 template:
   - sensor:
-      # --- Comptes de clients (déjà 0 si vide) ---
+      # --- UDR7 ---
+      - name: "UDR7 - Clients total (sans fil + filaires)"
+        unique_id: udr7_total_clients
+        icon: mdi:router-wireless
+        state: >
+          {% set ap_mac = '1c:0b:8b:4e:50:70' %}
+          {% set wireless = (state_attr('sensor.unifi_clients_json','data') or [])
+            | selectattr('ap_mac','equalto',ap_mac)
+            | list | count %}
+          {% set udr7 = (state_attr('sensor.unifi_device_json','data') or []) 
+            | selectattr('mac','equalto',ap_mac) | first | default({}) %}
+          {% set ports = udr7.get('port_table', []) %}
+          {% set wired = ports
+                | selectattr('up','equalto',true)
+                | selectattr('last_connection','!=',none)
+                | list | count %}
+          {{ wireless + wired }}
+
+      - name: "UDR7 - Clients 2.4G"
+        unique_id: udr7_2_4g_clients
+        state: >
+          {% set arr = state_attr('sensor.unifi_clients_json','data') or [] %}
+          {{ arr | selectattr('ap_mac','equalto','1c:0b:8b:4e:50:70')
+            | selectattr('radio','in',['ng','b','g'])
+            | list | count }}
+
+      - name: "UDR7 - Clients 5G"
+        unique_id: udr7_5g_clients
+        state: >
+          {% set arr = state_attr('sensor.unifi_clients_json','data') or [] %}
+          {{ arr | selectattr('ap_mac','equalto','1c:0b:8b:4e:50:70')
+            | selectattr('radio','in',['na','a'])
+            | list | count }}
+
+      - name: "UDR7 - Clients 6G"
+        unique_id: udr7_6g_clients
+        state: >
+          {% set arr = state_attr('sensor.unifi_clients_json','data') or [] %}
+          {{ arr | selectattr('ap_mac','equalto','1c:0b:8b:4e:50:70')
+            | selectattr('radio','in',['6e','6'])
+            | list | count }}
+
+      - name: "UDR7 - Clients filaires"
+        unique_id: udr7_wired_clients
+        state: >
+          {% set mac = '1c:0b:8b:4e:50:70' %}
+          {% set udr7 = (state_attr('sensor.unifi_device_json','data') or []) 
+            | selectattr('mac','equalto',mac) 
+            | first | default({}) %}
+          {% set ports = udr7.get('port_table', []) %}
+          {% set wired = ports | selectattr('up','equalto',true)
+            | selectattr('last_connection','!=',none)
+            | list | count %}
+          {{ wired }}
+
+      - name: "UDR7 - Port 1 - RX (Mbit/s)"
+        unique_id: udr7_port_1_rx_mbps
+        unit_of_measurement: "Mbit/s"
+        state_class: measurement
+        device_class: data_rate
+        state: >
+          {% set mac = '1c:0b:8b:4e:50:70' %}
+          {% set devs = state_attr('sensor.unifi_device_json','data') or [] %}
+          {% set udr7 = devs | selectattr('mac','equalto',mac) | first | default({}) %}
+          {% set ports = udr7.get('port_table', []) %}
+          {% set port = (ports | selectattr('port_idx','equalto',1) | first) | default({}) %} 
+          {{ (port.get('rx_bytes-r', 0) * 8 / 1000000) | round(1) }}
+
+      - name: "UDR7 - Port 1 - TX (Mbit/s)"
+        unique_id: udr7_port_1_tx_mbps
+        unit_of_measurement: "Mbit/s"
+        state_class: measurement
+        device_class: data_rate
+        state: >
+          {% set mac = '1c:0b:8b:4e:50:70' %}
+          {% set devs = state_attr('sensor.unifi_device_json','data') or [] %}
+          {% set udr7 = devs | selectattr('mac','equalto',mac) | first | default({}) %}
+          {% set ports = udr7.get('port_table', []) %}
+          {% set port = (ports | selectattr('port_idx','equalto',1) | first) | default({}) %} 
+          {{ (port.get('tx_bytes-r', 0) * 8 / 1000000) | round(1) }}
+
+      - name: "UDR7 - Port 2 - RX (Mbit/s)"
+        unique_id: udr7_port_2_rx_mbps
+        unit_of_measurement: "Mbit/s"
+        state_class: measurement
+        device_class: data_rate
+        state: >
+          {% set mac = '1c:0b:8b:4e:50:70' %}
+          {% set devs = state_attr('sensor.unifi_device_json','data') or [] %}
+          {% set udr7 = devs | selectattr('mac','equalto',mac) | first | default({}) %}
+          {% set ports = udr7.get('port_table', []) %}
+          {% set port = (ports | selectattr('port_idx','equalto',2) | first) | default({}) %} 
+          {{ (port.get('rx_bytes-r', 0) * 8 / 1000000) | round(1) }}
+
+      - name: "UDR7 - Port 2 - TX (Mbit/s)"
+        unique_id: udr7_port_2_tx_mbps
+        unit_of_measurement: "Mbit/s"
+        state_class: measurement
+        device_class: data_rate
+        state: >
+          {% set mac = '1c:0b:8b:4e:50:70' %}
+          {% set devs = state_attr('sensor.unifi_device_json','data') or [] %}
+          {% set udr7 = devs | selectattr('mac','equalto',mac) | first | default({}) %}
+          {% set ports = udr7.get('port_table', []) %}
+          {% set port = (ports | selectattr('port_idx','equalto',2) | first) | default({}) %} 
+          {{ (port.get('tx_bytes-r', 0) * 8 / 1000000) | round(1) }}
+
+      - name: "UDR7 - Port 3 - RX (Mbit/s)"
+        unique_id: udr7_port_3_rx_mbps
+        unit_of_measurement: "Mbit/s"
+        state_class: measurement
+        device_class: data_rate
+        state: >
+          {% set mac = '1c:0b:8b:4e:50:70' %}
+          {% set devs = state_attr('sensor.unifi_device_json','data') or [] %}
+          {% set udr7 = devs | selectattr('mac','equalto',mac) | first | default({}) %}
+          {% set ports = udr7.get('port_table', []) %}
+          {% set port = (ports | selectattr('port_idx','equalto',3) | first) | default({}) %} 
+          {{ (port.get('rx_bytes-r', 0) * 8 / 1000000) | round(1) }}
+
+      - name: "UDR7 - Port 3 - TX (Mbit/s)"
+        unique_id: udr7_port_3_tx_mbps
+        unit_of_measurement: "Mbit/s"
+        state_class: measurement
+        device_class: data_rate
+        state: >
+          {% set mac = '1c:0b:8b:4e:50:70' %}
+          {% set devs = state_attr('sensor.unifi_device_json','data') or [] %}
+          {% set udr7 = devs | selectattr('mac','equalto',mac) | first | default({}) %}
+          {% set ports = udr7.get('port_table', []) %}
+          {% set port = (ports | selectattr('port_idx','equalto',3) | first) | default({}) %} 
+          {{ (port.get('tx_bytes-r', 0) * 8 / 1000000) | round(1) }}
+
+      - name: "UDR7 - Port 4 - RX (Mbit/s)"
+        unique_id: udr7_port_4_rx_mbps
+        unit_of_measurement: "Mbit/s"
+        state_class: measurement
+        device_class: data_rate
+        state: >
+          {% set mac = '1c:0b:8b:4e:50:70' %}
+          {% set devs = state_attr('sensor.unifi_device_json','data') or [] %}
+          {% set udr7 = devs | selectattr('mac','equalto',mac) | first | default({}) %}
+          {% set ports = udr7.get('port_table', []) %}
+          {% set port = (ports | selectattr('port_idx','equalto',4) | first) | default({}) %} 
+          {{ (port.get('rx_bytes-r', 0) * 8 / 1000000) | round(1) }}
+
+      - name: "UDR7 - Port 4 - TX (Mbit/s)"
+        unique_id: udr7_port_4_tx_mbps
+        unit_of_measurement: "Mbit/s"
+        state_class: measurement
+        device_class: data_rate
+        state: >
+          {% set mac = '1c:0b:8b:4e:50:70' %}
+          {% set devs = state_attr('sensor.unifi_device_json','data') or [] %}
+          {% set udr7 = devs | selectattr('mac','equalto',mac) | first | default({}) %}
+          {% set ports = udr7.get('port_table', []) %}
+          {% set port = (ports | selectattr('port_idx','equalto',4) | first) | default({}) %} 
+          {{ (port.get('tx_bytes-r', 0) * 8 / 1000000) | round(1) }}
+
+      # ----------------------------------------------------------------------
+      # CAPTEUR UNIQUE ET DÉFINITIF POUR LE DÉBIT RADIO DOWNLINK (6G)
+      # ----------------------------------------------------------------------
+      - name: "UDR7 - Débit Radio Downlink (Mbps)"
+        unique_id: udr7_debit_radio_downlink_mbps
+        unit_of_measurement: "Mbit/s"
+        state_class: measurement
+        device_class: data_rate
+        state: >
+
+          {% set wan_rx = float(states('sensor.udr7_port_4_rx_mbps'),0) %}
+          {% set total_lan_tx = float(states('sensor.udr7_port_1_tx_mbps'),0) + float(states('sensor.udr7_port_2_tx_mbps'),0) + float(states('sensor.udr7_port_3_tx_mbps'),0)%}
+
+
+          {# Calcul (WAN RX - LAN TX) et conversion en Mbit/s. Utilise ABS pour assurer la positivité #}
+          {% set radio_downlink_bytes_r = wan_rx - total_lan_tx %}
+
+          {{ ((radio_downlink_bytes_r | abs) | round(1)) }}
+
+      # ----------------------------------------------------------------------
+      # CAPTEUR POUR LE DÉBIT RADIO UPLINK
+      # ----------------------------------------------------------------------
+      - name: "UDR7 - Débit Radio Uplink (Mbps)"
+        unique_id: udr7_debit_radio_uplink_mbps
+        unit_of_measurement: "Mbit/s"
+        state_class: measurement
+        device_class: data_rate
+        state: >
+
+          {% set wan_tx = float(states('sensor.udr7_port_4_tx_mbps'),0) %}
+          {% set total_lan_rx = float(states('sensor.udr7_port_1_rx_mbps'),0) + float(states('sensor.udr7_port_2_rx_mbps'),0) + float(states('sensor.udr7_port_3_rx_mbps'),0)%}
+
+          {# Calcul (WAN TX - LAN RX) et conversion en Mbit/s. Utilise ABS pour assurer la positivité #}
+          {% set radio_uplink_bytes_r = wan_tx - total_lan_rx %}
+
+          {{ ((radio_uplink_bytes_r | abs) | round(1)) }}
+
+        # --- UDR7 - Signal moyen (dBm) ---
+      - name: "UDR7 - Signal 2.4G moyen"
+        unique_id: udr7_2_4g_dbm
+        state_class: measurement
+        device_class: signal_strength
+        unit_of_measurement: "dBm"
+        state: >
+          {% set ap='1c:0b:8b:4e:50:70' %}
+          {% set xs = (state_attr('sensor.unifi_clients_json','data') or [])
+                | selectattr('ap_mac','equalto',ap)
+                | selectattr('radio','in',['ng','g','b'])
+                | map(attribute='signal') | select('number') | list %}
+          {% set n = xs|length %}
+          {{ (xs|sum / n) | round(0) if n>0 else 0 }}
+
+      - name: "UDR7 - Signal 5G moyen"
+        unique_id: udr7_5g_dbm
+        state_class: measurement
+        device_class: signal_strength
+        unit_of_measurement: "dBm"
+        state: >
+          {% set ap='1c:0b:8b:4e:50:70' %}
+          {% set xs = (state_attr('sensor.unifi_clients_json','data') or [])
+                | selectattr('ap_mac','equalto',ap)
+                | selectattr('radio','in',['na','a'])
+                | map(attribute='signal') | select('number') | list %}
+          {% set n = xs|length %}
+          {{ (xs|sum / n) | round(0) if n>0 else 0 }}
+
+      - name: "UDR7 - Signal 6G moyen"
+        unique_id: udr7_6g_dbm
+        device_class: signal_strength
+        state_class: measurement
+        unit_of_measurement: "dBm"
+        state: >
+          {% set ap='1c:0b:8b:4e:50:70' %}
+          {% set xs = (state_attr('sensor.unifi_clients_json','data') or [])
+                | selectattr('ap_mac','equalto',ap)
+                | selectattr('radio','in',['6e','6'])
+                | map(attribute='signal') | select('number') | list %}
+          {% set n = xs|length %}
+          {{ (xs|sum / n) | round(0) if n>0 else 0 }}
+
+      # --- AC Lite ---
       - name: "AC Lite - Clients total"
         unique_id: ac_lite_total_clients
         icon: mdi:access-point
         state: >
-          {% set ap='68:d7:9a:76:53:d6' %}
+          {% set ap_mac = '68:d7:9a:76:53:d6' %}
           {% set arr = state_attr('sensor.unifi_clients_json','data') or [] %}
-          {{ arr | selectattr('ap_mac','equalto',ap) | list | count }}
+          {{ arr | selectattr('ap_mac','equalto',ap_mac)
+              | list | count }}
 
       - name: "AC Lite - Clients 2.4G"
         unique_id: ac_lite_2_4g_clients
         state: >
-          {% set ap='68:d7:9a:76:53:d6' %}
+          {% set ap_mac = '68:d7:9a:76:53:d6' %}
           {% set arr = state_attr('sensor.unifi_clients_json','data') or [] %}
-          {{ arr | selectattr('ap_mac','equalto',ap)| selectattr('radio','in',['ng','b','g']) | list | count }}
+          {{ arr | selectattr('ap_mac','equalto',ap_mac)
+              | selectattr('radio','in',['ng','b','g'])
+              | list | count }}
 
       - name: "AC Lite - Clients 5G"
         unique_id: ac_lite_5g_clients
         state: >
-          {% set ap='68:d7:9a:76:53:d6' %}
+          {% set ap_mac = '68:d7:9a:76:53:d6' %}
           {% set arr = state_attr('sensor.unifi_clients_json','data') or [] %}
-          {{ arr | selectattr('ap_mac','equalto',ap)| selectattr('radio','in',['na','a']) | list | count }}
+          {{ arr | selectattr('ap_mac','equalto',ap_mac)
+              | selectattr('radio','in',['na','a'])
+              | list | count }}
 
-      # --- RX/TX moyens (kbps -> Mbit/s), 0 si aucun client ---
-      - name: "AC Lite - RX rate moyen"
-        unique_id: ac_lite_rx_moyen
-        unit_of_measurement: "Mbit/s"
-        device_class: data_rate
-        state: >
-          {% set ap='68:d7:9a:76:53:d6' %}
-          {% set xs = (state_attr('sensor.unifi_clients_json','data') or [])
-                        | selectattr('ap_mac','equalto',ap)
-                        | map(attribute='rx_rate') | select('number') | list %}
-          {% set n = xs|length %}
-          {{ (xs|sum / (n if n>0 else 1) / 1000) | round(1) if n>0 else 0 }}
-
-      - name: "AC Lite - TX rate moyen"
-        unique_id: ac_lite_tx_moyen
-        unit_of_measurement: "Mbit/s"
-        device_class: data_rate
-        state: >
-          {% set ap='68:d7:9a:76:53:d6' %}
-          {% set xs = (state_attr('sensor.unifi_clients_json','data') or [])
-                        | selectattr('ap_mac','equalto',ap)
-                        | map(attribute='tx_rate') | select('number') | list %}
-          {% set n = xs|length %}
-          {{ (xs|sum / (n if n>0 else 1) / 1000) | round(1) if n>0 else 0 }}
-
-      # --- Signaux moyens (dBm), 0 si aucun client ---
+        # --- AC Lite - Signal moyen (dBm) ---
       - name: "AC Lite - Signal 2.4G moyen"
         unique_id: ac_lite_2_4g_dbm
+        state_class: measurement
         device_class: signal_strength
         unit_of_measurement: "dBm"
         state: >
           {% set ap='68:d7:9a:76:53:d6' %}
           {% set xs = (state_attr('sensor.unifi_clients_json','data') or [])
-                        | selectattr('ap_mac','equalto',ap)
-                        | selectattr('radio','in',['ng','g','b'])
-                        | map(attribute='signal') | select('number') | list %}
+                | selectattr('ap_mac','equalto',ap)
+                | selectattr('radio','in',['ng','g','b'])
+                | map(attribute='signal') | select('number') | list %}
           {% set n = xs|length %}
           {{ (xs|sum / n) | round(0) if n>0 else 0 }}
 
       - name: "AC Lite - Signal 5G moyen"
         unique_id: ac_lite_5g_dbm
+        state_class: measurement
         device_class: signal_strength
         unit_of_measurement: "dBm"
         state: >
           {% set ap='68:d7:9a:76:53:d6' %}
           {% set xs = (state_attr('sensor.unifi_clients_json','data') or [])
-                        | selectattr('ap_mac','equalto',ap)
-                        | selectattr('radio','in',['na','a'])
-                        | map(attribute='signal') | select('number') | list %}
+                | selectattr('ap_mac','equalto',ap)
+                | selectattr('radio','in',['na','a'])
+                | map(attribute='signal') | select('number') | list %}
           {% set n = xs|length %}
           {{ (xs|sum / n) | round(0) if n>0 else 0 }}
-
-      - name: "AC Lite - Satisfaction 2.4G"
-        unique_id: ac_lite_satisfaction_2_4g
-        unit_of_measurement: "%"
-        device_class: battery
-        state: >
-          {% set mac='68:d7:9a:76:53:d6' %}
-          {% set devs = state_attr('sensor.unifi_device_json','data') or [] %}
-          {% set dev = (devs | selectattr('mac','equalto',mac) | list | first) or {} %}
-          {% set rts = dev.get('radio_table_stats', dev.get('radio_table', [])) %}
-          {% set r24 = (rts | selectattr('radio','in',['ng','g','b']) | list | first) or {} %}
-          {% if r24.get('satisfaction') is number %}
-            {{ r24.get('satisfaction') | float | round(0) }}
-          {% else %}
-            {% set ap=mac %}
-            {% set xs = (state_attr('sensor.unifi_clients_json','data') or [])
-                         | selectattr('ap_mac','equalto',ap)
-                         | selectattr('radio','in',['ng','g','b'])
-                         | map(attribute='satisfaction_now') | select('number') | list %}
-            {{ (xs|sum / (xs|length if xs|length>0 else 1)) | round(0) if xs|length>0 else 0 }}
-          {% endif %}
-
-      - name: "AC Lite - Satisfaction 5G"
-        unique_id: ac_lite_satisfaction_5g
-        unit_of_measurement: "%"
-        device_class: battery
-        state: >
-          {% set mac='68:d7:9a:76:53:d6' %}
-          {% set devs = state_attr('sensor.unifi_device_json','data') or [] %}
-          {% set dev = (devs | selectattr('mac','equalto',mac) | list | first) or {} %}
-          {% set rts = dev.get('radio_table_stats', dev.get('radio_table', [])) %}
-          {% set r5 = (rts | selectattr('radio','in',['na','a']) | list | first) or {} %}
-          {% if r5.get('satisfaction') is number %}
-            {{ r5.get('satisfaction') | float | round(0) }}
-          {% else %}
-            {% set ap=mac %}
-            {% set xs = (state_attr('sensor.unifi_clients_json','data') or [])
-                         | selectattr('ap_mac','equalto',ap)
-                         | selectattr('radio','in',['na','a'])
-                         | map(attribute='satisfaction_now') | select('number') | list %}
-            {{ (xs|sum / (xs|length if xs|length>0 else 1)) | round(0) if xs|length>0 else 0 }}
-          {% endif %}
-
-      # --- Débit instantané agrégé par bande (Mb/s) ---
-      # sta.json expose 'tx_bytes-r' / 'rx_bytes-r' (octets/s) par client
-      # --- Up 2.4G (inst.) ---
-      - name: "AC Lite - Up 2.4G (inst.)"
-        unique_id: sensor.ac_lite_up_2_4g_inst
-        unit_of_measurement: "Mbit/s"
-        device_class: data_rate
-        state: >
-          {% set ap='68:d7:9a:76:53:d6' %}
-          {% set clients = (state_attr('sensor.unifi_clients_json','data') or [])
-                            | selectattr('ap_mac','equalto',ap)
-                            | selectattr('radio','in',['ng','g','b']) | list %}
-          {% set tot = 0.0 %}
-          {% for c in clients %}
-            {% set tot = tot + (c['tx_bytes-r'] | default(0) | float(0)) %}
-          {% endfor %}
-          {{ (tot * 8) | round(2) }}
-
-      # --- Down 2.4G (inst.) ---
-      - name: "AC Lite - Down 2.4G (inst.)"
-        unique_id: sensor.ac_lite_down_2_4g_inst
-        unit_of_measurement: "Mbit/s"
-        device_class: data_rate
-        state: >
-          {% set ap='68:d7:9a:76:53:d6' %}
-          {% set clients = (state_attr('sensor.unifi_clients_json','data') or [])
-                            | selectattr('ap_mac','equalto',ap)
-                            | selectattr('radio','in',['ng','g','b']) | list %}
-          {% set tot = 0.0 %}
-          {% for c in clients %}
-            {% set tot = tot + (c['rx_bytes-r'] | default(0) | float(0)) %}
-          {% endfor %}
-          {{ (tot * 8) | round(2) }}
-
-      # --- Up 5G (inst.) ---
-      - name: "AC Lite - Up 5G (inst.)"
-        unique_id: sensor.ac_lite_up_5g_inst
-        unit_of_measurement: "Mbit/s"
-        device_class: data_rate
-        state: >
-          {% set ap='68:d7:9a:76:53:d6' %}
-          {% set clients = (state_attr('sensor.unifi_clients_json','data') or [])
-                            | selectattr('ap_mac','equalto',ap)
-                            | selectattr('radio','in',['na','a']) | list %}
-          {% set tot = 0.0 %}
-          {% for c in clients %}
-            {% set tot = tot + (c['tx_bytes-r'] | default(0) | float(0)) %}
-          {% endfor %}
-          {{ (tot * 8) | round(2) }}
-
-      # --- Down 5G (inst.) ---
-      - name: "AC Lite - Down 5G (inst.)"
-        unique_id: sensor.ac_lite_down_5g_inst
-        unit_of_measurement: "Mbit/s"
-        device_class: data_rate
-        state: >
-          {% set ap='68:d7:9a:76:53:d6' %}
-          {% set clients = (state_attr('sensor.unifi_clients_json','data') or [])
-                            | selectattr('ap_mac','equalto',ap)
-                            | selectattr('radio','in',['na','a']) | list %}
-          {% set tot = 0.0 %}
-          {% for c in clients %}
-            {% set tot = tot + (c['rx_bytes-r'] | default(0) | float(0)) %}
-          {% endfor %}
-          {{ (tot * 8) | round(2) }}
-
-      # Débit instantané uplink AP (global)
-      - name: "AC Lite - Uplink Up (inst.)"
-        unique_id: ac_lite_uplink_up_inst
-        unit_of_measurement: "Mbit/s"
-        device_class: data_rate
-        state: >
-          {% set mac = '68:d7:9a:76:53:d6' %}
-          {% set devs = state_attr('sensor.unifi_device_json','data') or [] %}
-          {% set ap = (devs | selectattr('mac','equalto',mac) | list | first) or {} %}
-          {{ (ap.get('uplink',{}).get('tx_bytes-r', 0) | float * 8 / 1_000_000)| round(1)}}
-
-      - name: "AC Lite - Uplink Down (inst.)"
-        unique_id: ac_lite_uplink_down_inst
-        unit_of_measurement: "Mbit/s"
-        device_class: data_rate
-        state: >
-          {% set mac = '68:d7:9a:76:53:d6' %}
-          {% set devs = state_attr('sensor.unifi_device_json','data') or [] %}
-          {% set ap = (devs | selectattr('mac','equalto',mac) | list | first) or {} %}
-          {{ (ap.get('uplink',{}).get('rx_bytes-r', 0) | float * 8 / 1_000_000)| round(1)}}
-
-      # --- Qualité du lien : CCQ moyen (clients) ---
-      - name: "AC Lite - CCQ 2.4G (moy.)"
-        unique_id: ac_lite_ccq_2_4g_moy
-        unit_of_measurement: "%"
-        device_class: battery
-        state: >
-          {% set ap='68:d7:9a:76:53:d6' %}
-          {% set xs = (state_attr('sensor.unifi_clients_json','data') or [])
-                        | selectattr('ap_mac','equalto',ap)
-                        | selectattr('radio','in',['ng','g','b'])
-                        | map(attribute='ccq') | select('number') | list %}
-          {# ccq est souvent /1000 → converti en % #}
-          {% set vals = xs | map('float') | list %}
-          {{ ((vals | sum) / (vals | length if vals|length>0 else 1) / 10) | round(0) if vals|length>0 else 0 }}
-
-      - name: "AC Lite - CCQ 5G (moy.)"
-        unique_id: ac_lite_ccq_5g_moy
-        unit_of_measurement: "%"
-        device_class: battery
-        state: >
-          {% set ap='68:d7:9a:76:53:d6' %}
-          {% set xs = (state_attr('sensor.unifi_clients_json','data') or [])
-                        | selectattr('ap_mac','equalto',ap)
-                        | selectattr('radio','in',['na','a'])
-                        | map(attribute='ccq') | select('number') | list %}
-          {% set vals = xs | map('float') | list %}
-          {{ ((vals | sum) / (vals | length if vals|length>0 else 1) / 10) | round(0) if vals|length>0 else 0 }}
-
-      # --- Bruit moyen (dBm, clients) ---
-      - name: "AC Lite - Bruit 2.4G (moy.)"
-        unique_id: ac_lite_bruit_2_4g_moy
-        unit_of_measurement: "dBm"
-        state: >
-          {% set ap='68:d7:9a:76:53:d6' %}
-          {% set xs = (state_attr('sensor.unifi_clients_json','data') or [])
-                        | selectattr('ap_mac','equalto',ap)
-                        | selectattr('radio','in',['ng','g','b'])
-                        | map(attribute='noise') | select('number') | list %}
-          {{ (xs|sum / (xs|length if xs|length>0 else 1)) | round(0) if xs|length>0 else 0 }}
-
-      - name: "AC Lite - Bruit 5G (moy.)"
-        unique_id: ac_lite_bruit_5g_moy
-        unit_of_measurement: "dBm"
-        state: >
-          {% set ap='68:d7:9a:76:53:d6' %}
-          {% set xs = (state_attr('sensor.unifi_clients_json','data') or [])
-                        | selectattr('ap_mac','equalto',ap)
-                        | selectattr('radio','in',['na','a'])
-                        | map(attribute='noise') | select('number') | list %}
-          {{ (xs|sum / (xs|length if xs|length>0 else 1)) | round(0) if xs|length>0 else 0 }}
-
-      # --- Retries moyens (%) ---
-      - name: "AC Lite - Retries 2.4G (moy. %)"
-        unique_id: ac_lite_retries_2_4g_moy
-        unit_of_measurement: "%"
-        device_class: battery
-        state: >
-          {% set ap = '68:d7:9a:76:53:d6' %}
-          {% set clients = (state_attr('sensor.unifi_clients_json','data') or [])
-                            | selectattr('ap_mac','equalto', ap)
-                            | selectattr('radio','in',['ng','g','b']) | list %}
-          {% set total = 0 %}
-          {% set count = 0 %}
-          {% for c in clients %}
-            {% if c.get('wifi_tx_retries_percentage') is number %}
-              {% set total = total + c.get('wifi_tx_retries_percentage') %}
-              {% set count = count + 1 %}
-            {% elif c.get('tx_retries') is number and c.get('wifi_tx_attempts') is number and c.get('wifi_tx_attempts') > 0 %}
-              {% set total = total + (100 * c.get('tx_retries') / c.get('wifi_tx_attempts')) %}
-              {% set count = count + 1 %}
-            {% endif %}
-          {% endfor %}
-          {{ (total / count) | round(1) if count > 0 else 0 }}
-        availability: >
-          {{ (state_attr('sensor.unifi_clients_json','data') or [])
-              | selectattr('ap_mac','equalto','68:d7:9a:76:53:d6')
-              | selectattr('radio','in',['ng','g','b']) | list | count > 0 }}
-
-      - name: "AC Lite - Retries 5G (moy. %)"
-        unique_id: ac_lite_retries_5g_moy
-        unit_of_measurement: "%"
-        device_class: battery
-        state: >
-          {% set ap = '68:d7:9a:76:53:d6' %}
-          {% set clients = (state_attr('sensor.unifi_clients_json','data') or [])
-                            | selectattr('ap_mac','equalto', ap)
-                            | selectattr('radio','in',['na','a']) | list %}
-          {% set total = 0 %}
-          {% set count = 0 %}
-          {% for c in clients %}
-            {% if c.get('wifi_tx_retries_percentage') is number %}
-              {% set total = total + c.get('wifi_tx_retries_percentage') %}
-              {% set count = count + 1 %}
-            {% elif c.get('tx_retries') is number and c.get('wifi_tx_attempts') is number and c.get('wifi_tx_attempts') > 0 %}
-              {% set total = total + (100 * c.get('tx_retries') / c.get('wifi_tx_attempts')) %}
-              {% set count = count + 1 %}
-            {% endif %}
-          {% endfor %}
-          {{ (total / count) | round(1) if count > 0 else 0 }}
-        availability: >
-          {{ (state_attr('sensor.unifi_clients_json','data') or [])
-              | selectattr('ap_mac','equalto','68:d7:9a:76:53:d6')
-              | selectattr('radio','in',['na','a']) | list | count > 0 }}

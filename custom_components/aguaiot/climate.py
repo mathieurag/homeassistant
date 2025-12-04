@@ -353,7 +353,6 @@ class AguaIOTAirDevice(AguaIOTClimateDevice):
     @property
     def target_temperature_step(self):
         """Return the supported step of target temperature."""
-        #return self._device.get_register(self._temperature_set_key).get("step", 1)
         return 0.5
 
     async def sync_clock(self):
@@ -509,7 +508,6 @@ class AguaIOTWaterDevice(AguaIOTClimateDevice):
     @property
     def target_temperature_step(self):
         """Return the supported step of target temperature."""
-        #return self._device.get_register(self._temperature_set_key).get("step", 1)
         return 0.5
 
 
@@ -697,8 +695,4 @@ class AguaIOTCanalizationDevice(AguaIOTClimateDevice):
     @property
     def target_temperature_step(self):
         """Return the supported step of target temperature."""
-        #if self.entity_description.key_temp_set in self._device.registers:
-            #return self._device.get_register(self.entity_description.key_temp_set).get(
-            #    "step", 1
-            #)
         return 0.5

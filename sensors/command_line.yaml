@@ -2,35 +2,32 @@ command_line:
   - sensor:
       name: UniFi Clients JSON
       unique_id: unifi_clients_json
-      command: >
-        bash -lc '/config/scripts/unifi/unifi_sta.sh >/dev/null 2>&1 || true;
-        cat /config/scripts/unifi/sta.json 2>/dev/null || echo "{\"meta\":{\"rc\":\"error\"},\"data\":[]}"'
+      command: /config/scripts/unifi/unifi_sta.sh
       scan_interval: 30
       command_timeout: 25
-      value_template: "{{ value_json.meta.rc | default('error') }}"
-      json_attributes: [data]
+      value_template: >
+        {% if value_json is defined and value_json.meta is defined %}
+          {{ value_json.meta.rc }}
+        {% else %}
+          error
+        {% endif %}
+      json_attributes:
+        - data
 
   - sensor:
       name: UniFi Device JSON
       unique_id: unifi_device_json
-      command: >
-        bash -lc '/config/scripts/unifi/unifi_device.sh >/dev/null 2>&1 || true;
-        cat /config/scripts/unifi/device.json 2>/dev/null || echo "{\"meta\":{\"rc\":\"error\"},\"data\":[]}"'
-      scan_interval: 60
+      command: /config/scripts/unifi/unifi_device.sh
+      scan_interval: 30
       command_timeout: 25
-      value_template: "{{ value_json.meta.rc | default('error') }}"
-      json_attributes: [data]
-
-  - sensor:
-      name: UniFi Sites JSON
-      unique_id: unifi_sites_json
-      command: >
-        bash -lc '/config/scripts/unifi/unifi_sites.sh >/dev/null 2>&1 || true;
-        cat /config/scripts/unifi/sites.json 2>/dev/null || echo "{\"meta\":{\"rc\":\"error\"},\"data\":[]}"'
-      scan_interval: 120
-      command_timeout: 25
-      value_template: "{{ value_json.meta.rc | default('error') }}"
-      json_attributes: [data]
+      value_template: >
+        {% if value_json is defined and value_json.meta is defined %}
+          {{ value_json.meta.rc }}
+        {% else %}
+          error
+        {% endif %}
+      json_attributes:
+        - data
 
   - sensor:
       name: NUC Promox Usbdisk

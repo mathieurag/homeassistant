@@ -20,7 +20,6 @@ API_PATH_DEVICE_REGISTERS_MAP = "/deviceGetRegistersMap"
 API_PATH_DEVICE_BUFFER_READING = "/deviceGetBufferReading"
 API_PATH_DEVICE_JOB_STATUS = "/deviceJobStatus/"
 API_PATH_DEVICE_WRITING = "/deviceRequestWriting"
-DEFAULT_TIMEOUT_VALUE = 30
 
 HEADER_ACCEPT = "application/json, text/javascript, */*; q=0.01"
 HEADER_CONTENT_TYPE = "application/json"
@@ -43,6 +42,8 @@ class aguaiot(object):
         air_temp_fix=False,
         reading_error_fix=False,
         language="ENG",
+        http_timeout=30,
+        buffer_read_timeout=30,
     ):
         self.api_url = api_url.rstrip("/")
         self.customer_code = customer_code
@@ -58,6 +59,8 @@ class aguaiot(object):
         self.refresh_token = None
         self.devices = list()
         self.async_client = async_client
+        self.http_timeout = http_timeout
+        self.buffer_read_timeout = buffer_read_timeout
 
         # Vendor specific fixes
         self.air_temp_fix = air_temp_fix
@@ -113,7 +116,7 @@ class aguaiot(object):
                     json=payload,
                     headers=self._headers(),
                     follow_redirects=False,
-                    timeout=DEFAULT_TIMEOUT_VALUE,
+                    timeout=self.http_timeout,
                 )
                 _LOGGER.debug(
                     "RESPONSE Register app - CODE: %s DATA: %s",
@@ -121,7 +124,7 @@ class aguaiot(object):
                     response.text,
                 )
         except httpx.TransportError as e:
-            raise ConnectionError(f"Connection error to {url}: {e}")
+            raise AguaIOTConnectionError(f"Connection error to {url}: {e}")
 
         if response.status_code != 201:
             _LOGGER.error(
@@ -129,7 +132,7 @@ class aguaiot(object):
                 response.status_code,
                 response.text,
             )
-            raise UnauthorizedError("Failed to register app id")
+            raise AguaIOTUnauthorized("Failed to register app id")
 
         return True
 
@@ -162,7 +165,7 @@ class aguaiot(object):
                     json=payload,
                     headers=headers,
                     follow_redirects=False,
-                    timeout=DEFAULT_TIMEOUT_VALUE,
+                    timeout=self.http_timeout,
                 )
                 _LOGGER.debug(
                     "RESPONSE Login - CODE: %s DATA: %s",
@@ -170,7 +173,7 @@ class aguaiot(object):
                     response.text,
                 )
         except httpx.TransportError as e:
-            raise ConnectionError(f"Connection error to {url}: {e}")
+            raise AguaIOTConnectionError(f"Connection error to {url}: {e}")
 
         if response.status_code != 200:
             _LOGGER.error(
@@ -178,7 +181,7 @@ class aguaiot(object):
                 response.status_code,
                 response.text,
             )
-            raise UnauthorizedError("Failed to login, please check credentials")
+            raise AguaIOTUnauthorized("Failed to login, please check credentials")
 
         res = response.json()
         self.token = res["token"]
@@ -208,7 +211,7 @@ class aguaiot(object):
                     json=payload,
                     headers=self._headers(),
                     follow_redirects=False,
-                    timeout=DEFAULT_TIMEOUT_VALUE,
+                    timeout=self.http_timeout,
                 )
                 _LOGGER.debug(
                     "RESPONSE Refresh token - CODE: %s DATA: %s",
@@ -216,11 +219,11 @@ class aguaiot(object):
                     response.text,
                 )
         except httpx.TransportError as e:
-            raise ConnectionError(f"Connection error to {url}: {e}")
+            raise AguaIOTConnectionError(f"Connection error to {url}: {e}")
 
         if response.status_code != 201:
             _LOGGER.warning("Refresh auth token failed, forcing new login...")
-            self.login()
+            await self.login()
             return
 
         res = response.json()
@@ -269,7 +272,6 @@ class aguaiot(object):
         """Fetch device information of heating devices"""
         for dev in self.devices:
             await dev.update_mapping()
-            await dev.update()
 
     async def update(self):
         for dev in self.devices:
@@ -293,7 +295,7 @@ class aguaiot(object):
                         json=payload,
                         headers=headers,
                         follow_redirects=False,
-                        timeout=DEFAULT_TIMEOUT_VALUE,
+                        timeout=self.http_timeout,
                     )
             else:
                 async with self.async_client as client:
@@ -302,7 +304,7 @@ class aguaiot(object):
                         params=payload,
                         headers=headers,
                         follow_redirects=False,
-                        timeout=DEFAULT_TIMEOUT_VALUE,
+                        timeout=self.http_timeout,
                     )
             _LOGGER.debug(
                 "RESPONSE %s - CODE: %s DATA: %s",
@@ -311,7 +313,7 @@ class aguaiot(object):
                 response.text,
             )
         except httpx.TransportError as e:
-            raise ConnectionError(f"Connection error to {url}: {e}")
+            raise AguaIOTConnectionError(f"Connection error to {url}: {e}")
 
         if response.status_code == 401:
             await self.do_refresh_token()
@@ -391,36 +393,64 @@ class Device(object):
             "BufferId": 1,
         }
 
-        res = await self.__aguaiot.handle_webcall("POST", url, payload)
-        if res is False:
+        res_req = await self.__aguaiot.handle_webcall("POST", url, payload)
+        if res_req is False:
             raise AguaIOTError("Error while making device buffer read request.")
 
-        id_request = res["idRequest"]
-        url = self.__aguaiot.api_url + API_PATH_DEVICE_JOB_STATUS + id_request
+        async def buffer_read_loop(id_request):
+            url = self.__aguaiot.api_url + API_PATH_DEVICE_JOB_STATUS + id_request
+            sleep_secs = 1
+            attempts = 1
 
-        payload = {}
-        for _ in range(10):
-            await asyncio.sleep(1)
+            try:
+                while True:
+                    await asyncio.sleep(sleep_secs)
 
-            res = await self.__aguaiot.handle_webcall("GET", url, payload)
-            if "jobAnswerStatus" in res and res["jobAnswerStatus"] == "completed":
-                break
+                    _LOGGER.debug("BUFFER READ (%s) ATTEMPT %s", id_request, attempts)
+                    res_get = await self.__aguaiot.handle_webcall("GET", url, {})
+                    _LOGGER.debug(
+                        "BUFFER READ (%s) STATUS: %s",
+                        id_request,
+                        res_get.get("jobAnswerStatus"),
+                    )
+                    if res_get.get("jobAnswerStatus") != "waiting":
+                        return res_get
 
-        if res is False or res["jobAnswerStatus"] != "completed":
-            raise AguaIOTError("Timeout on reply to device buffer read.")
+                    sleep_secs += 1
+                    attempts += 1
+            except asyncio.CancelledError:
+                raise
 
-        current_i = 0
-        information_dict = dict()
         try:
-            for item in res["jobAnswerData"]["Items"]:
-                information_dict.update(
-                    {item: res["jobAnswerData"]["Values"][current_i]}
-                )
-                current_i = current_i + 1
-        except KeyError:
-            raise AguaIOTError("Error in data received from device.")
+            res = await asyncio.wait_for(
+                buffer_read_loop(res_req["idRequest"]),
+                self.__aguaiot.buffer_read_timeout,
+            )
+        except asyncio.TimeoutError:
+            raise AguaIOTUpdateError(
+                f"Timeout on waiting device buffer read to complete within {self.__aguaiot.buffer_read_timeout} seconds."
+            )
 
-        self.__information_dict = information_dict
+        if not res:
+            raise AguaIOTUpdateError("Error while reading device buffer response.")
+
+        if res.get("jobAnswerStatus") == "completed":
+            current_i = 0
+            information_dict = dict()
+            try:
+                for item in res["jobAnswerData"]["Items"]:
+                    information_dict.update(
+                        {item: res["jobAnswerData"]["Values"][current_i]}
+                    )
+                    current_i = current_i + 1
+            except KeyError:
+                raise AguaIOTUpdateError("Error in data received from device.")
+
+            self.__information_dict = information_dict
+        else:
+            raise AguaIOTUpdateError(
+                f"Received unexpected 'jobAnswerStatus' while reading buffers: {res.get('jobAnswerStatus')}"
+            )
 
     def __prepare_value_for_writing(self, item, value, limit_value_raw=False):
         set_min = self.__register_map_dict[item]["set_min"]
@@ -506,8 +536,9 @@ class Device(object):
         return list(self.__register_map_dict.keys())
 
     def get_register(self, key):
+        register = self.__register_map_dict.get(key, {})
+
         try:
-            register = self.__register_map_dict[key]
             register["value_raw"] = str(
                 self.__information_dict[register["offset"]] & register["mask"]
             )
@@ -521,10 +552,10 @@ class Device(object):
                     "int": lambda a: int(a),
                 },
             )
-
-            return register
         except (KeyError, ValueError):
-            return {}
+            pass
+
+        return register
 
     def get_register_value(self, key):
         value = self.get_register(key).get("value")
@@ -659,15 +690,22 @@ class AguaIOTError(Exception):
         Exception.__init__(self, message)
 
 
-class UnauthorizedError(AguaIOTError):
+class AguaIOTUnauthorized(AguaIOTError):
     """Unauthorized"""
 
     def __init__(self, message):
         super().__init__(message)
 
 
-class ConnectionError(AguaIOTError):
+class AguaIOTConnectionError(AguaIOTError):
     """Connection error"""
+
+    def __init__(self, message):
+        super().__init__(message)
+
+
+class AguaIOTUpdateError(AguaIOTError):
+    """Update error"""
 
     def __init__(self, message):
         super().__init__(message)

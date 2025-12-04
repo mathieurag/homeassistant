@@ -103,6 +103,7 @@ logger:
     custom_components.bambu_lab.pybambu: error
     custom_components.bbox.coordinator: error
     homeassistant.components.recorder.db_schema: error
+    frontend.js.modern.202511051: critical
 
 my:
 

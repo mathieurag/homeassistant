@@ -71,6 +71,11 @@ CONF_ENDPOINT = "endpoint"
 CONF_BRAND_ID = "brand_id"
 CONF_BRAND = "brand"
 CONF_LANGUAGE = "language"
+CONF_AIR_TEMP_FIX = "air_temp_fix"
+CONF_READING_ERROR_FIX = "reading_error_fix"
+CONF_UPDATE_INTERVAL = "update_interval"
+CONF_HTTP_TIMEOUT = "http_timeout"
+CONF_BUFFER_READ_TIMEOUT = "buffer_read_timeout"
 
 AIR_VARIANTS = ["air", "air2", "air3", "air_palm"]
 WATER_VARIANTS = ["water", "h2o", "h2o_mandata"]
@@ -102,8 +107,6 @@ PLATFORMS = [
     Platform.NUMBER,
     Platform.SELECT,
 ]
-
-UPDATE_INTERVAL = 60
 
 ENDPOINTS = {
     "Alfapalm": {
@@ -495,6 +498,12 @@ SWITCHES = (
         icon="mdi:speedometer",
         device_class=SwitchDeviceClass.SWITCH,
     ),
+    SwitchEntityDescription(
+        key="eco_stop_set",
+        name="ECO Stop",
+        icon="mdi:leaf-off",
+        device_class=SwitchDeviceClass.SWITCH,
+    ),
 )
 
 NUMBERS = (
@@ -534,6 +543,15 @@ NUMBERS = (
         icon="mdi:fire",
         native_step=1,
         hybrid_only=True,
+    ),
+    AguaIOTNumberEntityDescription(
+        key="eco_temp_stop",
+        name="ECO Stop Time",
+        native_step=1,
+        native_unit_of_measurement="min",
+        native_min_value=0,
+        native_max_value=30,
+        force_enabled=True,
     ),
 )
 

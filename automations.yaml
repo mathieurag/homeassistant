@@ -247,6 +247,14 @@
     trigger: time
   conditions: []
   actions:
+  - action: shell_command.pve_cpu_mode
+    data:
+      mode: power
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
   - data:
       keep_days: 1
       entity_id:
@@ -275,6 +283,14 @@
       hours: 0
       minutes: 1
       seconds: 0
+      milliseconds: 0
+  - action: shell_command.pve_cpu_mode
+    data:
+      mode: power
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
       milliseconds: 0
   - data:
       keep_days: 1
@@ -340,6 +356,14 @@
       minutes: 1
       seconds: 0
       milliseconds: 0
+  - action: shell_command.pve_cpu_mode
+    data:
+      mode: power
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
   - data:
       entity_id:
       - sensor.consommation_non_suivie_moyenne
@@ -362,7 +386,11 @@
       - sensor.energie_estimee_batterie_dc
       - sensor.variation_consommation_brute
       - sensor.consommation_brute
+      - sensor.nuc_proxmox_cpu
+      - sensor.node_host_001_cpu_used
       keep_days: 0
+      entity_globs:
+      - sensor.udr7*
     action: recorder.purge_entities
   - delay:
       hours: 0
@@ -1362,70 +1390,6 @@
       seconds: 0
       milliseconds: 0
   mode: single
-- id: '1730799442676'
-  alias: Alerte TP-Link
-  description: ''
-  triggers:
-  - trigger: state
-    entity_id:
-    - sensor.deco_m5_cpu_used
-    for:
-      hours: 0
-      minutes: 4
-      seconds: 0
-  - trigger: state
-    entity_id:
-    - sensor.deco_m5_cpu_used
-    to: unavailable
-    for:
-      hours: 0
-      minutes: 1
-      seconds: 0
-  - trigger: state
-    entity_id:
-    - sensor.deco_m5_cpu_used
-    to: unknown
-    for:
-      hours: 0
-      minutes: 1
-      seconds: 0
-  conditions: []
-  actions:
-  - repeat:
-      sequence:
-      - action: homeassistant.reload_config_entry
-        metadata: {}
-        data: {}
-        target:
-          device_id: 9b77fab7a9aa7b4577e7cfe2d53e7375
-      - wait_for_trigger:
-        - trigger: template
-          value_template: '{{ float(states(''sensor.deco_m5_cpu_used''),0) > 0 }}'
-        timeout:
-          hours: 0
-          minutes: 5
-          seconds: 0
-          milliseconds: 0
-      while:
-      - condition: template
-        value_template: '{{ (is_state(''sensor.deco_m5_cpu_used'', ''unavailable'')
-          or is_state(''sensor.deco_m5_cpu_used'', ''unknown'')) and repeat.index
-          < 6 }}'
-  - if:
-    - condition: or
-      conditions:
-      - condition: state
-        entity_id: sensor.deco_m5_cpu_used
-        state: unavailable
-      - condition: state
-        entity_id: sensor.deco_m5_cpu_used
-        state: unknown
-    then:
-    - action: notify.persistent_notification
-      metadata: {}
-      data:
-        message: '⚠️ Pas de réponse de TP Link ! '
-  mode: single
 - id: '1730987726595'
   alias: Alerte Rain Sensor
   description: ''
@@ -2106,10 +2070,13 @@
   description: ''
   triggers:
   - trigger: state
+    id: planning
     entity_id:
     - schedule.calendrier_chauffage_salon
     from: 'off'
     to: 'on'
+  - trigger: time
+    at: 07:00:00
   conditions:
   - condition: state
     entity_id: input_boolean.automatisation
@@ -2133,6 +2100,7 @@
         target:
           device_id:
           - 2e6fb60152117ae32ea29b2814d6e54b
+      alias: Clim chambres
     - if:
       - condition: state
         entity_id: switch.disjoncteur_4_none
@@ -2148,10 +2116,15 @@
           device_id:
           - 95cac785555a1625a4b133475bc2c04b
       enabled: false
-    - if:
+      alias: Clim Salon
+    - alias: Prise TV
+      if:
       - condition: state
         entity_id: switch.prise_tv_local
         state: 'off'
+      - condition: trigger
+        id:
+        - planning
       then:
       - action: switch.turn_on
         metadata: {}
@@ -2170,6 +2143,7 @@
         target:
           device_id:
           - f6b1ca126ebf449238fb940da0aa0c2f
+      alias: Prise Lave Linge
     - if:
       - condition: state
         entity_id: switch.prise_lave_vaisselle_local
@@ -2181,6 +2155,7 @@
         target:
           device_id:
           - d4d1a674deef9c59116468790efc2b84
+      alias: Lave Vaisselle
   mode: single
 - id: '1732522539929'
   alias: Désactivation Prises connectées
@@ -2807,8 +2782,8 @@
   - entity_id:
     - sensor.hauteur_pellets
     for:
-      hours: 0
-      minutes: 30
+      hours: 1
+      minutes: 0
       seconds: 0
     trigger: state
   - entity_id:
@@ -4444,41 +4419,6 @@
   - delay: 00:05:00
   - action: shell_command.correction_marstek
   mode: single
-- id: '1760007343160'
-  alias: Alerte Deco
-  description: ''
-  triggers:
-  - trigger: state
-    entity_id:
-    - sensor.deco_m5_memory_used
-    to: unavailable
-    for:
-      hours: 0
-      minutes: 5
-      seconds: 0
-  - entity_id:
-    - sensor.deco_m5_cpu_used
-    for:
-      hours: 1
-      minutes: 0
-      seconds: 0
-    trigger: state
-  conditions: []
-  actions:
-  - data:
-      message: Pas de réponse de Deco ! {{trigger.from_state.attributes.friendly_name
-        }}
-    action: notify.notify
-    enabled: false
-  - action: notify.persistent_notification
-    data:
-      message: Pas de réponse de Deco ! {{trigger.from_state.attributes.friendly_name
-        }}
-    enabled: false
-  - action: homeassistant.reload_config_entry
-    data:
-      entry_id: 01K6AY58R58Z65ME301FMWH1BV
-  mode: single
 - id: '1760888218116'
   alias: Alerte Disque Externe
   description: ''
@@ -4626,6 +4566,13 @@
           entity_id: cfc8e4c00ec05ae6b721d21a975d1ccb
           type: set_hvac_mode
           hvac_mode: heat
+      - alias: Présent
+        if:
+        - condition: state
+          entity_id: input_boolean.mode_absent
+          state:
+          - 'off'
+        then:
         - action: switch.turn_off
           metadata: {}
           data: {}
@@ -4641,18 +4588,11 @@
           data: {}
           target:
             entity_id: switch.shelly_plus_1pm_01_switch_0
-      - if:
-        - condition: state
-          entity_id: input_boolean.mode_absent
-          state:
-          - 'off'
-        then:
         - device_id: 280904bd43829cf2b64d322cd3b67cd1
           domain: climate
           entity_id: c8d050f513f09480235a70a8a490c65b
           type: set_hvac_mode
           hvac_mode: heat
-        alias: Présent
   mode: single
 - id: '1762347085911'
   alias: Charge forcée batterie
@@ -4853,8 +4793,7 @@
     id: percentage_max
     entity_id:
     - sensor.system_monitor_utilisation_du_processeur
-    - sensor.esphome_pourcentage_du_processeur
-    - sensor.nuc_proxmox_cpu
+    - sensor.node_host_001_cpu_used
     above: 50
   - trigger: numeric_state
     id: percentage_min
@@ -4865,7 +4804,27 @@
       minutes: 2
       seconds: 0
     below: 10
-  conditions: []
+  conditions:
+  - condition: or
+    conditions:
+    - condition: and
+      conditions:
+      - condition: trigger
+        id:
+        - percentage_min
+      - condition: state
+        entity_id: sensor.cpu_mode
+        state:
+        - Power
+    - condition: and
+      conditions:
+      - condition: trigger
+        id:
+        - percentage_max
+      - condition: state
+        entity_id: sensor.cpu_mode
+        state:
+        - Eco
   actions:
   - choose:
     - conditions:
@@ -4913,16 +4872,16 @@
         - action: shell_command.pve_cpu_mode
           data:
             mode: eco
-    - delay:
-        hours: 0
-        minutes: 0
-        seconds: 5
-        milliseconds: 0
-    - action: homeassistant.update_entity
-      metadata: {}
-      data:
-        entity_id:
-        - sensor.cpu_mode
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - action: homeassistant.update_entity
+    metadata: {}
+    data:
+      entity_id:
+      - sensor.cpu_mode
   mode: single
 - id: '1763645726678'
   alias: Tirage d'eau
@@ -5066,13 +5025,11 @@
   - trigger: numeric_state
     entity_id:
     - sensor.prise_seche_serviette_power
-    - sensor.em06_b1_power
     id: power_off
     below: 1
   - trigger: numeric_state
     entity_id:
     - sensor.prise_seche_serviette_power
-    - sensor.em06_b1_power
     above: 0
     id: power_on
   conditions:
