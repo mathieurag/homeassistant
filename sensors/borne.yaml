@@ -1,0 +1,158 @@
+template:
+  - sensor:
+
+      - name: "Consommation Borne"
+        unique_id: "consommation_borne"
+        device_class: power # Exemples de valeurs possibles
+        state_class: measurement
+        unit_of_measurement: "W"
+        state: >
+          {% set em06 = states('sensor.em06_02_c2_power') | float(none) %}
+          {% set nrgkick = states('sensor.nrg_kick_total_active_power') | float(none) %}
+          
+          {% if em06 is not none or nrgkick is not none %}
+            {% if (em06 < 10 or nrgkick < 10) and (em06 > -10 or nrgkick > -10) %}
+              {{ 0 | float }}
+            {% else %}
+              {% if em06 == 0 %}
+                {{ nrgkick | float(0) }}
+              {% else %}
+                {{ em06 | float(0) }}
+              {% endif %}
+            {% endif %}
+          {% else %}
+            unavailable
+          {% endif %}
+        availability: >
+          {{ states('sensor.em06_02_c2_power') not in ['unknown', 'unavailable'] or 
+             states('sensor.nrg_kick_total_active_power') not in ['unknown', 'unavailable'] }}
+      - name: "Prix kWh Temps Réel"
+        unique_id: prix_kwh_temps_reel
+        unit_of_measurement: "EUR/kWh"
+        state_class: measurement
+        # AJOUT : On ne calcule que si le select est valide
+        availability: "{{ states('select.energie_consommee_j') not in ['unknown', 'unavailable'] }}"
+        state: >
+          {% set tarif = states('select.energie_consommee_j') %}
+          {% if tarif == 'HP' %} {{ states('input_number.prix_hp_kwh') | float(0) }}
+          {% elif tarif == 'HC' %} {{ states('input_number.prix_hc_kwh') | float(0) }}
+          {% elif tarif == 'HG' %} {{ states('input_number.prix_hg_kwh') | float(0) }}
+          {% else %} 0
+          {% endif %}
+
+      - name: "Coût Recharge Borne maison"
+        unique_id: cout_recharge_borne_maison
+        unit_of_measurement: "EUR"
+        state_class: total_increasing
+        device_class: monetary
+        # AJOUT : On ne calcule que si le capteur d'énergie est valide
+        availability: "{{ states('sensor.energie_borne') not in ['unknown', 'unavailable'] }}"
+        state: >
+          {% set current_energy = states('sensor.energie_borne') | float(0) %}
+          {% set price = states('sensor.prix_kwh_temps_reel') | float(0) %}
+          {% set mode_force = states('input_boolean.charge_vehicule_forcee') %}
+          {% set mode_solaire = states('input_boolean.charge_vehicule_solaire') %}
+
+          {% set last_energy = state_attr('sensor.cout_recharge_borne_maison', 'last_energy') | float(current_energy) %}
+          
+          {% set delta = max(0, current_energy - last_energy) %}
+          {% set cost_added = delta * price %}
+          
+          {% set previous_value = this.state | float(0) if this.state | is_number else 0 %}
+
+          {{(previous_value | float(0)) | round(2) }}
+          
+        attributes:
+          # On stocke l'index d'énergie actuel pour la prochaine fois
+          last_energy: "{{ states('sensor.energie_borne') }}"
+
+      - name: "Coût Réel Recharge Borne maison"
+        unique_id: cout_reel_recharge_borne_maison
+        unit_of_measurement: "EUR"
+        state_class: total_increasing
+        device_class: monetary
+        # AJOUT : On ne calcule que si le capteur d'énergie est valide
+        availability: "{{ states('sensor.energie_borne') not in ['unknown', 'unavailable'] }}"
+        state: >
+          {% set current_energy = states('sensor.energie_borne') | float(0) %}
+          {% set price = states('sensor.prix_kwh_temps_reel') | float(0) %}
+          {% set mode_force = states('input_boolean.charge_vehicule_forcee') %}
+
+          {% set last_energy = state_attr('sensor.cout_reel_recharge_borne_maison', 'last_energy') | float(current_energy) %}
+          
+          {% set delta = max(0, current_energy - last_energy) %}
+          {% set cost_added = delta * price %}
+          
+          {% set previous_value = this.state | float(0) if this.state | is_number else 0 %}
+
+          {% if mode_force == 'on' %} {{ (previous_value | float(0) + cost_added) | round(2) }}
+          {% else %} {{ (previous_value | float(0)) | round(2) }}
+          {% endif %}
+          
+        attributes:
+          # On stocke l'index d'énergie actuel pour la prochaine fois
+          last_energy: "{{ states('sensor.energie_borne') }}"
+
+      # 1. Total des Km gagnés (Total Increasing)
+      - name: "Total Km Recharge"
+        unique_id: total_km_recharge
+        unit_of_measurement: "km"
+        state_class: total_increasing
+        availability: "{{ states('sensor.energie_borne') not in ['unknown', 'unavailable'] }}"
+        state: >
+          {% set current_energy = states('sensor.energie_borne') | float(0) %}
+          {% set last_energy = state_attr('sensor.total_km_recharge', 'last_energy') | float(current_energy) %}
+          {% set conso_100km = states('input_number.conso_vehicule_kwh_100km') | float(15) %}
+          
+          {# Calcul du delta et conversion kWh -> km #}
+          {% set delta_energy = (current_energy - last_energy) | max(0) %}
+          {% set delta_km = (delta_energy / (conso_100km / 100)) %}
+          
+          {{ (this.state | float(0) + delta_km) | round(1) }}
+        attributes:
+          last_energy: "{{ states('sensor.energie_borne') }}"
+
+      # 2. Coût moyen par Km
+      - name: "Coût moyen par Km"
+        unique_id: cout_moyen_par_km
+        unit_of_measurement: "EUR/km"
+        state_class: measurement
+        availability: >
+          {{ states('sensor.depense_recharge_borne_maison') | float(0) > 0 
+             and states('sensor.total_km_recharge') | float(0) > 0 }}
+        state: >
+          {% set total_cost = states('sensor.depense_recharge_borne_maison') | float(0) %}
+          {% set total_km = states('sensor.total_km_recharge') | float(0) %}
+          {{ (total_cost / total_km) | round(3) }}
+
+      - name: "Total Énergie Recharge Perso"
+        unique_id: total_energie_recharge_perso_kwh
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        state: >
+          {{ states('input_number.energie_recharge_perso') | float(0) }}
+
+      - name: "Total Énergie Recharge Pro"
+        unique_id: total_energie_recharge_pro_kwh
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        state: >
+          {{ states('input_number.energie_recharge_pro') | float(0) }}
+
+      - name: "Total Coût Recharge Perso"
+        unique_id: total_cout_recharge_perso
+        unit_of_measurement: "EUR"
+        device_class: monetary
+        state_class: total_increasing
+        state: >
+          {{ states('input_number.cout_recharge_perso') | float(0) }}
+
+      - name: "Total Coût Recharge Pro"
+        unique_id: total_cout_recharge_pro
+        unit_of_measurement: "EUR"
+        device_class: monetary
+        state_class: total_increasing
+        state: >
+          {{ states('input_number.cout_recharge_pro') | float(0) }}

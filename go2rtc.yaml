@@ -1,0 +1,41 @@
+
+streams:
+  garage:
+    - "homekit://192.168.68.105:37131?client_id=418d0545-5d4a-48b0-b4f9-ae3e01d0e5da&client_private=6da547a9fc32d492c37ab3fc3f4af613a9862208ccc76b8be2231c3350e1403308b65f64d8b588ad8fce01503c2cc2998132bcf6be0d1d0019396e74c34059f8&device_id=F8:67:72:46:EE:24&device_public=29176e7f361993535177ad2e7173dc1833d275d0528349bc533f7f6abc755af7"
+  garage_aac:
+    - "ffmpeg:garage#video=copy#audio=aac#-ar#32000#-ac#1"
+  entree:
+    - "homekit://192.168.68.104:37337?client_id=a0fdcfa6-7412-4cce-bb17-9124d55ff401&client_private=bb3bd930bf8038e8e5c9f0cb00b5fb44e50df15c5702342df55ec79f9eff201df0e34a350fed34f5420ba2403ba476af2ee5e5e98493e5e308c16a4cdbc2e42d&device_id=EB:B2:DB:5B:74:15&device_public=425d6c817dae2a1aba15f2fa67750ca3406a5ec6fd1b93f6cc52c51dff13c16d"
+  entree_aac:
+    - "ffmpeg:entree#video=copy#audio=aac#-ar#32000#-ac#1"
+  #entree_unifi:
+  #- rtsp://127.0.0.1:8554/entree?video
+  #- "ffmpeg:lavfi#audio=anullsrc=channel_layout=mono:sample_rate=44100##audio=aac#args=-fflags +nobuffer+genpts+flush_packets -flags +low_delay"
+  entree_unifi:
+  #- "rtsp://127.0.0.1:8554/entree?video"
+    - "ffmpeg:entree#video=copy#audio=aac#-ar#32000#-ac#1#-metadata:s:v:0#tick_rate=60000/1001"
+  sonnette:
+    - "homekit://192.168.68.102:43327?client_id=cfc7354e-d5f0-4deb-8345-74dc0f331a0d&client_private=33e44c2d3e444d8e73c1f9b60edc0be63b7ff28230ab9dd750e71dc58b0bb9e5d479aa0e69666a8af3c63a7c21904dcf572e65b63e97673e6104c1cf7970acca&device_id=BA:A9:2F:48:23:9E&device_public=f44c440b7478bc57f62b69a4fc07b0a995fe009b839196c5a489ef2dd5b694b4"
+  sonnette_aac:
+    - "ffmpeg:sonnette#video=copy#audio=aac#-ar#32000#-ac#1"
+    
+rtsp:
+  listen: ":8554"
+  # Réduit le buffer pour envoyer les paquets dès qu'ils arrivent
+  #out_buffer: 0
+
+onvif:
+  - listen: ":10001" # Pour l'Entrée
+    username: admin
+    password: password
+    name: "Cam-Entree"
+  
+  - listen: ":10002" # Pour le Garage
+    username: admin
+    password: password
+    name: "Cam-Garage"
+
+  - listen: ":10003" # Pour la Sonnette
+    username: admin
+    password: password
+    name: "Cam-Sonnette"

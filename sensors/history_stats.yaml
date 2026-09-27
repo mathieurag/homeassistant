@@ -1,0 +1,41 @@
+sensor:
+  #WATERMETER
+
+    #ECS
+  - platform: history_stats
+    name: temps_allumage_ecs_today
+    entity_id: input_boolean.ecs
+    state: "on"
+    type: time
+
+    start: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
+    end: "{{ now() }}"
+    unique_id: "temps_allumage_ecs_today"
+
+  - platform: history_stats
+    name: temps_allumage_ecs_hier
+    entity_id: input_boolean.ecs
+    state: "on"
+    unique_id: "temps_allumage_ecs_hier"
+    type: time
+    end: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
+    duration:
+      hours: 24
+
+  - platform: history_stats
+    name: temps_allumage_ecs_semaine
+    entity_id: input_boolean.ecs
+    state: "on"
+    unique_id: "temps_allumage_ecs_semaine"
+    type: time
+    start: "{{ as_timestamp( now().replace(hour=0, minute=0, second=0, microsecond=0) ) - now().weekday() * 86400 }}"
+    end: "{{ now() }}"
+
+  - platform: history_stats
+    name: temps_allumage_ecs_mois
+    entity_id: input_boolean.ecs
+    state: "on"
+    unique_id: "temps_allumage_ecs_mois"
+    type: time
+    start: "{{ now().replace(day=1, hour=0, minute=0, second=0, microsecond=0 ) }}"
+    end: "{{ now() }}"

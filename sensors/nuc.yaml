@@ -1,0 +1,99 @@
+template:
+  - sensor:
+      - name: "NUC Proxmox Fréquence"
+        unique_id: nuc_proxmox_freq
+        unit_of_measurement: "MHz"
+        state: "{{ state_attr('sensor.nuc_proxmox','freq_eff')}}"
+        state_class: measurement
+        device_class: frequency
+      - name: "NUC Proxmox Power"
+        unique_id: nuc_proxmox__power_w
+        unit_of_measurement: "W"
+        state: "{{ (state_attr('sensor.nuc_proxmox','power_w') | float(0)) | round(1) }}"
+        state_class: measurement
+        device_class: power
+      - name: "NUC Proxmox CPU Temp"
+        unique_id: nuc_proxmox_cpu_temp
+        unit_of_measurement: "°C"
+        state: "{{ (state_attr('sensor.nuc_proxmox','pkg_temp_c') | float(0)) | round(1) }}"
+        state_class: measurement
+        device_class: temperature
+      - name: "NUC Proxmox NVME Temp"
+        unique_id: nuc_proxmox_nvme_temp
+        unit_of_measurement: "°C"
+        state: "{{ (state_attr('sensor.nuc_proxmox','nvme_temp') | float(0)) | round(1) }}"
+        state_class: measurement
+        device_class: temperature
+      - name: "NUC Proxmox CPU %"
+        unique_id: nuc_proxmox_cpu_pct
+        unit_of_measurement: "%"
+        state: "{{ (state_attr('sensor.nuc_proxmox','cpu_pct') | float(0)) | round(1) }}"
+        state_class: measurement
+      - name: "NUC Proxmox Core Temp"
+        unique_id: nuc_proxmox_core_temp
+        unit_of_measurement: "°C"
+        state: "{{ (state_attr('sensor.nuc_proxmox','core_avg_c') | float(0)) | round(1) }}"
+        state_class: measurement
+      - name: "NUC Proxmox CState"
+        unique_id: nuc_proxmox_cstate
+        unit_of_measurement: "%"
+        state: "{{ (state_attr('sensor.nuc_proxmox_energy','c3_pct') | float(0)) | round(1) }}"
+        state_class: measurement
+
+      - name: "NUC Proxmox Power PPT-F HX370"
+        unique_id: nuc_proxmox_ppt_f_hx370
+        unit_of_measurement: "W"
+        state: "{{ (state_attr('sensor.nuc_proxmox_hx370','sys')['ppt_f'] | float(0)) | round(1) }}"
+        state_class: measurement
+        device_class: power
+      - name: "NUC Proxmox Power PPT-S HX370"
+        unique_id: nuc_proxmox_ppt_s_hx370
+        unit_of_measurement: "W"
+        state: "{{ (state_attr('sensor.nuc_proxmox_hx370','sys')['ppt_s'] | float(0)) | round(1) }}"
+        state_class: measurement
+        device_class: power
+      - name: "NUC Proxmox KVM HX370"
+        unique_id: nuc_proxmox_kvm_hx370
+        unit_of_measurement: "%"
+        state: "{{ (state_attr('sensor.nuc_proxmox_hx370','sys')['kvm_pct']  | float(0)) | round(0) }}"
+        state_class: measurement
+      - name: "NUC Proxmox NVME USB HX370"
+        unique_id: nuc_proxmox_nvme_usb_hx370
+        unit_of_measurement: "°C"
+        state: "{{ (state_attr('sensor.nuc_promox_usbdisk','nvme_usb_temp')  | float(0)) | round(0) }}"
+        state_class: measurement
+        device_class: temperature
+
+      - name: "Loki PVE Liste"
+        unique_id: sensor_loki_pve_liste
+        icon: mdi:shield-alert
+        state_class: measurement
+        state: >
+          {% set result = state_attr('sensor.loki_pve_drops', 'result') %}
+          {% if result is iterable and result | length > 0 %}
+            {{ result[0]['values'] | length }}
+          {% else %}
+            0
+          {% endif %}
+        attributes:
+          # On stocke le résultat brut sans aucune boucle for
+          entries: >
+            {% set result = state_attr('sensor.loki_pve_drops', 'result') %}
+            {{ result[0]['values'] if result is iterable and result | length > 0 else [] }}
+
+      - name: "Loki PVE Liste N97"
+        unique_id: sensor_loki_pve_liste_n97
+        icon: mdi:shield-alert
+        state_class: measurement
+        state: >
+          {% set result = state_attr('sensor.loki_pve_drops_n97', 'result') %}
+          {% if result is iterable and result | length > 0 %}
+            {{ result[0]['values'] | length }}
+          {% else %}
+            0
+          {% endif %}
+        attributes:
+          # On stocke le résultat brut sans aucune boucle for
+          entries: >
+            {% set result = state_attr('sensor.loki_pve_drops_n97', 'result') %}
+            {{ result[0]['values'] if result is iterable and result | length > 0 else [] }}

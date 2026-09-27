@@ -1,0 +1,55 @@
+# 1. Ignorer tout par défaut
+*
+
+# 2. Ouvrir l'accès aux dossiers (Indispensable pour que Git puisse entrer dedans)
+!*/
+
+# 3. Ré-ignorer spécifiquement les dossiers lourds (mais laisser entrer dans custom_components)
+custom_components/*
+esphome/fonts/*
+
+# 4. LES EXCEPTIONS (Ce qu'on veut synchroniser)
+!*.yaml
+!.gitignore
+!packages/**
+!sensors/**
+!python_scripts/**
+!blueprints/**
+!esphome/**
+!zigbee2mqtt/**
+!www/**
+!lovelace*
+!scripts/**
+
+# LE CAS SPÉCIFIQUE REFOSS
+!custom_components/refoss/
+!custom_components/refoss/**
+
+# 5. SÉCURITÉ ET NETTOYAGE (Priorité haute, en bas de fichier)
+# On ignore les fichiers sensibles et les résidus de dossiers
+*.db
+*.db-shm
+*.db-wal
+*.log
+*.log*
+*.csv
+__pycache__/
+.storage/
+.cloud/
+.ssh/
+.google.token
+core.*
+tts/
+esphome/archive/
+esphome/fonts/
+python_scripts/
+secrets.yaml
+ip_bans.yaml
+known_devices.yaml
+packages/refoss_ha
+zigbee2mqtt/state.json
+myelectricaldata/
+scripts/
+www/community/
+www/ecs_calib/
+*db*

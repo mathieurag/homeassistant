@@ -1,0 +1,127 @@
+homeassistant:
+  packages: !include_dir_named sensors
+  allowlist_external_dirs:
+    - /config
+  auth_providers:
+    - type: trusted_networks
+      trusted_networks:
+        - 192.168.68.0/24 # Réseau local
+        - 100.100.168.0/24 # Réseau interne de Tailscale
+      allow_bypass_login: true
+    - type: homeassistant
+
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+  extra_module_url:
+    - /local/card-mod.js
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+mqtt_statestream:
+  base_topic: ha2evcc
+  publish_attributes: false
+  publish_timestamps: false
+  include:
+    entities:
+      - sensor.consommation_reseau
+      - sensor.consommation_batterie
+      - sensor.consommation_borne
+      - sensor.consommation_cumulus
+      - sensor.consommation_maison
+      - sensor.production_solaire
+      - sensor.surplus_production
+      - sensor.esphome_web_a92940_marstek_battery_state_of_charge
+      - sensor.em06_02_b1_power
+      - sensor.esphome_web_a92940_marstek_inverter_state
+
+logbook:
+  exclude:
+    domains:
+      - climate
+      - device_tracker
+      - update
+    entity_globs:
+      - sensor.estar*
+      - sensor.*last_boot
+      - sensor.*last_restart
+      - binary_sensor.*motion_sensor
+      - binary_sensor.estar*
+      - binary_sensor.detection*
+      - input_text.bronpi*
+      - sensor.bronpi*
+      - automation.*bronpi*
+      - sensor.*vu_pour_la_derniere_fois
+      - sensor.*marstek*
+      - automation.*batterie*
+      - sensor.estimation_temps_restant_batterie*
+      - input_number.*frigo*
+      - sensor.*frigo*
+      - number.esphome_web_a92940_marstek_forcible_*
+      - sensor.*json*
+      - camera.l40s_pro_ultra_map
+      - number.marstek_1_maximum_discharge_power
+      - sensor.consommation_*
+      - sensor.simulation*
+      - sensor.comparaison*
+      - sensor.mathieu_pc_hx370*
+      - sensor.kvm_nut_*
+      - automation.*
+      - input_text.estar_token_input
+      - sensor.suivi_pv*
+      - input_datetime.dernier_cycle_frigo
+      - sensor.abe2gf2*
+      - sensor.maj_linky*
+      - sensor.top_values*
+      - sensor.solcast_pv_forecast_*
+      - input_number.*
+      - button.*
+      - select.marstek_1_*
+      - number.marstek_1_*
+      - sensor.cyberpower_*
+      - switch.clim*
+
+# Purge de la base
+recorder:
+  purge_keep_days: 5
+  auto_repack: true
+  auto_purge: true
+  commit_interval: 60
+  exclude:
+    entities:
+      - sensor.unifi_clients_json
+      - sensor.unifi_device_json
+      - automation.charge_batterie_pilotee
+      - camera.l40s_pro_ultra_map
+
+system_log:
+  fire_event: true
+
+logger:
+  default: info
+  logs:
+    homeassistant.components.gree.coordinator: error
+    homeassistant.components.websocket_api.http.connection: error
+    homeassistant.components.automation.simulation_pv: error
+    greeclimate.discovery: warning
+    pyhap.hap_protocol: warning
+    root: warning
+    aioesphomeapi.reconnect_logic: error
+    custom_components.tuya_local.climate: info
+    custom_components.aguaiot: info
+    py.warnings: error
+    aioesphomeapi.connection: error
+    homeassistant.loader: error
+    homeassistant.helpers.frame: error
+    custom_components.bambu_lab.pybambu: error
+    homeassistant.components.recorder.db_schema: debug
+    custom_components.stellantis_vehicles.stellantis: error
+    frontend.js.modern.202511051: debug
+
+my:
+a_file_logger:

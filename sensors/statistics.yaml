@@ -1,0 +1,10 @@
+sensor:
+  - platform: statistics
+    name: consommation_non_suivie_moyenne
+    entity_id: sensor.consommation_non_suivie
+    state_characteristic: mean
+    unique_id: "consommation_non_suivie_moyenne"
+    max_age:
+      minutes: 5
+    sampling_size: 50
+    precision: 1

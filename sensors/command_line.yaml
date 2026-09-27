@@ -1,0 +1,35 @@
+command_line:
+  - sensor:
+      name: UniFi Clients JSON
+      unique_id: unifi_clients_json
+      command: "/bin/bash /config/scripts/unifi/unifi_sta.sh"
+      scan_interval: 30
+      command_timeout: 45
+      value_template: "{{ value_json.data | length if value_json.data is defined else 'error' }}"
+      json_attributes:
+        - data
+
+  - sensor:
+      name: UniFi Device JSON
+      unique_id: unifi_device_json
+      command: "/bin/bash /config/scripts/unifi/unifi_device.sh"
+      scan_interval: 30
+      command_timeout: 45
+      value_template: "{{ value_json.meta.rc if value_json.meta is defined else 'error' }}"
+      json_attributes:
+        - data
+
+  #- sensor:
+  #    name: "CPU Mode"
+  #    unique_id: pve_cpu_mode
+  #    command: >-
+  #      ssh 
+  #      -i /config/ssh/id_rsa
+  #      -o BatchMode=yes
+  #      -o ConnectTimeout=5
+  #      -o StrictHostKeyChecking=no
+  #      -o UserKnownHostsFile=/config/ssh/known_hosts
+  #      root@192.168.68.150 "/root/pve-cpu-mode --mode-only"
+  #    value_template: "{{ value | trim | lower | capitalize }}"
+  #    command_timeout: 10
+  #    scan_interval: 300

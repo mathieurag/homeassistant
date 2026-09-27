@@ -1,0 +1,96 @@
+substitutions:
+  name: esphome-web-27f580
+  friendly_name: ESP32-POELE
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  min_version: 2024.6.0
+  name_add_mac_suffix: false
+  project:
+    name: esphome.web
+    version: dev
+
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+    
+
+bluetooth_proxy:
+    active: True
+
+# Enable logging
+logger:
+
+# Allow provisioning Wi-Fi via serial
+improv_serial:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret encryption_key
+    
+# Allow Over-The-Air updates
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  use_address: 192.168.68.130
+  
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: !secret wifi_ssid_fallback
+    password: !secret wifi_password_fallback
+# In combination with the `ap` this allows the user
+# to provision wifi credentials to the device via WiFi AP.
+captive_portal:
+
+# Sets up Bluetooth LE (Only on ESP32) to allow the user
+# to provision wifi credentials to the device.
+esp32_improv:
+  authorizer: none
+
+# To have a "next url" for improv serial
+web_server:
+
+sensor:
+  - platform: ultrasonic
+    trigger_pin: 2
+    echo_pin: 15
+    name: "Hauteur pellets brute"
+    id: hauteur_pellets
+    update_interval: 5s
+    timeout: 2m
+    pulse_time: 10us
+    unit_of_measurement: "cm"
+    accuracy_decimals: 1
+    filters:
+      - clamp:
+          min_value: 0.02
+          max_value: 0.45
+      - multiply: 100
+      - median:
+          window_size: 3
+      - lambda: |-
+          static float buffer[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+          static int index = 0;
+          static float last_valid = 4.0;  // Valeur initiale réaliste
+          buffer[index] = x;
+          index = (index + 1) % 6;
+          if (index == 0) {
+            float sum = 0.0;
+            for (int i = 0; i < 6; i++) {
+              sum += buffer[i];
+            }
+            last_valid = sum / 6.0;
+          }
+          return last_valid;
+      - round: 1
+
+
+

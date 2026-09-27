@@ -1,0 +1,241 @@
+multiscrape:
+
+rest:
+  - resource: "http://71dadad1-grafana-loki:3100/loki/api/v1/query_range"
+    scan_interval: 15
+    params:
+      query: '{job="pve_firewall"} |= "policy DROP"'
+      limit: 100
+      end: "{{ (now().timestamp() * 1000000000) | int }}"
+      start: "{{ ((now().timestamp() - 3600) * 1000000000) | int }}"
+    sensor:
+      - name: "Loki PVE Drops"
+        unique_id: loki_pve_drops
+        value_template: "{{ value_json.status if value_json is defined else 'indisponible' }}"
+        json_attributes_path: "$.data"
+        json_attributes:
+          - result
+
+  - resource: "http://71dadad1-grafana-loki:3100/loki/api/v1/query_range"
+    scan_interval: 15
+    params:
+      query: '{job="pve_firewall_n97"} |= "policy DROP"'
+      limit: 100
+      end: "{{ (now().timestamp() * 1000000000) | int }}"
+      start: "{{ ((now().timestamp() - 3600) * 1000000000) | int }}"
+    sensor:
+      - name: "Loki PVE Drops N97"
+        unique_id: loki_pve_drops_n97
+        value_template: "{{ value_json.status if value_json is defined else 'indisponible' }}"
+        json_attributes_path: "$.data"
+        json_attributes:
+          - result
+  ##########################
+  #ESTAR
+  ##########################
+
+  #TOKEN
+
+  - authentication: basic
+    username: !secret login_estar
+    password: !secret password_estar
+    scan_interval: 10000
+    method: POST
+    payload: !secret payload_estar
+    resource: "https://monitor.estarpower.com/platform/api/gateway/iam/auth_login"
+    headers:
+      Content-Type: application/json;charset=UTF-8
+      Cookie: estar_token_language=fr_fr
+    sensor:
+      - name: "Estar Token"
+        unique_id: "estar_token"
+        json_attributes_path: "$.data"
+        value_template: "{{ value_json.message }}"
+        icon: mdi:cookie
+        json_attributes:
+          - "token"
+
+  #DATA DCU ET MO
+
+  - authentication: basic
+    username: !secret login_estar
+    password: !secret password_estar
+    scan_interval: 60
+    method: POST
+    payload: !secret payload_estar2
+    resource: "https://monitor.estarpower.com/platform/api/gateway/pvm/station_select_device_of_tree"
+    headers:
+      Content-Type: application/json;charset=UTF-8
+      Cookie: "{{ states('input_text.estar_token_input')}}"
+    sensor:
+      - name: "Estar DCU"
+        unique_id: "estar_dcu_data"
+        icon: mdi:network-pos
+        json_attributes_path: "$.data[0]"
+        value_template: "{{ value_json.data[0].warn_data.connect}}"
+        json_attributes:
+          - "id"
+          - "vc"
+          - "sn"
+          - "model_no"
+          - "soft_ver"
+          - "hard_ver"
+          - "warn_data"
+      - name: "Estar MO1"
+        unique_id: "estar_mo1_data"
+        icon: mdi:solar-panel
+        json_attributes_path: "$.data[0].children[0]"
+        value_template: "{{ value_json.data[0].children[0].warn_data.connect}}"
+        json_attributes:
+          - "id"
+          - "sn"
+          - "vc"
+          - "dtu_sn"
+          - "type"
+          - "model_no"
+          - "soft_ver"
+          - "hard_ver"
+          - "warn_data"
+          - "extend_data"
+      - name: "Estar MO2"
+        unique_id: "estar_mo2_data"
+        icon: mdi:solar-panel
+        json_attributes_path: "$.data[0].children[1]"
+        value_template: "{{ value_json.data[0].children[1].warn_data.connect}}"
+        json_attributes:
+          - "id"
+          - "sn"
+          - "vc"
+          - "dtu_sn"
+          - "type"
+          - "model_no"
+          - "soft_ver"
+          - "hard_ver"
+          - "warn_data"
+          - "extend_data"
+      - name: "Estar MO3"
+        unique_id: "estar_mo3_data"
+        icon: mdi:solar-panel
+        json_attributes_path: "$.data[0].children[2]"
+        value_template: "{{ value_json.data[0].children[2].warn_data.connect}}"
+        json_attributes:
+          - "id"
+          - "sn"
+          - "vc"
+          - "dtu_sn"
+          - "type"
+          - "model_no"
+          - "soft_ver"
+          - "hard_ver"
+          - "warn_data"
+          - "extend_data"
+      - name: "Estar MO4"
+        unique_id: "estar_mo4_data"
+        icon: mdi:solar-panel
+        json_attributes_path: "$.data[0].children[3]"
+        value_template: "{{ value_json.data[0].children[3].warn_data.connect}}"
+        json_attributes:
+          - "id"
+          - "sn"
+          - "vc"
+          - "dtu_sn"
+          - "type"
+          - "model_no"
+          - "soft_ver"
+          - "hard_ver"
+          - "warn_data"
+          - "extend_data"
+      - name: "Estar MO5"
+        unique_id: "estar_mo5_data"
+        icon: mdi:solar-panel
+        json_attributes_path: "$.data[0].children[4]"
+        value_template: "{{ value_json.data[0].children[4].warn_data.connect}}"
+        json_attributes:
+          - "id"
+          - "sn"
+          - "vc"
+          - "dtu_sn"
+          - "type"
+          - "model_no"
+          - "soft_ver"
+          - "hard_ver"
+          - "warn_data"
+          - "extend_data"
+    binary_sensor:
+      - name: "Estar DCU"
+        unique_id: "estar_dcu_binary"
+        device_class: connectivity
+        value_template: "{{ value_json.data[0].warn_data.connect}}"
+      - name: "Estar MO1"
+        unique_id: "estar_mo1_binary"
+        device_class: connectivity
+        value_template: "{{ value_json.data[0].children[0].warn_data.connect}}"
+      - name: "Estar MO2"
+        unique_id: "estar_mo2_binary"
+        device_class: connectivity
+        value_template: "{{ value_json.data[0].children[1].warn_data.connect}}"
+      - name: "Estar MO3"
+        unique_id: "estar_mo3_binary"
+        device_class: connectivity
+        value_template: "{{ value_json.data[0].children[2].warn_data.connect}}"
+      - name: "Estar MO4"
+        unique_id: "estar_mo4_binary"
+        device_class: connectivity
+        value_template: "{{ value_json.data[0].children[3].warn_data.connect}}"
+      - name: "Estar MO5"
+        unique_id: "estar_mo5_binary"
+        device_class: connectivity
+        value_template: "{{ value_json.data[0].children[4].warn_data.connect}}"
+
+  #DONNEES CENTRALE
+
+  - scan_interval: 60
+    method: POST
+    payload: !secret payload_estar3
+    resource: "https://monitor.estarpower.com/platform/api/gateway/pvm-data/data_count_station_real_data"
+    headers:
+      Host: monitor.estarpower.com
+      Content-Type: application/json
+      Cookie: "{{ states('input_text.estar_token_input')}}"
+    sensor:
+      - name: "Estar Centrale"
+        unique_id: "estar_centrale"
+        icon: mdi:solar-power-variant
+        json_attributes_path: "$.data"
+        value_template: "{{ value_json.data.capacitor}}"
+        device_class: power
+        unit_of_measurement: kW
+        json_attributes:
+          - "real_power"
+          - "plant_tree"
+          - "data_time"
+          - "last_data_time"
+          - "capacitor"
+          - "is_balance"
+          - "is_reflux"
+      - name: "Estar Centrale Power"
+        unique_id: "estar_centrale_power"
+        icon: mdi:lightning-bolt
+        json_attributes_path: "$.data.reflux_station_data"
+        value_template: "{{ value_json.data.reflux_station_data.pv_power}}"
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        json_attributes:
+          - "pv_power"
+          - "grid_power"
+          - "load_power"
+      - name: "Estar MAJ Data"
+        unique_id: "estar_maj_data"
+        icon: mdi:clock
+        value_template: "{{ value_json.data.last_data_time | as_datetime | relative_time }}"
+      - name: "Estar Centrale Energy"
+        unique_id: "estar_centrale_energy"
+        icon: mdi:flash
+        json_attributes_path: "$.data"
+        value_template: "{{ value_json.data.today_eq}}"
+        unit_of_measurement: Wh
+        json_attributes:
+          - "today_eq"
+          - "month_eq"
+          - "year_eq"

@@ -1,0 +1,19 @@
+template:
+  - sensor:
+      #ECS
+
+      - name: "Taux de chauffe ECS"
+        unique_id: "taux_chauffe_ecs"
+        unit_of_measurement: "%"
+        device_class: power_factor # Exemples de valeurs possibles
+        state_class: measurement # Exemples de valeurs possibles
+        state: "{{ (100*(float(states('sensor.sonde_temperature_owon_temperature'),15) - float(states('input_number.tmin_ecs'),60) )/ (float(states('input_number.tmax_ecs'),60)-float(states('input_number.tmin_ecs'),15) ) )| round(0) }}"
+
+
+      #PELLETS
+      - name: "Taux de remplissage pellets"
+        state: "{{ max(min((42 - 4 - float(states('sensor.hauteur_pellets'),0) + 4)/(( 42 - 4) / 100),100),0)| round(0)}}"
+        unique_id: "taux_remplissage_pellets"
+        unit_of_measurement: "%"
+        state_class: measurement # Exemples de valeurs possibles
+        device_class: battery # Exemples de valeurs possibles

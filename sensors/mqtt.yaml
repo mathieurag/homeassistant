@@ -1,0 +1,269 @@
+mqtt:
+  - binary_sensor:
+      - name: "KVM-NUT UPS State"
+        unique_id: "kvm_nut_ups_state"
+        state_topic: "proxmox/kvm-nut/telemetry"
+        value_template: "{{ value_json.ups_service.communication }}"
+        payload_on: "online"
+        payload_off: "offline"
+        device_class: connectivity
+        entity_category: diagnostic
+        icon: mdi:usb-port
+        expire_after: 130
+
+  - sensor:
+      # ESTAR
+      - name: "Estar Data"
+        unique_id: estar_data_details
+        state_topic: "estar/production"
+        value_template: "{{ value_json.total_puissance | default(0) }}"
+        json_attributes_topic: "estar/production"
+
+      - name: "NUC Proxmox"
+        unique_id: "nuc_proxmox"
+        unit_of_measurement: "MHz"
+        device_class: frequency
+        state_topic: "proxmox/telemetry"
+        value_template: "{{ value_json.freq_eff }}"
+        json_attributes_topic: "proxmox/telemetry"
+
+      - name: "NUC Proxmox Energy"
+        unique_id: nuc_proxmox_energy
+        state_topic: "proxmox/telemetry/energy"
+        value_template: "{{ value_json.energy.governor | default('unknown') }}"
+        json_attributes_topic: "proxmox/telemetry/energy"
+        json_attributes_template: "{{ value_json.energy | tojson }}"
+        icon: mdi:chip
+
+      - name: "NUC Promox Usbdisk"
+        unique_id: "nuc_proxmox_usbdisk"
+        state_topic: "proxmox/ryzen/telemetry/usbdisk"
+        value_template: "{{ value_json.files_total }}"
+        # On fusionne les blocs sys et energy dans les attributs
+        json_attributes_topic: "proxmox/ryzen/telemetry/usbdisk"
+        json_attributes_template: "{{ value_json | tojson }}"
+        state_class: "measurement"
+
+      - name: "NUC Proxmox HX370"
+        unique_id: "nuc_proxmox_hx370"
+        state_topic: "proxmox/ryzen/telemetry"
+        # L'état principal du capteur sera la consommation
+        value_template: "{{ value_json.sys.power_w }}"
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        # On fusionne les blocs sys et energy dans les attributs
+        json_attributes_topic: "proxmox/ryzen/telemetry"
+        json_attributes_template: >
+          {
+            "sys": {{ value_json.sys | tojson }},
+            "energy": {{ value_json.energy | tojson }}
+          }
+
+        #KVM :
+
+      # Données UPS Live (Script upssched)
+      - name: "UPS Status"
+        unique_id: kvm_nut_ups_status_live
+        state_topic: "proxmox/kvm-nut/telemetry/ups"
+        value_template: "{{ value_json.status }}"
+
+      - name: "KVM-NUT CPU"
+        unique_id: "kvm_nut_cpu"
+        state_topic: "proxmox/kvm-nut/telemetry"
+        value_template: "{{ value_json.cpu_usage }}"
+        unit_of_measurement: "%"
+        state_class: measurement
+
+      - name: "KVM-NUT CPU Freq"
+        unique_id: "kvm_nut_cpu_freq"
+        state_topic: "proxmox/kvm-nut/telemetry"
+        value_template: "{{ value_json.cpu_freq }}"
+        unit_of_measurement: "MHz"
+        state_class: measurement
+
+      - name: "KVM-NUT RAM"
+        unique_id: "kvm_nut_ram"
+        state_topic: "proxmox/kvm-nut/telemetry"
+        value_template: "{{ value_json.ram_usage }}"
+        unit_of_measurement: "%"
+        state_class: measurement
+
+      - name: "KVM-NUT SD Card"
+        unique_id: "kvm_nut_sdcard"
+        state_topic: "proxmox/kvm-nut/telemetry"
+        value_template: "{{ value_json.sd_usage }}"
+        unit_of_measurement: "%"
+        state_class: measurement
+
+      - name: "KVM-NUT CPU Temp"
+        unique_id: "kvm_nut_cpu_temp"
+        state_topic: "proxmox/kvm-nut/telemetry"
+        value_template: "{{ value_json.cpu_temp }}"
+        unit_of_measurement: "°C"
+        state_class: measurement
+
+      - name: "KVM-NUT GPU Temp"
+        unique_id: "kvm_nut_gpu_temp"
+        state_topic: "proxmox/kvm-nut/telemetry"
+        value_template: "{{ value_json.gpu_temp }}"
+        unit_of_measurement: "°C"
+        state_class: measurement
+
+      - name: "KVM-NUT RAM Temp"
+        unique_id: "kvm_nut_ram_temp"
+        state_topic: "proxmox/kvm-nut/telemetry"
+        value_template: "{{ value_json.ram_temp }}"
+        unit_of_measurement: "°C"
+        state_class: measurement
+
+      - name: "KVM-NUT RAM Temp"
+        unique_id: "kvm_nut_ram_temp"
+        state_topic: "proxmox/kvm-nut/telemetry"
+        value_template: "{{ value_json.ram_temp }}"
+        unit_of_measurement: "°C"
+        state_class: measurement
+
+      - name: "KVM-NUT Uptime"
+        unique_id: "kvm_nut_uptime"
+        state_topic: "proxmox/kvm-nut/telemetry"
+        value_template: "{{ value_json.uptime | as_datetime }}"
+        device_class: timestamp
+
+      - name: "KVM-NUT USB Error"
+        unique_id: "kvm_nut_usb_error"
+        state_topic: "proxmox/kvm-nut/telemetry"
+        value_template: "{{ value_json.last_usb_error | as_datetime }}"
+        device_class: timestamp
+
+      - name: "KVM-NUT NUT Error"
+        unique_id: "kvm_nut_nut_error"
+        state_topic: "proxmox/kvm-nut/telemetry/ups"
+        value_template: "{{ value_json.error | as_datetime }}"
+        device_class: timestamp
+
+      - name: "KVM-NUT Eth Error"
+        unique_id: "kvm_nut_eth_error"
+        state_topic: "proxmox/kvm-nut/telemetry"
+        value_template: "{{ value_json.last_eth_error | as_datetime }}"
+        device_class: timestamp
+
+      - name: "KVM-NUT Eth Speed"
+        unique_id: "kvm_nut_eth_speed"
+        state_topic: "proxmox/kvm-nut/telemetry/ups"
+        value_template: "{{ value_json.eth_speed }}"
+
+      - name: "Taux HC jour"
+        unique_id: taux_hc_day
+        state_topic: "homeassistant/sensor/taux_hc_day/state"
+        value_template: "{{ value }}"
+        json_attributes_topic: "homeassistant/sensor/taux_hc_day/attributes"
+        unit_of_measurement: "%"
+        device_class: battery
+
+      - name: "Taux HC semaine"
+        unique_id: taux_hc_week
+        state_topic: "homeassistant/sensor/taux_hc_week/state"
+        value_template: "{{ value }}"
+        json_attributes_topic: "homeassistant/sensor/taux_hc_week/attributes"
+        unit_of_measurement: "%"
+        device_class: battery
+
+      - name: "Taux HC mensuel"
+        unique_id: taux_hc_month
+        state_topic: "homeassistant/sensor/taux_hc_month/state"
+        value_template: "{{ value }}"
+        json_attributes_topic: "homeassistant/sensor/taux_hc_month/attributes"
+        unit_of_measurement: "%"
+        device_class: battery
+        state_class: measurement
+
+      - name: "Taux HC annuel"
+        unique_id: taux_hc_year
+        state_topic: "homeassistant/sensor/taux_hc_year/state"
+        value_template: "{{ value }}"
+        json_attributes_topic: "homeassistant/sensor/taux_hc_year/attributes"
+        unit_of_measurement: "%"
+        device_class: battery
+
+      - name: "Simulation PV"
+        unique_id: simulation_pv
+        state_topic: "homeassistant/simulation/solaire"
+        value_template: "{{ value_json.date }}"
+        json_attributes_topic: "homeassistant/simulation/solaire"
+        json_attributes_template: "{{ value_json | tojson }}"
+
+      - name: "Suivi PV"
+        unique_id: suivi_pv
+        state_topic: "homeassistant/suivi/solaire"
+        value_template: "{{ now().strftime('%H:%M') }}" # juste une heure d’actualisation
+        json_attributes_topic: "homeassistant/suivi/solaire"
+
+      - name: "Comparaison PV"
+        unique_id: comparaison_pv
+        state_topic: "homeassistant/comparaison/solaire"
+        value_template: "{{ value_json.comparaison.production.mesure | default(0) }}"
+        json_attributes_topic: "homeassistant/comparaison/solaire"
+        icon: mdi:chart-box
+
+      - name: "Shelly Pro Em Power 0 (Mqtt)"
+        state_topic: "shellyproem50-08f9e0e69644/status/em1:0"
+        value_template: "{{ value_json.act_power }}"
+        unit_of_measurement: "W"
+        device_class: power
+        json_attributes_topic: "shellyproem50-08f9e0e69644/status/em1:0"
+        json_attributes_template: "{{ value_json | tojson }}"
+
+      - name: "Shelly Pro Em Power 1 (Mqtt)"
+        state_topic: "shellyproem50-08f9e0e69644/status/em1:1"
+        value_template: "{{ value_json.act_power }}"
+        unit_of_measurement: "W"
+        device_class: power
+        json_attributes_topic: "shellyproem50-08f9e0e69644/status/em1:1"
+        json_attributes_template: "{{ value_json | tojson }}"
+
+      - name: Simulation Solaire ECS
+        state_topic: "homeassistant/simulation/solaire"
+        value_template: "{{ value_json.total_ecs_kwh }}"
+        unit_of_measurement: "kWh"
+        unique_id: simulation_ecs_kwh
+
+      - name: Simulation Solaire Batterie
+        state_topic: "homeassistant/simulation/solaire"
+        value_template: "{{ value_json.total_bat_kwh }}"
+        unit_of_measurement: "kWh"
+        unique_id: simulation_bat_kwh
+
+      - name: Simulation Solaire ECS OK
+        state_topic: "homeassistant/simulation/solaire"
+        value_template: "{{ value_json.ecs_ok }}"
+        unique_id: simulation_ecs_ok
+
+      - name: Simulation Solaire Batterie OK
+        state_topic: "homeassistant/simulation/solaire"
+        value_template: "{{ value_json.bat_ok }}"
+        unique_id: simulation_bat_ok
+
+      - name: "Consommation Mois"
+        unique_id: mqtt_consommation_mois
+        state_topic: "homeassistant/consommation/mois"
+        value_template: "{{ now().timestamp() | int }}"
+        json_attributes_topic: "homeassistant/consommation/mois"
+
+      - name: "Consommation Jour"
+        unique_id: mqtt_consommation_jour
+        state_topic: "homeassistant/consommation/jour"
+        value_template: "{{ now().timestamp() | int }}"
+        json_attributes_topic: "homeassistant/consommation/jour"
+
+      - name: "Consommation Semaine"
+        unique_id: mqtt_consommation_semaine
+        state_topic: "homeassistant/consommation/semaine"
+        value_template: "{{ now().timestamp() | int }}"
+        json_attributes_topic: "homeassistant/consommation/semaine"
+
+      - name: "Consommation Année"
+        unique_id: mqtt_consommation_annee
+        state_topic: "homeassistant/consommation/annee"
+        value_template: "{{ now().timestamp() | int }}"
+        json_attributes_topic: "homeassistant/consommation/annee"

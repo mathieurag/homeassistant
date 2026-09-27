@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "lovelace.lovelace",
+  "data": {
+    "config": {
+      "strategy": {
+        "type": "original-states",
+        "hide_energy": true,
+        "hide_entities_without_area": true,
+        "areas": {
+          "hidden": [
+            "chambre",
+            "cuisine",
+            "entree",
+            "exterieur",
+            "garage",
+            "all_house",
+            "salle_de_bain",
+            "salon",
+            "all_house_2"
+          ]
+        }
+      }
+    }
+  }
+}
